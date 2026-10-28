@@ -1,4 +1,4 @@
-import { Studio } from "@/components/studio";
+import { ProjectCreation } from "@/components/project-creation";
 export default function Page() {
-  return <Studio />;
+  return <ProjectCreation />;
 }

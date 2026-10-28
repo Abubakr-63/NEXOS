@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "node ../../scripts/with-env.mjs tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js",
+    "start": "node ../../scripts/with-env.mjs node dist/main.js",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },

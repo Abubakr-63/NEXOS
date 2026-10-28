@@ -5,6 +5,22 @@ datasource db {
   provider = "postgresql"
   url = env("DATABASE_URL")
 }
+enum CatalogStatus {
+  UNVERIFIED
+  CATALOGED
+}
+enum SourceStatus {
+  UNREVIEWED
+  SOURCE_AVAILABLE
+}
+// BUILD_VERIFIED requires a future evidence-bearing build model and migration.
+enum BuildSupportStatus {
+  NOT_VERIFIED
+}
+enum BaseAvailability {
+  SOURCE_AVAILABLE
+  DEPRECATED
+}
 enum Role {
   USER
   DEVELOPER
@@ -105,6 +121,7 @@ model Device {
   chipset String?
   architecture String?
   isDemo Boolean @default(false)
+  deprecatedAt DateTime?
   variants DeviceVariant[]
   projects ProjectDevice[]
   threads Thread[]
@@ -118,6 +135,15 @@ model DeviceVariant {
   region String
   bootloaderNotes String?
   androidVersions String[]
+  hardwareVariant String?
+  officialSourceUrl String?
+  evidenceUrls String[] @default([])
+  sourceCodeUrl String?
+  catalogStatus CatalogStatus @default(UNVERIFIED)
+  sourceStatus SourceStatus @default(UNREVIEWED)
+  buildSupportStatus BuildSupportStatus @default(NOT_VERIFIED)
+  reviewedAt DateTime?
+  notes String?
   rules CompatibilityRule[]
   @@unique([deviceId, modelNumber, region])
 }
@@ -321,4 +347,19 @@ model ConfigurationRevision {
   configuration Json
   createdAt DateTime @default(now())
   @@unique([projectId, number])
+}
+
+// Source catalog only: no device compatibility relation is implied.
+model AndroidBase {
+  id String @id
+  name String
+  androidVersion String
+  sourceRepository String
+  sourceRef String
+  documentationUrl String
+  evidenceUrls String[] @default([])
+  availability BaseAvailability @default(SOURCE_AVAILABLE)
+  buildSupportStatus BuildSupportStatus @default(NOT_VERIFIED)
+  reviewedAt DateTime
+  @@unique([name, androidVersion, sourceRef])
 }

@@ -33,7 +33,8 @@ export const romConfigurationSchema = z
     schemaVersion: z.literal(1),
     name: z.string().trim().min(1).max(60),
     variantId: z.string().min(1).max(100),
-    base: z.enum(["unconfigured"]),
+    description: z.string().trim().max(2000).default(""),
+    base: z.string().trim().min(1).max(100),
     preset: z.enum([
       "Balanced",
       "Gaming",
@@ -59,6 +60,7 @@ export type ROMConfiguration = z.infer<typeof romConfigurationSchema>;
 export const defaultConfiguration: ROMConfiguration = {
   schemaVersion: 1,
   name: "My Android",
+  description: "",
   variantId: "unselected",
   base: "unconfigured",
   preset: "Balanced",
@@ -81,7 +83,7 @@ export function validateConfiguration(input: unknown, variantExists: boolean) {
     explanation: "No verified build manifest has been registered.",
     blockingIssues: [
       ...(!variantExists ? ["Select an existing exact device variant."] : []),
-      "Device tree, vendor dependencies, firmware, Android base, kernel and recovery evidence are missing.",
+      "Device-specific build manifest, pinned device-tree/vendor/firmware/kernel integration and recovery evidence have not been verified.",
       "An isolated Android compilation worker is not configured.",
     ],
     warnings: [
@@ -94,3 +96,11 @@ export function validateConfiguration(input: unknown, variantExists: boolean) {
     configuration,
   };
 }
+
+export const deviceQuerySchema = catalogQuerySchema.extend({
+  manufacturerId: z.string().min(1).max(100).optional(),
+});
+export const projectMetadataSchema = romConfigurationSchema.pick({
+  name: true,
+  description: true,
+});

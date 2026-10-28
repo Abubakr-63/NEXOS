@@ -7,6 +7,7 @@ import {
   Post,
   Patch,
   ConflictException,
+  BadRequestException,
   Delete,
   Body,
   Query,
@@ -22,6 +23,7 @@ import {
   type ExceptionFilter,
   type ArgumentsHost,
   type OnModuleDestroy,
+  type OnModuleInit,
 } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
@@ -36,12 +38,56 @@ import {
   registrationSchema,
   loginSchema,
   catalogQuerySchema,
+  deviceQuerySchema,
 } from "@rom-hub/contracts";
 import { ZodError } from "zod";
-import { hashPassword, verifyPassword, sessionDigest } from "./security";
+import {
+  hashPassword,
+  verifyPassword,
+  sessionDigest,
+  dummyPasswordHash,
+} from "./security";
+import { upgradePasswordHash } from "./password-upgrade";
+import { StartupConfigurationError, sessionCookieOptions } from "./config";
 
 @Injectable()
-export class Database extends PrismaClient implements OnModuleDestroy {
+export class Database
+  extends PrismaClient
+  implements OnModuleDestroy, OnModuleInit
+{
+  async onModuleInit() {
+    try {
+      await this.$connect();
+      await this.$queryRaw`SELECT 1`;
+      await this.user.findFirst({ select: { id: true, passwordHash: true } });
+      await this.session.findFirst({
+        select: { tokenHash: true, expiresAt: true },
+      });
+      await this.rOMProject.findFirst({
+        select: { configuration: true, revision: true },
+      });
+      await this.deviceVariant.findFirst({
+        select: { modelNumber: true, region: true, catalogStatus: true },
+      });
+      await this.androidBase.findFirst({ select: { id: true } });
+    } catch (error) {
+      await this.$disconnect();
+      const code =
+        error instanceof Prisma.PrismaClientKnownRequestError ||
+        error instanceof Prisma.PrismaClientInitializationError
+          ? error instanceof Prisma.PrismaClientKnownRequestError
+            ? error.code
+            : error.errorCode
+          : undefined;
+      const hint =
+        code === "P2021" || code === "P2022"
+          ? "Required tables or columns are missing. Run pnpm db:migrate."
+          : "Check DATABASE_URL, database credentials and whether PostgreSQL is running.";
+      throw new StartupConfigurationError(
+        `Database startup check failed${code ? ` (${code})` : ""}. ${hint}`,
+      );
+    }
+  }
   async onModuleDestroy() {
     await this.$disconnect();
   }
@@ -79,6 +125,7 @@ export class Errors implements ExceptionFilter {
       console.error(
         JSON.stringify({
           event: "request.error",
+          requestId: host.switchToHttp().getRequest<FastifyRequest>().id,
           error: error instanceof Error ? error.name : "unknown",
         }),
       );
@@ -94,7 +141,12 @@ export class Errors implements ExceptionFilter {
 @Injectable()
 export class Accounts {
   constructor(@Inject(Database) private readonly db: Database) {}
+  private assertSecureTransport(req: FastifyRequest) {
+    if (process.env.NODE_ENV === "production" && req.protocol !== "https")
+      throw new ForbiddenException("HTTPS is required");
+  }
   assertOrigin(req: FastifyRequest) {
+    this.assertSecureTransport(req);
     if (
       req.headers.origin !== (process.env.WEB_ORIGIN ?? "http://localhost:3000")
     )
@@ -103,6 +155,7 @@ export class Accounts {
       throw new ForbiddenException("JSON content type required");
   }
   async user(req: FastifyRequest) {
+    this.assertSecureTransport(req);
     const token = req.cookies[cookieName];
     if (!token) throw new UnauthorizedException("Sign in to continue");
     const session = await this.db.session.findUnique({
@@ -113,36 +166,63 @@ export class Accounts {
       throw new UnauthorizedException("Session expired");
     return session.user;
   }
+  private async persistSession(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    oldToken: string | undefined,
+    token: string,
+  ) {
+    if (oldToken)
+      await tx.session.deleteMany({
+        where: { tokenHash: sessionDigest(oldToken) },
+      });
+    await tx.session.create({
+      data: {
+        userId,
+        tokenHash: sessionDigest(token),
+        expiresAt: new Date(Date.now() + 7 * 86400000),
+      },
+    });
+    await tx.auditLog.create({
+      data: { actorId: userId, action: "session.created" },
+    });
+  }
+  private setSessionCookie(reply: FastifyReply, token: string) {
+    reply.setCookie(cookieName, token, {
+      ...sessionCookieOptions(),
+      maxAge: 7 * 86400,
+    });
+  }
+  async register(
+    input: ReturnType<typeof registrationSchema.parse>,
+    req: FastifyRequest,
+    reply: FastifyReply,
+  ) {
+    // Derive before opening a transaction: no expensive KDF while holding a connection.
+    const passwordHash = await hashPassword(input.password);
+    const token = randomBytes(32).toString("base64url");
+    const user = await this.db.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: { email: input.email, username: input.username, passwordHash },
+        select: publicUser,
+      });
+      await this.persistSession(tx, created.id, req.cookies[cookieName], token);
+      return created;
+    });
+    // Never emit a usable credential before the database transaction commits.
+    this.setSessionCookie(reply, token);
+    return user;
+  }
   async createSession(
     userId: string,
     req: FastifyRequest,
     reply: FastifyReply,
   ) {
     const token = randomBytes(32).toString("base64url");
-    const oldToken = req.cookies[cookieName];
-    await this.db.$transaction(async (tx) => {
-      if (oldToken)
-        await tx.session.deleteMany({
-          where: { tokenHash: sessionDigest(oldToken) },
-        });
-      await tx.session.create({
-        data: {
-          userId,
-          tokenHash: sessionDigest(token),
-          expiresAt: new Date(Date.now() + 7 * 86400000),
-        },
-      });
-      await tx.auditLog.create({
-        data: { actorId: userId, action: "session.created" },
-      });
-    });
-    reply.setCookie(cookieName, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 7 * 86400,
-    });
+    await this.db.$transaction((tx) =>
+      this.persistSession(tx, userId, req.cookies[cookieName], token),
+    );
+    this.setSessionCookie(reply, token);
   }
 }
 @ApiTags("Accounts")
@@ -164,15 +244,7 @@ class AuthController {
   ) {
     this.accounts.assertOrigin(req);
     const input = registrationSchema.parse(body);
-    const user = await this.db.user.create({
-      data: {
-        email: input.email,
-        username: input.username,
-        passwordHash: await hashPassword(input.password),
-      },
-      select: publicUser,
-    });
-    await this.accounts.createSession(user.id, req, reply);
+    const user = await this.accounts.register(input, req, reply);
     return { user };
   }
   @Post("login")
@@ -187,10 +259,32 @@ class AuthController {
       where: { email: input.email },
     });
     // Run scrypt even for unknown accounts to reduce account enumeration by timing.
-    const hash =
-      user?.passwordHash ?? `scrypt:${"0".repeat(32)}:${"0".repeat(128)}`;
-    if (!(await verifyPassword(input.password, hash)) || !user)
+    const hash = user?.passwordHash ?? dummyPasswordHash;
+    if (!(await verifyPassword(input.password, hash)) || !user?.passwordHash)
       throw new UnauthorizedException("Invalid email or password");
+    const upgrade = await upgradePasswordHash(
+      this.db,
+      user.id,
+      input.password,
+      hash,
+    );
+    if (upgrade === "superseded") {
+      // Another login may have upgraded the same password, or the password changed.
+      // Recheck before granting a session; never write over the newer hash.
+      const latest = await this.db.user.findUnique({
+        where: { id: user.id },
+        select: { passwordHash: true },
+      });
+      if (
+        !latest?.passwordHash ||
+        !(await verifyPassword(input.password, latest.passwordHash))
+      )
+        throw new UnauthorizedException("Invalid email or password");
+    } else if (upgrade === "failed") {
+      console.warn(
+        JSON.stringify({ event: "password.rehash_failed", requestId: req.id }),
+      );
+    }
     await this.accounts.createSession(user.id, req, reply);
     return {
       user: {
@@ -216,7 +310,7 @@ class AuthController {
       await this.db.session.deleteMany({
         where: { tokenHash: sessionDigest(token) },
       });
-    reply.clearCookie(cookieName, { path: "/" });
+    reply.clearCookie(cookieName, sessionCookieOptions());
     return { success: true };
   }
   @Get("sessions")
@@ -258,13 +352,53 @@ class CatalogController {
       throw new ServiceUnavailableException("Database unavailable");
     }
   }
+  @Get("manufacturers")
+  async manufacturers() {
+    return {
+      items: await this.db.manufacturer.findMany({
+        where: { devices: { some: { isDemo: false, deprecatedAt: null } } },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
+    };
+  }
+  @Get("android-bases")
+  async androidBases() {
+    const items = await this.db.androidBase.findMany({
+      where: { availability: "SOURCE_AVAILABLE" },
+      orderBy: [{ name: "asc" }, { androidVersion: "asc" }],
+    });
+    return {
+      items: items.map((base) => ({
+        ...base,
+        supportStatus: "UNKNOWN",
+        buildSupported: false,
+      })),
+      explanation:
+        "Published source catalogs do not establish device-specific compatibility. No NEXOS build has been verified.",
+    };
+  }
   @Get("devices")
   async devices(@Query() query: unknown) {
-    const { q, page, limit } = catalogQuerySchema.parse(query);
+    const { q, page, limit, manufacturerId } = deviceQuerySchema.parse(query);
     const where: Prisma.DeviceWhereInput = {
+      manufacturerId,
+      isDemo: false,
+      deprecatedAt: null,
       OR: [
         { name: { contains: q, mode: "insensitive" } },
         { codename: { contains: q, mode: "insensitive" } },
+        { manufacturer: { name: { contains: q, mode: "insensitive" } } },
+        {
+          variants: {
+            some: {
+              OR: [
+                { modelNumber: { contains: q, mode: "insensitive" } },
+                { region: { contains: q, mode: "insensitive" } },
+              ],
+            },
+          },
+        },
       ],
     };
     const [items, total] = await this.db.$transaction([
@@ -277,7 +411,23 @@ class CatalogController {
       }),
       this.db.device.count({ where }),
     ]);
-    return { items, total, page, limit };
+    return {
+      items: items.map((device) => ({
+        ...device,
+        supportStatus: "UNKNOWN",
+        buildSupportStatus: "NOT_VERIFIED",
+        catalogStatus:
+          device.variants.length > 0 &&
+          device.variants.every(
+            (variant) => variant.catalogStatus === "CATALOGED",
+          )
+            ? "CATALOGED"
+            : "UNVERIFIED",
+      })),
+      total,
+      page,
+      limit,
+    };
   }
   @Get("legacy/catalog-projects")
   async projects(@Query() query: unknown) {
@@ -338,6 +488,37 @@ class ROMProjectsController {
     if (!project) throw new NotFoundException("Project not found");
     return project;
   }
+  private async checkSelections(
+    configuration: ReturnType<typeof romConfigurationSchema.parse>,
+    previous?: ReturnType<typeof romConfigurationSchema.parse>,
+  ) {
+    // Unchanged legacy selections remain editable; never silently map them to real hardware.
+    if (
+      configuration.variantId !== "unselected" &&
+      configuration.variantId !== previous?.variantId
+    ) {
+      const variant = await this.db.deviceVariant.findUnique({
+        where: { id: configuration.variantId },
+        include: { device: true },
+      });
+      if (!variant || variant.device.isDemo || variant.device.deprecatedAt)
+        throw new BadRequestException(
+          "Selected device variant is unavailable or deprecated. Choose an active exact variant.",
+        );
+    }
+    if (
+      configuration.base !== "unconfigured" &&
+      configuration.base !== previous?.base
+    ) {
+      const base = await this.db.androidBase.findFirst({
+        where: { id: configuration.base, availability: "SOURCE_AVAILABLE" },
+      });
+      if (!base)
+        throw new BadRequestException(
+          "Selected Android base is not in the source catalog. Save an unconfigured draft or select an available base.",
+        );
+    }
+  }
   @Get()
   async list(@Req() req: FastifyRequest) {
     const user = await this.accounts.user(req);
@@ -354,6 +535,7 @@ class ROMProjectsController {
     this.accounts.assertOrigin(req);
     const user = await this.accounts.user(req);
     const configuration = romConfigurationSchema.parse(body);
+    await this.checkSelections(configuration);
     return this.db.rOMProject.create({
       data: {
         ownerId: user.id,
@@ -364,7 +546,27 @@ class ROMProjectsController {
   }
   @Get(":id")
   async get(@Param("id") id: string, @Req() req: FastifyRequest) {
-    return this.owned(id, req);
+    const project = await this.owned(id, req);
+    const configuration = romConfigurationSchema.parse(project.configuration);
+    const deviceVariant = await this.db.deviceVariant.findUnique({
+      where: { id: configuration.variantId },
+      include: { device: { include: { manufacturer: true } } },
+    });
+    const androidBase = await this.db.androidBase.findUnique({
+      where: { id: configuration.base },
+    });
+    return {
+      ...project,
+      configuration,
+      deviceVariant,
+      androidBase: androidBase
+        ? { ...androidBase, supportStatus: "UNKNOWN", buildSupported: false }
+        : null,
+      compatibility: validateConfiguration(
+        configuration,
+        Boolean(deviceVariant),
+      ),
+    };
   }
   @Patch(":id")
   async save(
@@ -375,6 +577,10 @@ class ROMProjectsController {
     this.accounts.assertOrigin(req);
     const project = await this.owned(id, req);
     const { configuration, revision } = saveConfigurationSchema.parse(body);
+    await this.checkSelections(
+      configuration,
+      romConfigurationSchema.parse(project.configuration),
+    );
     return this.db.$transaction(async (tx) => {
       const updated = await tx.rOMProject.updateMany({
         where: { id, ownerId: project.ownerId, revision },

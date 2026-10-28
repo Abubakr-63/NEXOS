@@ -8,10 +8,13 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import cookie from "@fastify/cookie";
 import helmet from "@fastify/helmet";
 import { AppModule, Errors } from "./app";
+import { StartupConfigurationError, validateEnvironment } from "./config";
 async function main() {
+  const config = validateEnvironment();
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
+      trustProxy: config.trustProxy,
       logger: {
         redact: [
           "req.headers.cookie",
@@ -21,6 +24,7 @@ async function main() {
       },
       bodyLimit: 32768,
     }),
+    { abortOnError: false },
   );
   await app.register(cookie);
   await app.register(helmet);
@@ -28,7 +32,7 @@ async function main() {
   app.useGlobalFilters(new Errors());
   app.enableShutdownHooks();
   app.enableCors({
-    origin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
+    origin: config.origin,
     credentials: true,
   });
   const document = SwaggerModule.createDocument(
@@ -40,11 +44,13 @@ async function main() {
       .build(),
   );
   SwaggerModule.setup("api/docs", app, document);
-  await app.listen(Number(process.env.PORT ?? 4000), "0.0.0.0");
+  await app.listen(config.port, "0.0.0.0");
 }
-main().catch(() => {
-  console.error(
-    "API startup failed. Check configuration and service availability.",
-  );
+main().catch((error: unknown) => {
+  const message =
+    error instanceof StartupConfigurationError
+      ? error.message
+      : "API startup failed. Check port availability and the sanitized startup logs.";
+  console.error(message);
   process.exitCode = 1;
 });

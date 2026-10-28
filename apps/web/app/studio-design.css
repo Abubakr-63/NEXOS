@@ -173,7 +173,6 @@ select {
 }
 .rail-brand > svg {
   color: var(--accent);
-  filter: drop-shadow(0 0 12px #71c9ff20);
 }
 .rail-brand small {
   display: block;
@@ -1439,4 +1438,72 @@ select {
   .glass-panel {
     background: var(--surface);
   }
+}
+
+/* Project identity fields reuse the existing editor surfaces and tokens. */
+.project-description-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+.project-description-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.project-description-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.project-facts {
+  margin-top: 24px;
+}
+.project-facts dd,
+.studio-editor .detail-list dd {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.project-workflow .craft-heading > div,
+.project-overview .craft-heading > div {
+  min-width: 0;
+}
+.project-workflow h1,
+.project-workflow h2,
+.project-overview h1 {
+  overflow-wrap: anywhere;
+}
+.project-overview .craft-heading > button {
+  flex-shrink: 0;
+}
+
+/* NEXOS branding; sidebar sizing and expansion remain unchanged. */
+.nexos-mark {
+  box-sizing: border-box;
+  padding: 4px;
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+.rail-brand > .nexos-mark {
+  color: #38bdf8;
+}
+.rail-brand small {
+  letter-spacing: 1px;
+}
+.nexos-auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  font-weight: 650;
+}
+.nexos-auth-brand small {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
 }

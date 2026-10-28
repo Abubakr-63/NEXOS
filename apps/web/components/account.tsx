@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { NEXOSLogo } from "./nexos-logo";
 import { useRouter } from "next/navigation";
 import { Button } from "@rom-hub/ui";
 type User = {
@@ -58,8 +59,11 @@ export function AccountForm() {
   return (
     <div className="page-content">
       <div className="auth-wrap">
+        <div className="nexos-auth-brand">
+          <NEXOSLogo size={36} />
+        </div>
         <div className="eyebrow">
-          <span /> YOUR ROMCRAFT ACCOUNT
+          <span /> YOUR NEXOS ACCOUNT
         </div>
         <h1>
           {mode === "login"
@@ -67,8 +71,8 @@ export function AccountForm() {
             : "Make room for possibilities."}
         </h1>
         <p>
-          Create your ROMCRAFT account to save configurations and continue
-          shaping your Android across sessions.
+          Create your NEXOS account to save configurations and continue shaping
+          your Android across sessions.
         </p>
         <div className="panel">
           <div className="auth-tabs">

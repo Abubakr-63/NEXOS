@@ -5,11 +5,10 @@ import "./globals.css";
 import "./studio-design.css";
 export const metadata: Metadata = {
   title: {
-    default: "ROMCRAFT — Build your own Android",
-    template: "%s | ROMCRAFT",
+    default: "NEXOS — Your Android. Your Rules.",
+    template: "%s | NEXOS",
   },
-  description:
-    "Design a personal Android configuration with an evidence-based ROM creation studio.",
+  description: "NEXOS — Android Creation Studio. Your Android. Your Rules.",
 };
 export default function RootLayout({
   children,
@@ -26,9 +25,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Suspense
-          fallback={<div className="craft-page">Loading ROMCRAFT…</div>}
-        >
+        <Suspense fallback={<div className="craft-page">Loading NEXOS…</div>}>
           <Shell>{children}</Shell>
         </Suspense>
       </body>

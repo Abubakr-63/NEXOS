@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 for (const width of [1440, 820, 390]) {
-  test(`ROMCRAFT styles load at ${width}px`, async ({ page }) => {
+  test(`NEXOS styles load at ${width}px`, async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => {
@@ -9,6 +9,10 @@ for (const width of [1440, 820, 390]) {
     });
     await page.setViewportSize({ width, height: 1000 });
     await page.goto("/");
+    await expect(page).toHaveTitle(/NEXOS/);
+    await expect(page.locator(".footer-brand")).toContainText("NEXOS");
+    await expect(page.locator(".rail-brand .lucide-orbit")).toHaveCount(1);
+    await expect(page.locator("body")).not.toContainText("ROMCRAFT");
     await expect(page.locator(".craft-hero h1")).toBeVisible();
     await expect(page.locator("body")).toHaveCSS(
       "background-color",
@@ -99,6 +103,20 @@ test("served CSS contains current studio rules and compiled Tailwind", async ({
   ])
     expect(css).toContain(selector);
   expect(css).not.toMatch(/@(?:tailwind|source|theme)\b/);
+  const icon = await page.request.get("/icon.svg");
+  expect(icon.ok()).toBe(true);
+  expect(await icon.text()).toContain("lucide-orbit");
+  const favicon = await page.request.get("/favicon.ico");
+  expect(favicon.ok()).toBe(true);
+  expect((await favicon.body()).subarray(0, 4)).toEqual(
+    Buffer.from([0, 0, 1, 0]),
+  );
+  await page.goto("/login");
+  await expect(page.locator(".nexos-auth-brand")).toContainText(
+    "ANDROID CREATION STUDIO",
+  );
+  await expect(page.locator(".nexos-auth-brand .lucide-orbit")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("ROMCRAFT");
 });
 
 test("rail collapse, route selection, mobile dialog focus, and responsive resize", async ({

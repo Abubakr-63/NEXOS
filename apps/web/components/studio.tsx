@@ -141,7 +141,7 @@ export function Studio({ id }: { id?: string }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "romcraft-configuration.json";
+    a.download = "nexos-configuration.json";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -351,7 +351,7 @@ export function Studio({ id }: { id?: string }) {
                       );
                     } catch {
                       setMessage(
-                        "Invalid configuration. Import a valid ROMCRAFT JSON file under 16 KB.",
+                        "Invalid configuration. Import a valid NEXOS JSON file under 16 KB.",
                       );
                     }
                   }}
@@ -498,13 +498,13 @@ export function Projects() {
       <p role="status">{status}</p>
       <div className="craft-grid">
         {projects.map((p) => (
-          <Link className="craft-card" key={p.id} href={`/builder/${p.id}`}>
+          <Link className="craft-card" key={p.id} href={`/projects/${p.id}`}>
             <Layers />
             <h2>{p.configuration.name}</h2>
             <p>
               {p.configuration.preset} · Revision {p.revision}
             </p>
-            <span>Open builder →</span>
+            <span>Open project →</span>
           </Link>
         ))}
       </div>
@@ -519,7 +519,7 @@ export function Welcome() {
           <span className="craft-kicker">YOUR NEXT CHAPTER</span>
           <h2>A space to make it yours.</h2>
         </div>
-        <span className="welcome-edition">ROMCRAFT / STUDIO 01</span>
+        <span className="welcome-edition">NEXOS / STUDIO 01</span>
       </div>
       <section className="craft-hero">
         <div>

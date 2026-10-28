@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
+import { NEXOSLogo } from "./nexos-logo";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
-  Layers,
   LayoutDashboard,
   Folder,
   Plus,
@@ -96,12 +96,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <Link
           href="/"
           className="rail-brand"
-          aria-label="ROMCRAFT Creation Studio home"
+          aria-label="NEXOS Android Creation Studio home"
         >
-          <Layers size={29} />
-          <span>
-            ROMCRAFT <small>CREATION STUDIO</small>
-          </span>
+          <NEXOSLogo />
         </Link>
         <div className="rail-divider" />
         <NavigationPill aria-label="Main navigation">
@@ -122,6 +119,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="rail-bottom">
           <div
             className="rail-status"
+            role="status"
             title="Build infrastructure offline"
             aria-label="Build infrastructure offline"
           >
@@ -157,9 +155,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Link
               href="/"
               className="mobile-brand"
-              aria-label="ROMCRAFT Creation Studio home"
+              aria-label="NEXOS Android Creation Studio home"
             >
-              <Layers size={23} />
+              <NEXOSLogo size={23} wordmark={false} />
             </Link>
             <span>
               Personal workspace <span className="workspace-slash">/</span>{" "}
@@ -189,9 +187,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <main id="main">{children}</main>
         <footer>
           <span className="footer-brand">
-            <Layers size={13} /> ROMCRAFT <span>© 2026</span>
+            <NEXOSLogo size={18} wordmark={false} /> NEXOS <span>© 2026</span>
           </span>
-          <span>Built around your imagination. Grounded in compatibility.</span>
+          <span>Your Android. Your Rules.</span>
         </footer>
       </div>
       <NavigationPill className="mobile-dock" aria-label="Mobile navigation">
@@ -279,7 +277,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               </NavigationItem>
             ))}
             <Link href="/" className="more-home" onClick={closeMore}>
-              ROMCRAFT home <ArrowUpRight size={16} />
+              NEXOS home <ArrowUpRight size={16} />
             </Link>
           </nav>
           <StatusIndicator muted>

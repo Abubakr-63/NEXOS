@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "node ../../scripts/with-env.mjs tsx watch src/main.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "start": "node dist/main.js"
+    "start": "node ../../scripts/with-env.mjs node dist/main.js"
   },
   "dependencies": {
     "bullmq": "^5.61.0"

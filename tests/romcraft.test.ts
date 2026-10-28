@@ -27,3 +27,19 @@ test("unknown variants and absent manifests fail closed", () => {
     assert.deepEqual(result.evidence, []);
   }
 });
+
+test("metadata is bounded and legacy configurations still parse", () => {
+  const { description: _description, ...legacy } = defaultConfiguration;
+  assert.equal(romConfigurationSchema.parse(legacy).description, "");
+  assert.equal(
+    romConfigurationSchema.safeParse({
+      ...legacy,
+      description: "x".repeat(2001),
+    }).success,
+    false,
+  );
+  assert.equal(
+    romConfigurationSchema.safeParse({ ...legacy, name: "   " }).success,
+    false,
+  );
+});
