@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  USER
+  DEVELOPER
+  MODERATOR
+  ADMIN
+}
+enum ProjectKind {
+  ROM
+  RECOVERY
+  KERNEL
+}
+enum ReleaseStatus {
+  DRAFT
+  QUARANTINED
+  VERIFYING
+  READY
+  PUBLISHED
+  REJECTED
+}
+enum Channel {
+  STABLE
+  BETA
+  NIGHTLY
+}
+enum Compatibility {
+  SUPPORTED
+  UNSUPPORTED
+  CONDITIONAL
+  UNKNOWN
+}
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  username String @unique
+  passwordHash String?
+  avatarUrl String?
+  role Role @default(USER)
+  emailVerifiedAt DateTime?
+  createdAt DateTime @default(now())
+  romProjects ROMProject[]
+  sessions Session[]
+  oauthAccounts OAuthAccount[]
+  memberships Membership[]
+  projects ProjectMaintainer[]
+  threads Thread[]
+  posts Post[]
+  reviews Review[]
+  reactions Reaction[]
+  subscriptions Subscription[]
+  notifications Notification[]
+  audits AuditLog[]
+}
+model Session {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([userId, expiresAt])
+}
+model OAuthAccount {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider String
+  subject String
+  @@unique([provider, subject])
+}
+model Organization {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  members Membership[]
+  projects Project[]
+}
+model Membership {
+  organizationId String
+  userId String
+  role String @default("MEMBER")
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([organizationId, userId])
+}
+model Manufacturer {
+  id String @id @default(cuid())
+  name String @unique
+  slug String @unique
+  devices Device[]
+}
+model Device {
+  id String @id @default(cuid())
+  manufacturerId String
+  manufacturer Manufacturer @relation(fields: [manufacturerId], references: [id])
+  name String
+  slug String @unique
+  codename String
+  chipset String?
+  architecture String?
+  isDemo Boolean @default(false)
+  variants DeviceVariant[]
+  projects ProjectDevice[]
+  threads Thread[]
+  @@index([manufacturerId, codename])
+}
+model DeviceVariant {
+  id String @id @default(cuid())
+  deviceId String
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  modelNumber String
+  region String
+  bootloaderNotes String?
+  androidVersions String[]
+  rules CompatibilityRule[]
+  @@unique([deviceId, modelNumber, region])
+}
+model Project {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  kind ProjectKind
+  description String
+  androidBase String?
+  sourceUrl String?
+  status String @default("ACTIVE")
+  isDemo Boolean @default(false)
+  organizationId String?
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  maintainers ProjectMaintainer[]
+  devices ProjectDevice[]
+  releases Release[]
+  threads Thread[]
+  reviews Review[]
+  subscriptions Subscription[]
+  @@index([kind, status])
+}
+model ProjectMaintainer {
+  projectId String
+  userId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role String @default("MAINTAINER")
+  @@id([projectId, userId])
+}
+model ProjectDevice {
+  projectId String
+  deviceId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  @@id([projectId, deviceId])
+}
+model Release {
+  id String @id @default(cuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id])
+  version String
+  channel Channel
+  status ReleaseStatus @default(DRAFT)
+  changelog String
+  createdAt DateTime @default(now())
+  publishedAt DateTime?
+  artifacts Artifact[]
+  compatibilityRules CompatibilityRule[]
+  @@unique([projectId, version, channel])
+  @@index([status, publishedAt])
+}
+model Artifact {
+  id String @id @default(cuid())
+  releaseId String
+  release Release @relation(fields: [releaseId], references: [id])
+  objectKey String @unique
+  filename String
+  sizeBytes BigInt
+  expectedSha256 String?
+  verifiedSha256 String?
+  scannedAt DateTime?
+  signatureVerifiedAt DateTime?
+  mirrors DownloadMirror[]
+  verifications VerificationRecord[]
+}
+model DownloadMirror {
+  id String @id @default(cuid())
+  artifactId String
+  artifact Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  url String
+  region String?
+}
+model CompatibilityRule {
+  id String @id @default(cuid())
+  releaseId String
+  variantId String
+  release Release @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  variant DeviceVariant @relation(fields: [variantId], references: [id])
+  result Compatibility
+  explanation String
+  evidenceUrl String?
+  requiredBootloaderUnlocked Boolean?
+  requiredRecovery String?
+  androidBase String?
+  kernelDependency String?
+  firmware FirmwareRequirement[]
+  @@unique([releaseId, variantId])
+}
+model FirmwareRequirement {
+  id String @id @default(cuid())
+  ruleId String
+  rule CompatibilityRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  version String
+  evidenceUrl String?
+}
+model Thread {
+  id String @id @default(cuid())
+  title String
+  authorId String
+  author User @relation(fields: [authorId], references: [id])
+  projectId String?
+  deviceId String?
+  project Project? @relation(fields: [projectId], references: [id])
+  device Device? @relation(fields: [deviceId], references: [id])
+  createdAt DateTime @default(now())
+  posts Post[]
+  @@index([projectId, createdAt])
+  @@index([deviceId, createdAt])
+}
+model Post {
+  id String @id @default(cuid())
+  threadId String
+  authorId String
+  body String
+  createdAt DateTime @default(now())
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+  reactions Reaction[]
+  @@index([threadId, createdAt])
+}
+model Review {
+  id String @id @default(cuid())
+  projectId String
+  userId String
+  rating Int
+  body String
+  project Project @relation(fields: [projectId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  @@unique([projectId, userId])
+}
+model Reaction {
+  userId String
+  postId String
+  emoji String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  @@id([userId, postId, emoji])
+}
+model Subscription {
+  userId String
+  projectId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@id([userId, projectId])
+}
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message String
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([userId, readAt, createdAt])
+}
+model VerificationRecord {
+  id String @id @default(cuid())
+  artifactId String
+  artifact Artifact @relation(fields: [artifactId], references: [id])
+  kind String
+  result String
+  evidence String
+  createdAt DateTime @default(now())
+}
+model SecurityReport {
+  id String @id @default(cuid())
+  targetType String
+  targetId String
+  description String
+  status String @default("OPEN")
+  createdAt DateTime @default(now())
+  @@index([status, createdAt])
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action String
+  targetId String?
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+model ROMProject {
+  id String @id @default(cuid())
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  configuration Json
+  revision Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  revisions ConfigurationRevision[]
+  @@index([ownerId, updatedAt])
+}
+model ConfigurationRevision {
+  id String @id @default(cuid())
+  projectId String
+  project ROMProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  number Int
+  configuration Json
+  createdAt DateTime @default(now())
+  @@unique([projectId, number])
+}

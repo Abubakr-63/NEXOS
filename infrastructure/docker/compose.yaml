@@ -1,0 +1,45 @@
+name: rom-hub
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: romhub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-romhub_local}
+      POSTGRES_DB: romhub
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U romhub -d romhub"]
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+  storage:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    profiles: ["extended"]
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-romhub_local}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-romhub_local_storage}
+    ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
+    volumes: ["storage-data:/data"]
+  search:
+    image: getmeili/meilisearch:v1.15
+    profiles: ["extended"]
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-romhub-local-search-key-change-me}
+    ports: ["127.0.0.1:7700:7700"]
+    volumes: ["search-data:/meili_data"]
+volumes:
+  postgres-data:
+  redis-data:
+  storage-data:
+  search-data:

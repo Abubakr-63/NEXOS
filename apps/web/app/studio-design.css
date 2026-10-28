@@ -1,0 +1,1442 @@
+/* ROMCRAFT presentation tokens. Business logic and Tailwind compilation are separate. */
+:root {
+  --bg: #0b0e14;
+  --surface: #131823;
+  --raised: #1b2230;
+  --line: #ffffff10;
+  --text: #edf2fa;
+  --muted: #a1acbf;
+  --dim: #8794aa;
+  --accent: #8cd5ff;
+  --glass-bg: #171e2bd6;
+  --glass-border: #b8d8ff16;
+  --glass-highlight: #e0efff0a;
+  --glass-shadow: 0 18px 60px #00000026, inset 0 1px 0 var(--glass-highlight);
+  --active-bg: #239cf21a;
+  --active-border: #7cc9ff2e;
+  --button-bg: #9cddff;
+  --button-text: #102635;
+  --radius-panel: 28px;
+  --radius-card: 22px;
+  --ease-studio: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --rail-width: 76px;
+}
+:root[data-theme="light"] {
+  --bg: #f1f4f9;
+  --surface: #ffffff;
+  --raised: #e7edf5;
+  --line: #1e395218;
+  --text: #17283c;
+  --muted: #53657b;
+  --dim: #5e7187;
+  --accent: #126ba3;
+  --glass-bg: #ffffffdd;
+  --glass-border: #324d6b20;
+  --glass-highlight: #ffffffaa;
+  --glass-shadow: 0 18px 60px #24486d09, inset 0 1px 0 #ffffff;
+  --active-bg: #168be817;
+  --active-border: #168be82b;
+  --button-bg: #176b9e;
+  --button-text: #fff;
+}
+body {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+button,
+input,
+select {
+  font-family: inherit;
+}
+.craft-shell {
+  background: transparent;
+  isolation: isolate;
+}
+.craft-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 72% 10%, #25447a15, transparent 48%),
+    radial-gradient(ellipse at 25% 80%, #21666c0a, transparent 45%), var(--bg);
+}
+.glass-panel,
+.glass-card,
+.floating-toolbar {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-panel);
+}
+.glass-panel,
+.floating-toolbar {
+  backdrop-filter: blur(20px);
+}
+.glass-card {
+  border-radius: var(--radius-card);
+  transition:
+    transform 0.25s var(--ease-studio),
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--active-border);
+  box-shadow:
+    0 22px 45px #00000018,
+    inset 0 1px 0 var(--glass-highlight);
+}
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.status-indicator > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8bd7b2;
+  box-shadow: 0 0 8px #8bd7b230;
+  flex-shrink: 0;
+}
+.status-indicator.status-muted > span {
+  background: var(--dim);
+  box-shadow: none;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin: 38px 0 23px;
+}
+.section-header h2 {
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+  margin: 10px 0 7px;
+}
+.section-header p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.section-aside {
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  color: var(--dim);
+}
+.craft-kicker {
+  color: var(--accent);
+  font-size: 9px;
+  letter-spacing: 2.2px;
+  font-weight: 500;
+}
+/* Overlay rail: content reserves only the collapsed width. */
+.craft-sidebar {
+  inset: 20px auto 20px 20px;
+  width: var(--rail-width);
+  padding: 18px 8px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 30px;
+  background:
+    linear-gradient(155deg, var(--glass-highlight), transparent 45%),
+    var(--glass-bg);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(24px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  transition: width 300ms var(--ease-studio);
+  z-index: 70;
+}
+.rail-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  min-height: 52px;
+  position: relative;
+  font-size: 16px;
+  letter-spacing: -0.6px;
+  font-weight: 650;
+}
+.rail-brand > svg {
+  color: var(--accent);
+  filter: drop-shadow(0 0 12px #71c9ff20);
+}
+.rail-brand small {
+  display: block;
+  text-align: left;
+  font-size: 7px;
+  letter-spacing: 1.8px;
+  margin-top: 6px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.rail-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 16px 8px;
+}
+.craft-sidebar .navigation-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.craft-sidebar .navigation-item,
+.navigation-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 74px;
+  padding: 10px 8px;
+  border: 1px solid transparent;
+  border-radius: 21px;
+  color: var(--muted);
+  background: transparent;
+  text-align: center;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.2s var(--ease-studio);
+}
+.navigation-icon {
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 1;
+}
+.navigation-label {
+  font-size: 11px;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.craft-sidebar .navigation-item:hover,
+.navigation-item:hover {
+  color: var(--text);
+  background: var(--glass-highlight);
+}
+.craft-sidebar .navigation-item[aria-current],
+.navigation-item[aria-current],
+.navigation-item[data-active="true"] {
+  background: var(--active-bg);
+  border-color: var(--active-border);
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 #cceaff0a;
+}
+.navigation-item[aria-current] .navigation-icon {
+  filter: drop-shadow(0 0 8px #50baff35);
+  animation: nav-select 0.25s var(--ease-studio);
+}
+.rail-bottom {
+  margin-top: auto;
+  padding-top: 28px;
+  display: grid;
+  gap: 17px;
+  justify-items: center;
+}
+.rail-bottom > .status-indicator {
+  font-size: 9px;
+}
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 12px 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 17px;
+  background: var(--glass-highlight);
+  transition: background 0.2s;
+}
+.profile-card:hover {
+  background: var(--active-bg);
+}
+.profile-avatar,
+.header-avatar {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, #6591aa35, #8e88bd25);
+  color: var(--text);
+  border: 1px solid var(--glass-border);
+  border-radius: 13px;
+  width: 33px;
+  height: 35px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.profile-copy {
+  font-size: 10px;
+  font-weight: 500;
+}
+.profile-copy small {
+  display: block;
+  font-size: 8px;
+  color: var(--muted);
+  margin-top: 5px;
+  font-weight: 400;
+}
+.profile-arrow {
+  color: var(--dim);
+  margin-left: auto;
+  font-size: 12px;
+}
+.rail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  padding: 8px;
+  color: var(--muted);
+  font-size: 10px;
+  width: 100%;
+}
+/* Labels are absolutely positioned so neither the row height nor the icons move. */
+.craft-sidebar .navigation-item {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0;
+  height: 52px;
+  min-height: 52px;
+  padding: 0;
+  border-radius: 16px;
+  text-align: left;
+}
+.craft-sidebar .navigation-item[aria-current] .navigation-icon {
+  animation: none;
+}
+.craft-sidebar .navigation-icon {
+  width: 56px;
+  flex: 0 0 56px;
+}
+.craft-sidebar .rail-brand > svg {
+  width: 29px;
+  margin: 0 14px;
+  flex-shrink: 0;
+}
+.craft-sidebar .navigation-label,
+.craft-sidebar .rail-brand > span,
+.craft-sidebar .profile-copy,
+.craft-sidebar .profile-arrow,
+.craft-sidebar .rail-status-label,
+.craft-sidebar .rail-toggle > span {
+  position: absolute;
+  left: 64px;
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    visibility 160ms;
+}
+.craft-sidebar .navigation-label {
+  font-size: 12px;
+}
+.craft-sidebar .profile-card {
+  position: relative;
+  min-height: 52px;
+  justify-content: flex-start;
+  padding: 0;
+  gap: 0;
+}
+.craft-sidebar .profile-avatar {
+  margin-left: 11px;
+}
+.craft-sidebar .profile-arrow {
+  left: auto;
+  right: 10px;
+}
+.craft-sidebar .rail-bottom {
+  gap: 10px;
+  padding-top: 20px;
+  width: 100%;
+}
+.rail-status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 28px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.rail-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+  margin-left: 26px;
+  flex-shrink: 0;
+}
+.craft-sidebar .rail-status-label {
+  left: 64px;
+}
+.craft-sidebar .rail-toggle {
+  display: none;
+  position: relative;
+  justify-content: flex-start;
+  height: 44px;
+  padding: 0;
+}
+.craft-sidebar .rail-toggle > svg {
+  margin-left: 19px;
+  flex-shrink: 0;
+}
+.craft-sidebar[data-expanded="true"],
+.craft-sidebar:has(:focus-visible) {
+  width: 240px;
+}
+.craft-sidebar:is([data-expanded="true"], :has(:focus-visible))
+  :is(
+    .navigation-label,
+    .rail-brand > span,
+    .profile-copy,
+    .profile-arrow,
+    .rail-status-label,
+    .rail-toggle > span
+  ) {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 180ms ease 70ms,
+    visibility 0s;
+}
+.craft-main {
+  margin-left: calc(var(--rail-width) + 42px);
+  transition: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .craft-sidebar .rail-toggle {
+    display: flex;
+  }
+}
+.craft-topbar {
+  height: 90px;
+  margin: 0 38px;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+.workspace-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.workspace-heading strong {
+  color: var(--text);
+  font-weight: 450;
+}
+.workspace-slash {
+  margin: 0 15px;
+  color: var(--dim);
+}
+.topbar-actions {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.craft-topbar .theme-toggle {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.theme-moon {
+  display: none;
+}
+:root[data-theme="light"] .theme-sun {
+  display: none;
+}
+:root[data-theme="light"] .theme-moon {
+  display: block;
+}
+.craft-alpha {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  padding: 6px 9px;
+  border-color: var(--glass-border);
+}
+.mobile-brand,
+.mobile-dock {
+  display: none;
+}
+.craft-page {
+  padding: 34px 38px 48px;
+  max-width: 1600px;
+}
+.craft-main footer {
+  padding: 24px 38px;
+  color: var(--dim);
+  border-color: var(--line);
+  font-size: 9px;
+  gap: 20px;
+}
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+.footer-brand > span {
+  letter-spacing: 0;
+  margin-left: 4px;
+}
+/* Dashboard: original artwork drawn with lightweight CSS, not a product mockup. */
+.welcome-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+.welcome-heading h2 {
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  font-weight: 450;
+  margin-top: 9px;
+}
+.welcome-edition {
+  color: var(--dim);
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+.craft-hero {
+  position: relative;
+  overflow: hidden;
+  grid-template-columns: 1.12fr 1fr;
+  gap: 16px;
+  min-height: 480px;
+  padding: 40px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-panel);
+  background:
+    radial-gradient(ellipse at 90% 30%, #3c72a51c, transparent 60%),
+    linear-gradient(
+      115deg,
+      var(--surface),
+      color-mix(in srgb, var(--surface) 80%, transparent)
+    );
+  box-shadow: var(--glass-shadow);
+}
+.craft-hero > div:first-child {
+  position: relative;
+  z-index: 2;
+}
+.craft-pill {
+  margin: 0;
+  font-size: 9px;
+  background: var(--glass-highlight);
+  border-color: var(--glass-border);
+  color: var(--muted);
+  padding: 8px 12px;
+}
+.craft-hero h1 {
+  font-size: clamp(42px, 4.1vw, 67px);
+  font-weight: 480;
+  letter-spacing: -3px;
+  line-height: 1.08;
+  margin: 24px 0 20px;
+}
+.craft-hero em {
+  background: linear-gradient(100deg, var(--accent), #b6afff);
+  background-clip: text;
+  color: transparent;
+}
+:root[data-theme="light"] .craft-hero em {
+  background: linear-gradient(100deg, #126ba3, #6556a9);
+  background-clip: text;
+}
+.craft-hero p {
+  font-size: 12px;
+  line-height: 1.85;
+  margin-bottom: 25px;
+}
+.button {
+  min-height: 42px;
+  padding: 12px 18px;
+  border-radius: 13px;
+  font-size: 11px;
+  font-weight: 550;
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.button.primary {
+  background: var(--button-bg);
+  border: 1px solid transparent;
+  color: var(--button-text);
+  box-shadow:
+    0 4px 20px #70c6ff12,
+    inset 0 1px 0 #ffffff30;
+}
+.button.primary:hover {
+  background: var(--button-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 24px #70c6ff23;
+}
+.button.secondary {
+  background: var(--glass-highlight);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+}
+.button.secondary:hover {
+  background: var(--active-bg);
+}
+.button:disabled {
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.craft-text-link {
+  font-size: 10px;
+  margin-left: 18px;
+}
+.hero-availability {
+  margin-top: 24px;
+}
+.craft-hero .hero-availability small {
+  margin: 6px 0 0 13px;
+  font-size: 9px;
+}
+.hero-device-scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 415px;
+  isolation: isolate;
+}
+.device-orbit {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border: 1px solid #8dcbff0b;
+  border-radius: 50%;
+  z-index: -1;
+}
+.orbit-two {
+  width: 430px;
+  height: 430px;
+  border-style: dashed;
+  opacity: 0.6;
+}
+.hero-device-scene::before {
+  content: "";
+  position: absolute;
+  inset: 30px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #4387b32b, transparent 68%);
+  z-index: -1;
+}
+.showcase-phone {
+  width: 194px;
+  height: 365px;
+  border-radius: 33px;
+  border: 5px solid #3a4654;
+  outline: 1px solid #9aaec231;
+  background: #101a29;
+  transform: rotate(9deg);
+  box-shadow:
+    15px 25px 50px #0006,
+    inset 0 0 0 2px #030914;
+  position: relative;
+  overflow: hidden;
+  padding: 17px;
+  color: #e8f4fc;
+}
+.showcase-camera {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #050a11;
+  position: absolute;
+  top: 9px;
+  left: calc(50% - 4px);
+  z-index: 2;
+}
+.showcase-status {
+  display: flex;
+  justify-content: space-between;
+  font-size: 7px;
+  position: relative;
+  z-index: 1;
+}
+.showcase-wallpaper {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 120% 20%, #79cfe580, transparent 65%),
+    radial-gradient(ellipse at 0% 90%, #706aba85, transparent 60%), #122838;
+}
+.showcase-wallpaper::after {
+  content: "";
+  position: absolute;
+  width: 230px;
+  height: 440px;
+  background: linear-gradient(110deg, #8ac3df33, transparent);
+  border: 1px solid #b1ddf42b;
+  border-radius: 50%;
+  top: -85px;
+  left: 65px;
+  transform: rotate(35deg);
+}
+.showcase-clock {
+  position: relative;
+  font-size: 58px;
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -3px;
+  margin-top: 30px;
+  color: #cff0ff;
+}
+.showcase-clock > span {
+  display: block;
+}
+.hero-device-scene .showcase-phone > p {
+  position: relative;
+  font-size: 5px;
+  letter-spacing: 1px;
+  margin: 10px 0 18px;
+  color: #c2d4e4;
+}
+.showcase-widget {
+  position: relative;
+  border: 1px solid #c4e7ff20;
+  border-radius: 14px;
+  background: #c9eaff12;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+}
+.showcase-widget > span {
+  font-size: 5px;
+  letter-spacing: 1.2px;
+  display: block;
+}
+.showcase-widget strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  margin-top: 6px;
+}
+.showcase-widget-line {
+  height: 2px;
+  width: 35px;
+  background: #b4e4f8;
+  margin-top: 10px;
+  border-radius: 2px;
+}
+.showcase-apps {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 17px;
+}
+.showcase-apps > svg {
+  padding: 7px;
+  width: 29px;
+  height: 29px;
+  background: #d9eaff21;
+  border: 1px solid #d9eaff1a;
+  border-radius: 10px;
+}
+.showcase-gesture {
+  position: absolute;
+  bottom: 8px;
+  width: 52px;
+  height: 3px;
+  left: calc(50% - 26px);
+  background: #d5e6ed;
+  border-radius: 3px;
+}
+.design-float {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  background: var(--glass-bg);
+  padding: 13px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 12px 35px #0002;
+}
+.design-float > svg {
+  color: var(--accent);
+}
+.design-float > span {
+  font-size: 10px;
+  color: var(--text);
+}
+.design-float small {
+  display: block;
+  font-size: 8px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.float-top {
+  top: 40px;
+  right: -10px;
+}
+.float-bottom {
+  bottom: 42px;
+  left: -12px;
+}
+.mini-swatches {
+  display: flex;
+  margin-left: 4px;
+}
+.mini-swatches i {
+  width: 11px;
+  height: 11px;
+  background: #9bd9ee;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  margin-left: -3px;
+}
+.mini-swatches i:nth-child(2) {
+  background: #bcb0eb;
+}
+.mini-swatches i:nth-child(3) {
+  background: #e6becd;
+}
+.preview-caption {
+  position: absolute;
+  bottom: 0;
+  font-size: 6px;
+  letter-spacing: 1.2px;
+  color: var(--dim);
+}
+.craft-grid {
+  gap: 16px;
+}
+.craft-card {
+  background:
+    linear-gradient(135deg, var(--glass-highlight), transparent 65%),
+    var(--glass-bg);
+  padding: 25px 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+}
+.craft-card-top {
+  margin-bottom: 27px;
+  align-items: center;
+}
+.craft-card-top > svg {
+  box-sizing: content-box;
+  padding: 10px;
+  background: var(--active-bg);
+  border: 1px solid var(--active-border);
+  border-radius: 14px;
+}
+.craft-card-top > span {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+.craft-card h3 {
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.craft-card p {
+  font-size: 11px;
+  margin-top: 9px;
+}
+/* Existing editor and account surfaces share the same visual vocabulary. */
+.studio-editor,
+.panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+}
+.studio-editor {
+  padding: 27px;
+}
+.studio-layout {
+  grid-template-columns: 155px minmax(230px, 1fr) 245px;
+  gap: 22px;
+}
+.studio-steps button {
+  border: 1px solid transparent;
+  border-radius: 13px;
+  min-height: 42px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.studio-steps button[aria-current] {
+  background: var(--active-bg);
+  border-color: var(--active-border);
+}
+.craft-status {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  border-radius: 14px;
+  line-height: 1.6;
+}
+.craft-notice {
+  border-color: var(--glass-border);
+  background: var(--glass-highlight);
+  border-radius: 14px;
+}
+.studio-actions.floating-toolbar {
+  padding: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  margin-top: 30px;
+}
+.craft-field input,
+.craft-field select,
+.form-field input {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--bg);
+  min-height: 44px;
+}
+.craft-heading h1 {
+  font-weight: 500;
+  letter-spacing: -1.5px;
+}
+.craft-heading p {
+  line-height: 1.8;
+}
+.auth-wrap {
+  max-width: 500px;
+}
+.auth-wrap h1 {
+  font-weight: 500;
+  letter-spacing: -1px;
+  font-size: 32px;
+}
+.more-dialog {
+  position: fixed;
+  inset: auto 12px calc(100px + env(safe-area-inset-bottom));
+  width: calc(100% - 24px);
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: visible;
+}
+.more-dialog::backdrop {
+  background: #03071180;
+  backdrop-filter: blur(5px);
+}
+.more-dialog[open] {
+  animation: panel-enter 0.2s var(--ease-studio);
+}
+.more-dialog > .glass-panel {
+  padding: 24px;
+}
+.more-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.more-title h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin-top: 9px;
+  letter-spacing: -0.6px;
+}
+.more-dialog nav {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.more-dialog .navigation-item {
+  flex-direction: row;
+  justify-content: flex-start;
+  min-height: 50px;
+  border-radius: 14px;
+  gap: 16px;
+  padding: 12px;
+}
+.more-dialog .navigation-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+.more-home {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+@keyframes nav-select {
+  from {
+    transform: translateY(2px);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes panel-enter {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.welcome-heading,
+.craft-hero {
+  animation: panel-enter 0.4s var(--ease-studio);
+}
+@media (min-width: 1700px) {
+  .craft-hero {
+    min-height: 540px;
+    padding: 50px 60px;
+  }
+  .showcase-phone {
+    width: 215px;
+    height: 405px;
+  }
+  .showcase-clock {
+    font-size: 68px;
+  }
+  .hero-device-scene {
+    min-height: 445px;
+  }
+  .float-top {
+    right: 25px;
+  }
+  .float-bottom {
+    left: 25px;
+  }
+}
+@media (max-width: 1200px) {
+  .craft-sidebar {
+    left: 16px;
+    top: 16px;
+    bottom: 16px;
+  }
+  .craft-sidebar .rail-toggle {
+    display: flex;
+  }
+  .craft-topbar {
+    margin: 0 26px;
+  }
+  .craft-page {
+    padding: 28px 26px 40px;
+  }
+  .craft-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .craft-hero {
+    padding: 30px;
+    gap: 5px;
+  }
+  .craft-hero h1 {
+    font-size: 49px;
+  }
+  .float-top {
+    right: -15px;
+  }
+  .float-bottom {
+    left: -15px;
+  }
+  .design-float {
+    padding: 11px;
+  }
+  .mini-swatches {
+    display: none;
+  }
+  .studio-layout {
+    grid-template-columns: 135px minmax(230px, 1fr);
+  }
+  .studio-preview {
+    grid-column: 2;
+  }
+  .topbar-actions > .status-indicator {
+    display: none;
+  }
+  .craft-main footer {
+    padding: 24px 26px;
+  }
+}
+@media (max-width: 950px) {
+  .hero-device-scene .showcase-phone > p {
+    font-size: 5px;
+  }
+
+  .craft-hero {
+    grid-template-columns: 1.2fr 1fr;
+    padding: 28px;
+    min-height: 455px;
+  }
+  .craft-hero h1 {
+    font-size: 43px;
+    letter-spacing: -2px;
+  }
+  .craft-hero p {
+    font-size: 11px;
+  }
+  .showcase-phone {
+    width: 160px;
+    height: 315px;
+    border-radius: 28px;
+    padding: 13px;
+    transform: rotate(6deg);
+  }
+  .showcase-clock {
+    font-size: 49px;
+    margin-top: 25px;
+  }
+  .showcase-widget {
+    padding: 10px;
+  }
+  .showcase-apps {
+    margin-top: 12px;
+  }
+  .showcase-apps > svg {
+    width: 25px;
+    height: 25px;
+    padding: 6px;
+  }
+  .design-float {
+    display: none;
+  }
+  .hero-device-scene {
+    min-height: 355px;
+  }
+  .craft-text-link {
+    display: inline-block;
+    margin: 17px 0 0 0;
+    width: 100%;
+  }
+  .section-aside,
+  .welcome-edition {
+    display: none;
+  }
+  .hero-availability .status-indicator {
+    font-size: 9px;
+  }
+  .craft-hero .hero-availability small {
+    font-size: 8px;
+  }
+  .craft-topbar {
+    height: 80px;
+  }
+  .craft-hero {
+    gap: 12px;
+  }
+}
+@media (max-width: 720px) {
+  .craft-shell .craft-main {
+    transition: none;
+  }
+
+  html {
+    scroll-padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+
+  .craft-sidebar {
+    display: none;
+  }
+  .craft-main {
+    margin-left: 0;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+  .craft-topbar {
+    margin: 0 20px;
+    height: 76px;
+    position: relative;
+    top: auto;
+    z-index: 1;
+    background: transparent;
+  }
+  .workspace-heading {
+    font-size: 10px;
+  }
+  .workspace-heading > span {
+    font-size: 0;
+  }
+  .workspace-heading strong {
+    font-size: 11px;
+  }
+  .workspace-slash {
+    display: none;
+  }
+  .mobile-brand {
+    display: flex;
+    color: var(--accent);
+  }
+  .topbar-actions {
+    gap: 10px !important;
+  }
+  .header-avatar {
+    width: 31px;
+    height: 33px;
+  }
+  .craft-alpha {
+    display: none;
+  }
+  .craft-page {
+    padding: 25px 18px 32px;
+  }
+  .welcome-heading {
+    margin-bottom: 21px;
+  }
+  .welcome-heading h2 {
+    font-size: 20px;
+  }
+  .craft-kicker {
+    font-size: 8px;
+  }
+  .craft-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: 28px 25px 20px;
+    border-radius: 24px;
+    gap: 0;
+  }
+  .craft-hero h1 {
+    font-size: 53px;
+    letter-spacing: -2.8px;
+    margin: 25px 0 21px;
+  }
+  .craft-hero p {
+    font-size: 12px;
+  }
+  .craft-text-link {
+    width: auto;
+    margin: 0 0 0 14px;
+    font-size: 10px;
+  }
+  .hero-availability {
+    margin-top: 23px;
+  }
+  .hero-device-scene {
+    min-height: 325px;
+    margin-top: 25px;
+  }
+  .showcase-phone {
+    width: 161px;
+    height: 302px;
+    transform: rotate(8deg);
+  }
+  .showcase-clock {
+    font-size: 46px;
+  }
+  .hero-device-scene .showcase-phone > p {
+    font-size: 4.5px;
+    margin-bottom: 12px;
+  }
+  .showcase-widget {
+    padding: 9px;
+  }
+  .showcase-widget strong {
+    font-size: 13px;
+  }
+  .showcase-apps {
+    margin-top: 12px;
+  }
+  .preview-caption {
+    bottom: -8px;
+    font-size: 5px;
+  }
+  .design-float {
+    display: flex;
+  }
+  .float-top {
+    right: -10px;
+    top: 30px;
+  }
+  .float-bottom {
+    left: -9px;
+    bottom: 25px;
+  }
+  .design-float {
+    padding: 10px;
+    border-radius: 13px;
+  }
+  .design-float > span {
+    font-size: 8px;
+  }
+  .design-float small {
+    font-size: 7px;
+  }
+  .design-float > svg {
+    width: 15px;
+  }
+  .device-orbit {
+    width: 280px;
+    height: 280px;
+  }
+  .orbit-two {
+    width: 330px;
+    height: 330px;
+  }
+  .section-header {
+    margin: 29px 0 20px;
+  }
+  .section-header h2 {
+    font-size: 21px;
+    max-width: 280px;
+    line-height: 1.3;
+  }
+  .section-header p {
+    font-size: 11px;
+  }
+  .craft-grid {
+    gap: 12px;
+  }
+  .craft-card {
+    padding: 20px 15px;
+    border-radius: 20px;
+  }
+  .craft-card-top {
+    margin-bottom: 22px;
+  }
+  .craft-card-top > svg {
+    padding: 8px;
+    width: 19px;
+    height: 19px;
+    border-radius: 12px;
+  }
+  .craft-card h3 {
+    font-size: 12px;
+  }
+  .craft-card p {
+    font-size: 10px;
+  }
+  .craft-main footer {
+    padding: 20px 18px;
+    font-size: 8px;
+  }
+  .craft-main footer > span:last-child {
+    display: none;
+  }
+  .studio-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .studio-preview {
+    grid-column: 1;
+  }
+  .studio-editor {
+    padding: 22px;
+  }
+  .studio-steps {
+    gap: 8px;
+  }
+  .studio-steps button {
+    padding: 12px;
+  }
+  .craft-heading h1 {
+    font-size: 30px;
+  }
+  .craft-heading .button {
+    min-height: 42px;
+  }
+  .mobile-dock {
+    position: fixed;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    z-index: 60;
+    bottom: calc(13px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(420px, calc(100% - 24px));
+    padding: 7px;
+    gap: 4px;
+    border: 1px solid var(--glass-border);
+    border-radius: 29px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    box-shadow:
+      0 12px 45px #0005,
+      inset 0 1px 0 var(--glass-highlight);
+  }
+  .mobile-dock .navigation-item {
+    min-height: 62px;
+    border-radius: 22px;
+    gap: 5px;
+    padding: 8px 3px;
+  }
+  .mobile-dock .navigation-label {
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .mobile-dock .navigation-icon svg {
+    width: 23px;
+    height: 23px;
+  }
+}
+@media (max-width: 360px) {
+  .craft-hero {
+    padding: 25px 18px 20px;
+  }
+  .craft-hero h1 {
+    font-size: 46px;
+  }
+  .craft-text-link {
+    margin-top: 16px;
+    margin-left: 0;
+    width: 100%;
+  }
+  .craft-card {
+    padding: 17px 12px;
+  }
+  .craft-topbar {
+    margin: 0 16px;
+  }
+  .design-float {
+    padding: 8px;
+  }
+  .float-top {
+    right: -9px;
+  }
+  .float-bottom {
+    left: -10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .craft-sidebar,
+  .mobile-dock,
+  .design-float,
+  .glass-panel {
+    background: var(--surface);
+  }
+}

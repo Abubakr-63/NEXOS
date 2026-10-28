@@ -1,0 +1,37 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "API_ORIGIN",
+    "WEB_ORIGIN",
+    "NODE_ENV",
+    "PORT",
+    "REDIS_URL"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "!.next/dev/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "@rom-hub/database#build": {
+      "cache": false,
+      "outputs": []
+    },
+    "@rom-hub/ui#build": {
+      "outputs": []
+    },
+    "@rom-hub/utils#build": {
+      "outputs": []
+    }
+  }
+}

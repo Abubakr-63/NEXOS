@@ -1,0 +1,31 @@
+name: Quality
+on: [push, pull_request]
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: romhub
+          POSTGRES_PASSWORD: romhub_ci
+          POSTGRES_DB: romhub
+        ports: [5432:5432]
+        options: --health-cmd="pg_isready -U romhub" --health-interval=5s --health-retries=10
+    env:
+      DATABASE_URL: postgresql://romhub:romhub_ci@localhost:5432/romhub
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: pnpm --filter @rom-hub/contracts build
+      - run: pnpm db:validate && pnpm db:migrate && pnpm db:seed
+      - run: pnpm typecheck && pnpm lint && pnpm test && pnpm build
+      - run: pnpm test:integration
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

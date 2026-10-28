@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+**/node_modules/
+**/.next/
+**/dist/
+!**/.env.example
+.local/
+
+.turbo/
+**/.turbo/
+playwright-report/
+test-results/

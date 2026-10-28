@@ -1,0 +1,9 @@
+node_modules
+.next
+dist
+.turbo
+pnpm-lock.yaml
+package-lock.original.json
+*.sql
+test-results
+playwright-report

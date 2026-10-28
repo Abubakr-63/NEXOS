@@ -1,26 +1,32 @@
 {
-  "name": "crm-omuz",
-  "version": "0.1.0",
+  "name": "rom-hub",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22"
   },
-  "dependencies": {
-    "next": "16.4.3",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+  "scripts": {
+    "dev": "pnpm --filter @rom-hub/contracts build && turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "tsc --noEmit && turbo typecheck",
+    "test": "tsx --test tests/*.test.ts",
+    "db:generate": "pnpm --filter @rom-hub/database generate",
+    "db:migrate": "pnpm --filter @rom-hub/database migrate",
+    "db:seed": "pnpm --filter @rom-hub/database seed",
+    "db:validate": "pnpm --filter @rom-hub/database validate",
+    "test:integration": "tsx --test tests/api.integration.ts",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^22.18.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.20.6",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3"
   }
 }
