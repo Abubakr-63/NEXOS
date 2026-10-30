@@ -38,6 +38,28 @@ test("workspace runner loads app environment and preserves explicit shell overri
   }
 });
 
+test("workspace runner preserves native executable argument boundaries and literal shell characters", () => {
+  const argumentsToPreserve = [
+    "path with spaces",
+    'quoted "value"',
+    "literal & echo marker",
+    "$(literal)",
+  ];
+  const result = spawnSync(
+    process.execPath,
+    [
+      resolve("scripts/with-env.mjs"),
+      process.execPath,
+      "-e",
+      "process.stdout.write(JSON.stringify(process.argv.slice(1)))",
+      ...argumentsToPreserve,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout), argumentsToPreserve);
+});
+
 test("API validates missing database settings and exact browser origins without leaking values", () => {
   const old = {
     DATABASE_URL: process.env.DATABASE_URL,
