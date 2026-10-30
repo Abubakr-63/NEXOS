@@ -10,7 +10,8 @@
     "start": "node ../../scripts/with-env.mjs node dist/main.js"
   },
   "dependencies": {
-    "bullmq": "^5.61.0"
+    "bullmq": "^5.61.0",
+    "@rom-hub/contracts": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.20.6",

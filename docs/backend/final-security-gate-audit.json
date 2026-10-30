@@ -1,0 +1,91 @@
+{
+  "reviewedAt": "2026-10-29",
+  "scope": "Reviewed local working tree; not an immutable production image or deployment certification",
+  "decisions": {
+    "phaseCApiContracts": "GO",
+    "publicProduction": "NO-GO"
+  },
+  "commands": [
+    {
+      "command": "pnpm audit --json",
+      "exitCode": 0,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0
+      }
+    },
+    {
+      "command": "pnpm audit --prod --json",
+      "exitCode": 0,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0
+      }
+    }
+  ],
+  "remainingAdvisories": [],
+  "resolvedVersions": {
+    "zod": [
+      "4.6.6"
+    ],
+    "fastify": [
+      "5.12.6"
+    ],
+    "deepmergeTs": [
+      "8.0.2"
+    ],
+    "effect": [
+      "3.20.0"
+    ],
+    "jsYaml": {
+      "swagger": "5.4.1",
+      "eslintTooling": "4.3.2"
+    }
+  },
+  "databasePreservation": {
+    "modelsChecked": 28,
+    "changedModels": []
+  },
+  "verification": {
+    "unit": 34,
+    "integration": 13,
+    "e2e": 6,
+    "additionalTargetedAdversarialRerun": 1
+  },
+  "openInputFindings": [
+    {
+      "boundary": "DELETE /api/v1/auth/sessions/:id with NUL",
+      "observedStatus": 500
+    },
+    {
+      "boundary": "GET /api/v1/legacy/catalog-projects/:slug with NUL",
+      "observedStatus": 500
+    },
+    {
+      "boundary": "GET /api/v1/devices?manufacturerId=NUL",
+      "observedStatus": 500
+    }
+  ],
+  "sourceSha256": {
+    "package.json": "5226aa222afbef89ae26b3c7228f2cb7f6f7e53f863861eb27bc8e403ffcfae0",
+    "pnpm-lock.yaml": "c256f7210d036f12e37a61c042bea25dbae2e23612ba46cf6fa4133867a67de6",
+    "apps/api/src/security.ts": "3faf8a08a87367ed2ad353c4abdeac8afe06b145a831736e1e53adf19e9ea878",
+    "apps/api/src/password-upgrade.ts": "d11ce18c6ed22b5d8b6b793dc798ee20ad620975469c2a49e7eb83215feecda9",
+    "apps/api/src/app.ts": "3f3797765ac56c8430f717c735153cd5d990ff67c08e0a02c7152329fb21a650",
+    "apps/api/src/config.ts": "e02a154f670eb3ebe09911db99c4316f491f522ee51a0683185feb5a351439c0",
+    "apps/api/src/main.ts": "38168ac7bf3b6843baf9109f28fd96356d02b757d1b80f5ce2187a1f188cc424",
+    "apps/api/src/rate-limit.ts": "f6624ca8c0ff167aac299d7f42c8fc06d68ff5ff10f1c9d24bab2f4be33aba3a",
+    "apps/api/src/account-protection.ts": "c8eace15d5e383d69a0b0f8b901f457cba824d97bea1d00d41dad7c7ea2eaeda",
+    "packages/contracts/src/index.ts": "0b47957bf943a1ef16e4fe3e459d79de0fa457e5caeae35e13f3784e16372bb2",
+    "packages/contracts/src/validation-errors.ts": "facd96bd22e7ef2bddbfdda5b843ed10095185d4dff278776a09f1e3b232d5aa",
+    "packages/database/prisma/schema.prisma": "083b70c2199048fb5916b97fa544f084f2ffc794830352c159244f63ee280e5a",
+    "patches/@prisma__config@6.19.0.patch": "3162a0264768078f7b67d60eb8c85c3034cb663597be3795d339eea98dffb096",
+    "tests/api.integration.ts": "704a3b4a47542833f29e70b3aa1e2a1a15aa15f6728c225026877a95bf9850ca"
+  }
+}

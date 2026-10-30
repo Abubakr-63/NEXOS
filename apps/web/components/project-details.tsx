@@ -1,17 +1,21 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { projectMetadataSchema } from "@rom-hub/contracts";
+import {
+  projectMetadataSchema,
+  type ProjectDetailResponse,
+  type ProjectWriteResponse,
+} from "@rom-hub/contracts";
 import {
   GlassPanel,
   PrimaryButton,
   SecondaryButton,
   StatusIndicator,
 } from "./design-system";
-import { projectAPI, type SavedProject } from "@/lib/project-api";
+import { projectAPI } from "@/lib/project-api";
 
 export function ProjectDetails({ id }: { id: string }) {
-  const [project, setProject] = useState<SavedProject>();
+  const [project, setProject] = useState<ProjectDetailResponse>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
@@ -21,7 +25,7 @@ export function ProjectDetails({ id }: { id: string }) {
   const [message, setMessage] = useState("");
   useEffect(() => {
     const controller = new AbortController();
-    projectAPI<SavedProject>(
+    projectAPI<ProjectDetailResponse>(
       `projects/${encodeURIComponent(id)}`,
       "GET",
       undefined,
@@ -50,7 +54,7 @@ export function ProjectDetails({ id }: { id: string }) {
     setMessage("");
     try {
       const metadata = projectMetadataSchema.parse({ name, description });
-      const saved = await projectAPI<SavedProject>(
+      const saved = await projectAPI<ProjectWriteResponse>(
         `projects/${encodeURIComponent(id)}`,
         "PATCH",
         {

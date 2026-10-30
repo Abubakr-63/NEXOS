@@ -1,0 +1,101 @@
+{
+  "reviewedAt": "2026-10-28",
+  "changes": [
+    {
+      "package": "fastify",
+      "from": "5.11.3",
+      "to": "5.12.6",
+      "scope": "Direct API and @nestjs/platform-fastify@11.2.8 via fastify@5.11.3 override"
+    },
+    {
+      "package": "effect",
+      "from": "3.18.4",
+      "to": "3.20.0",
+      "scope": "@prisma/config@6.19.0>effect override"
+    }
+  ],
+  "commands": [
+    {
+      "command": "pnpm audit --json",
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 2,
+        "critical": 0
+      }
+    },
+    {
+      "command": "pnpm audit --prod --json",
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 2,
+        "critical": 0
+      }
+    }
+  ],
+  "remainingAdvisories": [
+    {
+      "package": "deepmerge-ts",
+      "severity": "high",
+      "title": "DeepmergeTS has stack exhaustion when merging recursive object graphs",
+      "identifier": "GHSA-ggr8-5vv4-36mx",
+      "url": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx",
+      "affected": "<8.0.0",
+      "fixed": ">=8.0.0",
+      "findings": [
+        {
+          "version": "7.1.5",
+          "paths": [
+            "packages__database>prisma>@prisma/config>deepmerge-ts"
+          ]
+        }
+      ]
+    },
+    {
+      "package": "zod",
+      "severity": "high",
+      "title": "Zod can exhaust memory while validating oversized constrained collections",
+      "identifier": "GHSA-mrhx-c7xc-m3w5",
+      "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+      "affected": "<4.6.6",
+      "fixed": ">=4.6.6",
+      "findings": [
+        {
+          "version": "3.25.76",
+          "paths": [
+            "apps__api>zod"
+          ]
+        }
+      ]
+    }
+  ],
+  "productionAdvisories": [
+    {
+      "identifier": "GHSA-ggr8-5vv4-36mx",
+      "findings": [
+        {
+          "version": "7.1.5",
+          "paths": [
+            "apps__api>@prisma/client>prisma>@prisma/config>deepmerge-ts"
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-mrhx-c7xc-m3w5",
+      "findings": [
+        {
+          "version": "3.25.76",
+          "paths": [
+            "apps__api>zod"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2627 @@
+{
+  "version": "3.25.76",
+  "syntheticInputsOnly": true,
+  "cases": [
+    {
+      "id": "registration-valid",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "migration+tag@example.com",
+          "username": "valid_name",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "auth-email-0",
+      "schema": "registrationSchema",
+      "input": {
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-1",
+      "schema": "registrationSchema",
+      "input": {
+        "email": null,
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-2",
+      "schema": "registrationSchema",
+      "input": {
+        "email": 5,
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Expected string, received number"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-3",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "bad",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Invalid email"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-4",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "a@b",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Invalid email"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-5",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "a..b@example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Invalid email"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-6",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "a_b@example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "a_b@example.com",
+          "username": "valid_name",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "auth-email-7",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "x'y@example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "x'y@example.com",
+          "username": "valid_name",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "auth-email-8",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "a@domain-.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "a@domain-.com",
+          "username": "valid_name",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "auth-email-9",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "a@a.co",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "a@a.co",
+          "username": "valid_name",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "auth-email-10",
+      "schema": "registrationSchema",
+      "input": {
+        "email": " Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Invalid email"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-11",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com ",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Invalid email"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-email-12",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "String must contain at most 254 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-0",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "username"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-1",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": null,
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "username"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-2",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": 3,
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "username"
+            ],
+            "message": "Expected string, received number"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-3",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "a",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "username"
+            ],
+            "message": "String must contain at least 3 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-4",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "../admin",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "username"
+            ],
+            "message": "Invalid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-5",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "username"
+            ],
+            "message": "String must contain at most 30 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-username-6",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "USER_123",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "migration+tag@example.com",
+          "username": "user_123",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "auth-password-0",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "password"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-password-1",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "password"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-password-2",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": 12
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "password"
+            ],
+            "message": "Expected string, received number"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-password-3",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "short"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "password"
+            ],
+            "message": "String must contain at least 12 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-password-4",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "aaaaaaaaaaaa"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "migration+tag@example.com",
+          "username": "valid_name",
+          "password": "aaaaaaaaaaaa"
+        }
+      }
+    },
+    {
+      "id": "auth-password-5",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "migration+tag@example.com",
+          "username": "valid_name",
+          "password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      }
+    },
+    {
+      "id": "auth-password-6",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "password"
+            ],
+            "message": "String must contain at most 128 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-unknown",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password",
+        "role": "ADMIN"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [],
+            "message": "Unrecognized key(s) in object: 'role'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-missing",
+      "schema": "registrationSchema",
+      "input": {},
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "email"
+            ],
+            "message": "Required"
+          },
+          {
+            "path": [
+              "username"
+            ],
+            "message": "Required"
+          },
+          {
+            "path": [
+              "password"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "auth-unknown-proto",
+      "schema": "registrationSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password",
+        "__proto__": {
+          "polluted": true
+        }
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [],
+            "message": "Unrecognized key(s) in object: '__proto__'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "login-valid",
+      "schema": "loginSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "email": "migration+tag@example.com",
+          "password": "synthetic-test-password"
+        }
+      }
+    },
+    {
+      "id": "login-extra",
+      "schema": "loginSchema",
+      "input": {
+        "email": "Migration+tag@Example.com",
+        "username": "Valid_Name",
+        "password": "synthetic-test-password"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [],
+            "message": "Unrecognized key(s) in object: 'username'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-0",
+      "schema": "catalogQuerySchema",
+      "input": {},
+      "expected": {
+        "success": true,
+        "data": {
+          "q": "",
+          "page": 1,
+          "limit": 12
+        }
+      }
+    },
+    {
+      "id": "query-1",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "q": " trim ",
+        "page": "2",
+        "limit": "5",
+        "extra": "strip"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "q": "trim",
+          "page": 2,
+          "limit": 5
+        }
+      }
+    },
+    {
+      "id": "query-2",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "page": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "page"
+            ],
+            "message": "Number must be greater than or equal to 1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-3",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "page": "abc"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "page"
+            ],
+            "message": "Expected number, received nan"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-4",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "page": -1
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "page"
+            ],
+            "message": "Number must be greater than or equal to 1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-5",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "limit": 51
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "limit"
+            ],
+            "message": "Number must be less than or equal to 50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-6",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "kind": "ROM"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "q": "",
+          "kind": "ROM",
+          "page": 1,
+          "limit": 12
+        }
+      }
+    },
+    {
+      "id": "query-7",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "kind": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "kind"
+            ],
+            "message": "Expected 'ROM' | 'RECOVERY' | 'KERNEL', received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-8",
+      "schema": "catalogQuerySchema",
+      "input": {
+        "kind": "bad"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "kind"
+            ],
+            "message": "Invalid enum value. Expected 'ROM' | 'RECOVERY' | 'KERNEL', received 'bad'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-9",
+      "schema": "deviceQuerySchema",
+      "input": {
+        "manufacturerId": "maker"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "q": "",
+          "page": 1,
+          "limit": 12,
+          "manufacturerId": "maker"
+        }
+      }
+    },
+    {
+      "id": "query-10",
+      "schema": "deviceQuerySchema",
+      "input": {
+        "manufacturerId": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "manufacturerId"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "query-11",
+      "schema": "deviceQuerySchema",
+      "input": {
+        "manufacturerId": ""
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "manufacturerId"
+            ],
+            "message": "String must contain at least 1 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-valid",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-name-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": " trim ",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "trim",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-name-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "name"
+            ],
+            "message": "String must contain at least 1 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-name-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": " ",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "name"
+            ],
+            "message": "String must contain at least 1 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-name-3",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": null,
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "name"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-name-4",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "name"
+            ],
+            "message": "String must contain at most 60 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-description-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-description-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": null,
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "description"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-description-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": " trim ",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "trim",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-description-3",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "description"
+            ],
+            "message": "String must contain at most 2000 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-variantId-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "variantId"
+            ],
+            "message": "String must contain at least 1 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-variantId-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": null,
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "variantId"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-variantId-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "variantId"
+            ],
+            "message": "String must contain at most 100 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-base-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "base"
+            ],
+            "message": "String must contain at least 1 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-base-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": null,
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "base"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-base-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "base"
+            ],
+            "message": "String must contain at most 100 character(s)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-schemaVersion-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "schemaVersion"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-schemaVersion-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": "1",
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "schemaVersion"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-schemaVersion-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 2,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "schemaVersion"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-accent-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#abcdef",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#abcdef",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-accent-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#ABCDEF",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#ABCDEF",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-accent-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "red",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "accent"
+            ],
+            "message": "Invalid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-darkMode-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "darkMode"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-darkMode-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": null,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "darkMode"
+            ],
+            "message": "Expected boolean, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-darkMode-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": "true",
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "darkMode"
+            ],
+            "message": "Expected boolean, received string"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-kernel-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ]
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "kernel"
+            ],
+            "message": "Invalid literal value, expected \"unconfigured\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-kernel-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "kernel"
+            ],
+            "message": "Invalid literal value, expected \"unconfigured\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-kernel-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "configured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "kernel"
+            ],
+            "message": "Invalid literal value, expected \"unconfigured\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-preset-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "preset"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-preset-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": null,
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "preset"
+            ],
+            "message": "Expected 'Balanced' | 'Gaming' | 'Battery Saver' | 'Performance' | 'Camera Focus' | 'Ultra Lite' | 'Privacy' | 'Beautiful UI' | 'Developer' | 'Fully Custom', received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-preset-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "invalid",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "preset"
+            ],
+            "message": "Invalid enum value. Expected 'Balanced' | 'Gaming' | 'Battery Saver' | 'Performance' | 'Camera Focus' | 'Ultra Lite' | 'Privacy' | 'Beautiful UI' | 'Developer' | 'Fully Custom', received 'invalid'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-0",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-1",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": null,
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Expected array, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-2",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": {},
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Expected array, received object"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-3",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-apps-4",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "variantId": "unselected",
+          "description": "",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      }
+    },
+    {
+      "id": "config-apps-5",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "browser"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Duplicate applications"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-6",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "bogus"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps",
+              0
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-7",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          [
+            "browser"
+          ]
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps",
+              0
+            ],
+            "message": "Expected 'browser' | 'calendar' | 'files' | 'terminal', received array"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-8",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "browser",
+          "browser",
+          "browser",
+          "browser"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Array must contain at most 4 element(s)"
+          },
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Duplicate applications"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-apps-9",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus",
+          "bogus"
+        ],
+        "kernel": "unconfigured"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "apps"
+            ],
+            "message": "Array must contain at most 4 element(s)"
+          },
+          {
+            "path": [
+              "apps",
+              0
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              1
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              2
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              3
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              4
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              5
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              6
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              7
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              8
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              9
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              10
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              11
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              12
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              13
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              14
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          },
+          {
+            "path": [
+              "apps",
+              15
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bogus'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "config-extra",
+      "schema": "romConfigurationSchema",
+      "input": {
+        "schemaVersion": 1,
+        "name": "My Android",
+        "description": "",
+        "variantId": "unselected",
+        "base": "unconfigured",
+        "preset": "Balanced",
+        "accent": "#70d6ed",
+        "darkMode": true,
+        "apps": [
+          "browser",
+          "files"
+        ],
+        "kernel": "unconfigured",
+        "role": "ADMIN"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [],
+            "message": "Unrecognized key(s) in object: 'role'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "metadata-default",
+      "schema": "projectMetadataSchema",
+      "input": {
+        "name": " trim "
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "name": "trim",
+          "description": ""
+        }
+      }
+    },
+    {
+      "id": "metadata-null",
+      "schema": "projectMetadataSchema",
+      "input": {
+        "name": "okay",
+        "description": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "description"
+            ],
+            "message": "Expected string, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-valid",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": 1
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "configuration": {
+            "schemaVersion": 1,
+            "name": "My Android",
+            "variantId": "unselected",
+            "description": "",
+            "base": "unconfigured",
+            "preset": "Balanced",
+            "accent": "#70d6ed",
+            "darkMode": true,
+            "apps": [
+              "browser",
+              "files"
+            ],
+            "kernel": "unconfigured"
+          },
+          "revision": 1
+        }
+      }
+    },
+    {
+      "id": "save-revision-0",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        }
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "revision"
+            ],
+            "message": "Required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-revision-1",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": null
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "revision"
+            ],
+            "message": "Expected number, received null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-revision-2",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": "1"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "revision"
+            ],
+            "message": "Expected number, received string"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-revision-3",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": 0
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "revision"
+            ],
+            "message": "Number must be greater than or equal to 1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-revision-4",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": 1.5
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "revision"
+            ],
+            "message": "Expected integer, received float"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-revision-5",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": 100000000000000000000
+      },
+      "expected": {
+        "success": true,
+        "data": {
+          "configuration": {
+            "schemaVersion": 1,
+            "name": "My Android",
+            "variantId": "unselected",
+            "description": "",
+            "base": "unconfigured",
+            "preset": "Balanced",
+            "accent": "#70d6ed",
+            "darkMode": true,
+            "apps": [
+              "browser",
+              "files"
+            ],
+            "kernel": "unconfigured"
+          },
+          "revision": 100000000000000000000
+        }
+      }
+    },
+    {
+      "id": "save-nested",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "bad"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": 1
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [
+              "configuration",
+              "apps",
+              0
+            ],
+            "message": "Invalid enum value. Expected 'browser' | 'calendar' | 'files' | 'terminal', received 'bad'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "save-extra",
+      "schema": "saveConfigurationSchema",
+      "input": {
+        "configuration": {
+          "schemaVersion": 1,
+          "name": "My Android",
+          "description": "",
+          "variantId": "unselected",
+          "base": "unconfigured",
+          "preset": "Balanced",
+          "accent": "#70d6ed",
+          "darkMode": true,
+          "apps": [
+            "browser",
+            "files"
+          ],
+          "kernel": "unconfigured"
+        },
+        "revision": 1,
+        "ownerId": "other"
+      },
+      "expected": {
+        "success": false,
+        "issues": [
+          {
+            "path": [],
+            "message": "Unrecognized key(s) in object: 'ownerId'"
+          }
+        ]
+      }
+    }
+  ]
+}

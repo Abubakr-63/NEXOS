@@ -34,6 +34,7 @@ export function NavigationItem({
 }: ComponentProps<typeof Link> & { icon: ReactNode; active?: boolean }) {
   return (
     <Link
+      prefetch={false}
       className={`navigation-item ${className}`}
       aria-current={active ? "page" : undefined}
       {...props}

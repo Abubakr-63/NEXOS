@@ -1,0 +1,238 @@
+{
+  "reviewedAt": "2026-10-28",
+  "method": "Actual contracts source transpiled to CommonJS and evaluated against existing Zod and isolated candidate tarball; small finite samples only. No project installation or source change.",
+  "candidateVersions": {
+    "zod": "4.6.6",
+    "deepmerge": "8.0.0"
+  },
+  "zodCases": [
+    {
+      "label": "registration-normal",
+      "equivalent": true,
+      "sameAcceptance": true
+    },
+    {
+      "label": "auth-invalid",
+      "equivalent": false,
+      "sameAcceptance": true,
+      "oldIssues": {
+        "count": 4,
+        "first": {
+          "code": "invalid_string",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email"
+        }
+      },
+      "candidateIssues": {
+        "count": 4,
+        "first": {
+          "code": "invalid_format",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email address"
+        }
+      }
+    },
+    {
+      "label": "email-quoted",
+      "equivalent": false,
+      "sameAcceptance": true,
+      "oldIssues": {
+        "count": 1,
+        "first": {
+          "code": "invalid_string",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email"
+        }
+      },
+      "candidateIssues": {
+        "count": 1,
+        "first": {
+          "code": "invalid_format",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email address"
+        }
+      }
+    },
+    {
+      "label": "email-ip",
+      "equivalent": false,
+      "sameAcceptance": true,
+      "oldIssues": {
+        "count": 1,
+        "first": {
+          "code": "invalid_string",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email"
+        }
+      },
+      "candidateIssues": {
+        "count": 1,
+        "first": {
+          "code": "invalid_format",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email address"
+        }
+      }
+    },
+    {
+      "label": "email-double-dot",
+      "equivalent": false,
+      "sameAcceptance": true,
+      "oldIssues": {
+        "count": 1,
+        "first": {
+          "code": "invalid_string",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email"
+        }
+      },
+      "candidateIssues": {
+        "count": 1,
+        "first": {
+          "code": "invalid_format",
+          "path": [
+            "email"
+          ],
+          "message": "Invalid email address"
+        }
+      }
+    },
+    {
+      "label": "query-default",
+      "equivalent": true,
+      "sameAcceptance": true
+    },
+    {
+      "label": "query-coercion",
+      "equivalent": true,
+      "sameAcceptance": true
+    },
+    {
+      "label": "query-invalid",
+      "equivalent": false,
+      "sameAcceptance": true,
+      "oldIssues": {
+        "count": 2,
+        "first": {
+          "code": "invalid_type",
+          "path": [
+            "page"
+          ],
+          "message": "Expected number, received nan"
+        }
+      },
+      "candidateIssues": {
+        "count": 2,
+        "first": {
+          "code": "invalid_type",
+          "path": [
+            "page"
+          ],
+          "message": "Invalid input: expected number, received NaN"
+        }
+      }
+    },
+    {
+      "label": "configuration-default",
+      "equivalent": true,
+      "sameAcceptance": true
+    },
+    {
+      "label": "configuration-invalid-apps",
+      "equivalent": false,
+      "sameAcceptance": true,
+      "oldIssues": {
+        "count": 17,
+        "first": {
+          "code": "too_big",
+          "path": [
+            "apps"
+          ],
+          "message": "Array must contain at most 4 element(s)"
+        }
+      },
+      "candidateIssues": {
+        "count": 1,
+        "first": {
+          "code": "too_big",
+          "path": [
+            "apps"
+          ],
+          "message": "Too big: expected array to have <=4 items"
+        }
+      }
+    },
+    {
+      "label": "metadata",
+      "equivalent": true,
+      "sameAcceptance": true
+    },
+    {
+      "label": "revision",
+      "equivalent": true,
+      "sameAcceptance": true
+    }
+  ],
+  "candidateZodErrorMatchesCurrentApiClass": false,
+  "deepmerge": {
+    "old": "7.1.5",
+    "candidate": "8.0.0",
+    "oldBehavior": {
+      "record": {
+        "a": {
+          "left": 1,
+          "right": 2
+        },
+        "list": [
+          1,
+          2
+        ]
+      },
+      "mapValue": {
+        "right": 2
+      },
+      "cycle": {
+        "handled": false,
+        "error": "RangeError"
+      }
+    },
+    "candidateBehavior": {
+      "record": {
+        "a": {
+          "left": 1,
+          "right": 2
+        },
+        "list": [
+          1,
+          2
+        ]
+      },
+      "mapValue": {
+        "left": 1,
+        "right": 2
+      },
+      "cycle": {
+        "handled": true,
+        "selfPreserved": true
+      }
+    }
+  },
+  "limitations": [
+    "Candidate comparison is runtime behavior only, not full candidate TypeScript compilation or an approved migration.",
+    "Map and cyclic probes are tiny isolated local inputs, not a denial-of-service or production exploit test."
+  ]
+}

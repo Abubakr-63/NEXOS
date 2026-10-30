@@ -15,7 +15,7 @@
     "db:migrate": "node scripts/with-env.mjs pnpm --filter @rom-hub/database migrate",
     "db:seed": "node scripts/with-env.mjs pnpm --filter @rom-hub/database seed",
     "db:validate": "node scripts/with-env.mjs pnpm --filter @rom-hub/database validate",
-    "test:integration": "node scripts/with-env.mjs tsx --test tests/api.integration.ts",
+    "test:integration": "node scripts/with-env.mjs tsx --test tests/*.integration.ts",
     "test:e2e": "node scripts/with-env.mjs playwright test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -25,7 +25,9 @@
     "db:local:start": "node scripts/local-postgres.mjs start",
     "db:local:stop": "node scripts/local-postgres.mjs stop",
     "db:local:status": "node scripts/local-postgres.mjs status",
-    "db:status": "node scripts/with-env.mjs pnpm --filter @rom-hub/database exec prisma migrate status"
+    "db:status": "node scripts/with-env.mjs pnpm --filter @rom-hub/database exec prisma migrate status",
+    "openapi:export": "pnpm --filter @rom-hub/contracts build && pnpm --filter @rom-hub/api build && node scripts/with-env.mjs node apps/api/dist/export-openapi.js",
+    "openapi:validate": "pnpm --filter @rom-hub/contracts build && pnpm --filter @rom-hub/api build && tsx --test tests/openapi.test.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
@@ -35,5 +37,17 @@
     "tsx": "^4.20.6",
     "turbo": "^2.5.8",
     "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nestjs/swagger@11.4.7>js-yaml": "5.4.1",
+      "fastify@5.11.3": "5.12.6",
+      "@prisma/config@6.19.0>effect": "3.20.0",
+      "@prisma/config@6.19.0>deepmerge-ts": "8.0.2",
+      "eslint-plugin-react-hooks@7.1.1>zod": "4.6.6"
+    },
+    "patchedDependencies": {
+      "@prisma/config@6.19.0": "patches/@prisma__config@6.19.0.patch"
+    }
   }
 }

@@ -1,4 +1,11 @@
 "use client";
+import type {
+  ProjectWriteResponse,
+  AuthenticationResponse,
+  ManufacturersResponse,
+  AndroidBasesResponse,
+  DevicesResponse,
+} from "@rom-hub/contracts";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,15 +17,16 @@ import {
 import {
   PrimaryButton,
   SecondaryButton,
-  GlassPanel,
   StatusIndicator,
 } from "./design-system";
 import {
   projectAPI,
   type CatalogDevice,
   type AndroidBaseOption,
-  type SavedProject,
 } from "@/lib/project-api";
+
+import { PixelExperience } from "./pixel/pixel-experience";
+import "./workspace-pages.css";
 
 const steps = [
   "Project Identity",
@@ -57,7 +65,7 @@ export function ProjectCreation() {
   const [pending, setPending] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
-    projectAPI<{ user: { id: string } }>(
+    projectAPI<AuthenticationResponse>(
       "auth/me",
       "GET",
       undefined,
@@ -70,7 +78,7 @@ export function ProjectCreation() {
       .catch((e) => {
         if (!controller.signal.aborted) setAccountStatus(e.message);
       });
-    projectAPI<{ items: { id: string; name: string }[] }>(
+    projectAPI<ManufacturersResponse>(
       "manufacturers",
       "GET",
       undefined,
@@ -83,7 +91,7 @@ export function ProjectCreation() {
       .finally(() => {
         if (!controller.signal.aborted) setManufacturersLoading(false);
       });
-    projectAPI<{ items: AndroidBaseOption[] }>(
+    projectAPI<AndroidBasesResponse>(
       "android-bases",
       "GET",
       undefined,
@@ -107,7 +115,7 @@ export function ProjectCreation() {
         limit: "12",
         ...(manufacturerId ? { manufacturerId } : {}),
       });
-      projectAPI<{ items: CatalogDevice[]; total: number }>(
+      projectAPI<DevicesResponse>(
         `devices?${params}`,
         "GET",
         undefined,
@@ -168,7 +176,7 @@ export function ProjectCreation() {
         variantId,
         base,
       });
-      const saved = await projectAPI<SavedProject>(
+      const saved = await projectAPI<ProjectWriteResponse>(
         "projects",
         "POST",
         configuration,
@@ -569,20 +577,22 @@ export function ProjectCreation() {
           </form>
         </section>
         <aside className="studio-preview">
-          <GlassPanel className="panel">
-            <span className="craft-kicker">YOUR PROJECT</span>
-            <h2>{name.trim() || "A new beginning"}</h2>
-            <p>
-              {device
-                ? `${device.name} · ${variant?.modelNumber || "Select variant"}`
-                : "Choose your exact device"}
-            </p>
-            <div className="craft-notice">
-              Draft configuration
-              <br />
-              Cloud compilation unavailable
-            </div>
-          </GlassPanel>
+          <PixelExperience
+            compact
+            authenticated
+            review={step === 3}
+            configuration={{
+              ...defaultConfiguration,
+              name: name.trim() || "My Android",
+              description,
+              variantId: variantId || defaultConfiguration.variantId,
+              base: base || defaultConfiguration.base,
+            }}
+            context={`${device ? `${device.name} · ${variant?.modelNumber || "Choose variant"}` : "No device selected"}. Base: ${bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Not selected")}. Interface concept only.`}
+          />
+          <div className="craft-notice">
+            Draft configuration · Cloud compilation unavailable
+          </div>
         </aside>
       </div>
     </div>

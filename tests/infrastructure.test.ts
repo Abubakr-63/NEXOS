@@ -7,6 +7,7 @@ import { resolve } from "node:path";
 import {
   StartupConfigurationError,
   validateEnvironment,
+  redisSettings,
 } from "../apps/api/src/config";
 
 test("workspace runner loads app environment and preserves explicit shell overrides", () => {
@@ -44,9 +45,11 @@ test("API validates missing database settings and exact browser origins without 
     PORT: process.env.PORT,
     NODE_ENV: process.env.NODE_ENV,
     TRUSTED_PROXY_IPS: process.env.TRUSTED_PROXY_IPS,
+    AUTH_ACCOUNT_HMAC_KEY: process.env.AUTH_ACCOUNT_HMAC_KEY,
   };
   try {
     process.env.NODE_ENV = "test";
+    process.env.AUTH_ACCOUNT_HMAC_KEY = "ab".repeat(32);
     delete process.env.TRUSTED_PROXY_IPS;
     delete process.env.DATABASE_URL;
     assert.throws(validateEnvironment, /DATABASE_URL is missing/);
@@ -72,6 +75,42 @@ test("API validates missing database settings and exact browser origins without 
     for (const [key, value] of Object.entries(old)) {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
+    }
+  }
+});
+
+test("Redis settings reject unsafe URLs and namespaces without leaking credentials", () => {
+  const keys = ["NODE_ENV", "REDIS_URL", "RATE_LIMIT_NAMESPACE"];
+  const previous = Object.fromEntries(
+    keys.map((key) => [key, process.env[key]]),
+  );
+  try {
+    process.env.NODE_ENV = "production";
+    delete process.env.REDIS_URL;
+    assert.throws(redisSettings, StartupConfigurationError);
+    for (const value of [
+      "http://localhost:6379",
+      "redis://localhost/not-a-db",
+      "redis://localhost/0?password=secret",
+      "redis://%ZZ:secret@localhost/0",
+    ]) {
+      process.env.REDIS_URL = value;
+      assert.throws(
+        redisSettings,
+        (error: unknown) =>
+          error instanceof StartupConfigurationError &&
+          !error.message.includes("secret"),
+      );
+    }
+    process.env.REDIS_URL = "rediss://localhost:6379/2";
+    process.env.RATE_LIMIT_NAMESPACE = "unsafe{namespace}";
+    assert.throws(redisSettings, /RATE_LIMIT_NAMESPACE/);
+    process.env.RATE_LIMIT_NAMESPACE = "nexos:test:valid";
+    assert.equal(redisSettings().namespace, "nexos:test:valid");
+  } finally {
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
     }
   }
 });

@@ -1,0 +1,18 @@
+diff --git a/dist/index.js b/dist/index.js
+index c628ae9ab0e6994e0cb8ae3a43764492040c46df..fe60fcb0a45a72cd439c721783e04040b4f05848 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -891,7 +891,12 @@ For more information, see: ${link("https://pris.ly/prisma-config")}
+ }
+ async function loadConfigTsOrJs(configRoot, configFile) {
+   const { loadConfig: loadConfigWithC12 } = await import("c12");
+-  const { deepmerge } = await import("deepmerge-ts");
++  const { deepmergeCustom } = await import("deepmerge-ts");
++  // Keep Prisma 6's shallow, last-entry-wins Map values while using the
++  // fixed library for recursive merging and circular-reference handling.
++  const deepmerge = deepmergeCustom({
++    mergeMaps: (values) => new Map(values.flatMap((value) => [...value]))
++  });
+   try {
+     const {
+       config,

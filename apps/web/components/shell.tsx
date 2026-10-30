@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import type { PublicUser } from "@rom-hub/contracts";
 import { NEXOSLogo } from "./nexos-logo";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -16,12 +17,12 @@ import {
   X,
   ArrowUpRight,
   UserRound,
+  BookOpen,
 } from "lucide-react";
 import {
   GlassPanel,
   NavigationItem,
   NavigationPill,
-  ProfileCard,
   StatusIndicator,
 } from "./design-system";
 
@@ -30,17 +31,24 @@ const destinations = [
   { href: "/projects", label: "My projects", Icon: Folder },
   { href: "/projects/new", label: "Create ROM", Icon: Plus },
   { href: "/settings", label: "Settings", Icon: Settings },
-  { href: "/login", label: "Profile", Icon: UserRound },
+  { href: "/profile", label: "Profile", Icon: UserRound },
 ];
 function currentSection(path: string) {
   if (path === "/projects/new") return "/projects/new";
   if (path.startsWith("/projects") || path.startsWith("/builder/"))
     return "/projects";
   if (path.startsWith("/settings")) return "/settings";
-  if (path === "/login") return "/login";
+  if (path === "/profile") return "/profile";
+  if (path === "/help") return "/help";
   return "/dashboard";
 }
-export function Shell({ children }: { children: React.ReactNode }) {
+export function Shell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: PublicUser;
+}) {
   const pathname = usePathname();
   const [hovered, setHovered] = useState(false);
   const [touchExpanded, setTouchExpanded] = useState(false);
@@ -60,7 +68,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const title =
     pathname.startsWith("/builder/") || pathname === "/projects/new"
       ? "Visual builder"
-      : destinations.find((d) => d.href === active)?.label;
+      : active === "/help"
+        ? "Help & documentation"
+        : destinations.find((d) => d.href === active)?.label;
   function closeMore() {
     dialog.current?.close();
     setMoreOpen(false);
@@ -75,7 +85,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }
   return (
     <div className="craft-shell">
-      <a className="skip-link" href="#main">
+      <a className="skip-link" href="#workspace-main">
         Skip to content
       </a>
       <aside
@@ -94,6 +104,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         onPointerLeave={() => setHovered(false)}
       >
         <Link
+          prefetch={false}
           href="/"
           className="rail-brand"
           aria-label="NEXOS Android Creation Studio home"
@@ -128,7 +139,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
               Build infrastructure offline
             </span>
           </div>
-          <ProfileCard title="Account settings" />
+          <Link
+            prefetch={false}
+            href="/help"
+            className="profile-card"
+            title="Help & documentation"
+            aria-label="Help & documentation"
+          >
+            <span className="profile-avatar" aria-hidden="true">
+              <BookOpen size={22} />
+            </span>
+            <span className="profile-copy">
+              Help & documentation<small>Using NEXOS</small>
+            </span>
+          </Link>
           <button
             className="rail-toggle"
             onClick={() => setTouchExpanded(!touchExpanded)}
@@ -153,6 +177,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <header className="craft-topbar">
           <div className="workspace-heading">
             <Link
+              prefetch={false}
               href="/"
               className="mobile-brand"
               aria-label="NEXOS Android Creation Studio home"
@@ -176,15 +201,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <Moon className="theme-moon" size={19} />
             </button>
             <Link
-              href="/settings"
+              prefetch={false}
+              href="/profile"
               className="header-avatar"
-              aria-label="Account settings"
+              aria-label="Your profile"
             >
-              R
+              {user.username.slice(0, 1).toUpperCase()}
             </Link>
           </div>
         </header>
-        <main id="main">{children}</main>
+        <main id="workspace-main">{children}</main>
         <footer>
           <span className="footer-brand">
             <NEXOSLogo size={18} wordmark={false} /> NEXOS <span>© 2026</span>
@@ -211,7 +237,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           aria-expanded={moreOpen}
           aria-controls="more-navigation"
           data-active={
-            active === "/settings" || active === "/login" || moreOpen
+            active === "/settings" || active === "/profile" || moreOpen
           }
           onClick={() => {
             dialog.current?.showModal();
@@ -276,7 +302,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 <ArrowUpRight size={15} />
               </NavigationItem>
             ))}
-            <Link href="/" className="more-home" onClick={closeMore}>
+            <Link
+              prefetch={false}
+              href="/help"
+              className="more-home"
+              onClick={closeMore}
+            >
+              Help & documentation <BookOpen size={16} />
+            </Link>
+            <Link
+              prefetch={false}
+              href="/"
+              className="more-home"
+              onClick={closeMore}
+            >
               NEXOS home <ArrowUpRight size={16} />
             </Link>
           </nav>

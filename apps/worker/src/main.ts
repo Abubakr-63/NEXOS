@@ -1,42 +1,42 @@
-import { Worker } from "bullmq";
-// Foundation queue: accepts connectivity probes only. Unimplemented security jobs fail closed.
-const redis = new URL(process.env.REDIS_URL ?? "redis://localhost:6379");
-const worker = new Worker(
-  "romhub-foundation",
-  async (job) => {
-    if (job.name !== "healthcheck")
-      throw new Error(
-        "Unsupported job; artifact verification is not implemented",
+import { createFoundationWorker } from "./foundation";
+
+const log = (record: { event: string }) =>
+  console.error(JSON.stringify(record));
+async function main() {
+  const service = createFoundationWorker(
+    process.env.REDIS_URL ?? "redis://localhost:6379",
+    { log },
+  );
+  let stopping = false;
+  for (const signal of ["SIGINT", "SIGTERM"])
+    process.on(signal, () => {
+      if (stopping) return;
+      stopping = true;
+      // Infrastructure probes have no external side effects. A stuck process is terminated;
+      // BullMQ's renewable lock/stalled recovery handles unacknowledged work on restart.
+      const deadline = setTimeout(() => process.exit(1), 10000);
+      service.close().then(
+        () => {
+          clearTimeout(deadline);
+          process.exit(0);
+        },
+        () => {
+          log({ event: "worker.shutdown_failed" });
+          process.exit(1);
+        },
       );
-    return { status: "ok" };
-  },
-  {
-    connection: {
-      host: redis.hostname,
-      port: Number(redis.port || 6379),
-      username: redis.username || undefined,
-      password: redis.password || undefined,
-      ...(redis.protocol === "rediss:" ? { tls: {} } : {}),
-    },
-    concurrency: 2,
-  },
-);
-worker.on("failed", (job, error) =>
-  console.error(
-    JSON.stringify({
-      event: "job.failed",
-      id: job?.id,
-      message: error.message,
-    }),
-  ),
-);
-worker.on("error", (error) =>
-  console.error(
-    JSON.stringify({ event: "worker.error", message: error.message }),
-  ),
-);
-for (const signal of ["SIGINT", "SIGTERM"])
-  process.on(signal, async () => {
-    await worker.close();
-    process.exit(0);
-  });
+    });
+  const startup = setTimeout(() => {
+    log({ event: "worker.start_timeout" });
+    process.exit(1);
+  }, 5000);
+  try {
+    await service.ready();
+  } finally {
+    clearTimeout(startup);
+  }
+}
+main().catch(() => {
+  log({ event: "worker.start_failed" });
+  process.exit(1);
+});

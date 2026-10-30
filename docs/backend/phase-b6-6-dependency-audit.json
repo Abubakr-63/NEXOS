@@ -1,0 +1,41 @@
+{
+  "reviewedAt": "2026-10-29",
+  "remediation": {
+    "package": "zod",
+    "from": "3.25.76",
+    "to": "4.6.6",
+    "resolvedAdvisory": "GHSA-mrhx-c7xc-m3w5",
+    "directConsumers": [
+      "apps/api",
+      "packages/contracts"
+    ],
+    "scopedToolingOverride": "eslint-plugin-react-hooks@7.1.1>zod",
+    "deepmergePreserved": "8.0.2 with existing @prisma/config@6.19.0 patch"
+  },
+  "commands": [
+    {
+      "command": "pnpm audit --json",
+      "exitCode": 0,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0
+      }
+    },
+    {
+      "command": "pnpm audit --prod --json",
+      "exitCode": 0,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0
+      }
+    }
+  ],
+  "remainingAdvisories": [],
+  "productionAdvisories": []
+}

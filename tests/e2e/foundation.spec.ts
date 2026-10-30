@@ -1,13 +1,14 @@
 import { randomBytes } from "node:crypto";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./workspace-fixture";
 import AxeBuilder from "@axe-core/playwright";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 test("creation validates identity and preserves mobile navigation", async ({
   page,
+  workspace,
 }) => {
-  await page.goto("/");
-  await page.getByRole("link", { name: "Create your ROM" }).click();
+  await workspace();
+  await page.goto("/projects/new");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByLabel("Project name", { exact: true })).toBeFocused();
   await page.getByLabel("Project name", { exact: true }).fill("A draft idea");
@@ -31,7 +32,9 @@ test("creation validates identity and preserves mobile navigation", async ({
 });
 test("overview passes automated WCAG A/AA checks in dark and light themes", async ({
   page,
+  workspace,
 }) => {
+  await workspace();
   await page.goto("/");
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const theme of ["dark", "light"]) {
@@ -52,6 +55,7 @@ test("overview passes automated WCAG A/AA checks in dark and light themes", asyn
 test("registration, session listing, and logout work through the Next proxy", async ({
   page,
 }) => {
+  test.setTimeout(120000);
   const suffix = Date.now().toString();
   const email = `browser_${suffix}@example.com`;
   const requireApi = createRequire(resolve("apps/api/package.json"));
@@ -59,50 +63,55 @@ test("registration, session listing, and logout work through the Next proxy", as
   const db = new PrismaClient();
   const makerId = `e2e-maker-${suffix}`;
   const baseName = `AOSP test metadata ${suffix}`;
-  await db.manufacturer.create({
-    data: {
-      id: makerId,
-      slug: makerId,
-      name: "Phase 2A test manufacturer",
-      devices: {
-        create: {
-          slug: `e2e-device-${suffix}`,
-          name: "Phase 2A test device",
-          codename: "test-device",
-          isDemo: false,
-          variants: {
-            create: {
-              modelNumber: "TEST-1",
-              region: "Test region",
-              androidVersions: [],
+  try {
+    await db.manufacturer.create({
+      data: {
+        id: makerId,
+        slug: makerId,
+        name: `Phase 2A test manufacturer ${suffix}`,
+        devices: {
+          create: {
+            slug: `e2e-device-${suffix}`,
+            name: "Phase 2A test device",
+            codename: "test-device",
+            isDemo: false,
+            variants: {
+              create: {
+                modelNumber: "TEST-1",
+                region: "Test region",
+                androidVersions: [],
+              },
             },
           },
         },
       },
-    },
-  });
-  await db.androidBase.create({
-    data: {
-      id: baseName,
-      name: baseName,
-      androidVersion: "test-only",
-      sourceRepository: "https://example.com/test-base",
-      sourceRef: "test-only",
-      documentationUrl: "https://example.com/test-base",
-      reviewedAt: new Date(),
-    },
-  });
-  try {
+    });
+    await db.androidBase.create({
+      data: {
+        id: baseName,
+        name: baseName,
+        androidVersion: "test-only",
+        sourceRepository: "https://example.com/test-base",
+        sourceRef: "test-only",
+        documentationUrl: "https://example.com/test-base",
+        reviewedAt: new Date(),
+      },
+    });
     await page.goto("/login");
     await page
-      .getByRole("button", { name: "Create account", exact: true })
+      .getByRole("link", { name: "Create account", exact: true })
       .click();
     await page
       .getByLabel("Username", { exact: true })
+      .filter({ visible: true })
       .fill(`browser_${suffix}`);
-    await page.getByLabel("Email address").fill(email);
+    await page
+      .getByLabel("Email address")
+      .filter({ visible: true })
+      .fill(email);
     await page
       .getByLabel("Password", { exact: true })
+      .filter({ visible: true })
       .fill("browser-test-password-123");
     await page
       .getByRole("button", { name: "Create account", exact: true })
@@ -195,16 +204,67 @@ test("registration, session listing, and logout work through the Next proxy", as
     await page.getByRole("link", { name: "Open existing editor" }).click();
     await page.getByRole("button", { name: "ROM Identity" }).click();
     await page.getByLabel("ROM name").fill("My personal Android");
-    await expect(page.locator(".android-widget h3")).toHaveText(
+    await expect(page.locator(".pixel-draft-summary strong")).toHaveText(
       "My personal Android",
     );
     await page
       .getByRole("button", { name: "Appearance", exact: false })
       .click();
     await page.getByLabel("Dark appearance").uncheck();
-    await expect(page.locator(".android-preview")).toHaveClass(/preview-light/);
+    await expect(page.locator(".pixel-draft-summary")).toContainText(
+      "Light appearance",
+    );
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect(page.getByLabel("Dark appearance")).toBeChecked();
+    await page
+      .getByRole("navigation", { name: "Builder steps" })
+      .getByRole("button", { name: /Applications/ })
+      .click();
+    const calendar = page.getByRole("checkbox", {
+      name: "calendar",
+      exact: true,
+    });
+    await calendar.check();
+    const liveCanvas = page.getByRole("img", {
+      name: "Autonomous generic configuration concept",
+    });
+    await expect(liveCanvas).toHaveAttribute("data-screen-apps", /calendar/, {
+      timeout: 15000,
+    });
+    await expect(
+      page.getByText("Calendar added", { exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(async () => Number(await liveCanvas.getAttribute("data-zoom")))
+      .toBeGreaterThan(1.05);
+    await expect
+      .poll(async () =>
+        Math.abs(Number(await liveCanvas.getAttribute("data-rotation"))),
+      )
+      .toBeLessThan(0.05);
+    await calendar.uncheck();
+    await expect(liveCanvas).not.toHaveAttribute(
+      "data-screen-apps",
+      /calendar/,
+    );
+    // Rapid changes replace obsolete camera work; latest form state wins.
+    await calendar.check();
+    await calendar.uncheck();
+    await calendar.check();
+    await expect(liveCanvas).toHaveAttribute("data-screen-apps", /calendar/);
+    await expect
+      .poll(async () =>
+        Math.abs(
+          Number(await liveCanvas.getAttribute("data-progress")) - 1 / 3,
+        ),
+      )
+      .toBeLessThan(0.002);
+    await expect
+      .poll(async () => Number(await liveCanvas.getAttribute("data-zoom")), {
+        timeout: 6000,
+      })
+      .toBeLessThan(1.005);
+    await page.screenshot({ path: ".local/autonomous-studio-calendar.png" });
     await page.getByRole("button", { name: "Advanced Options" }).click();
     const download = page.waitForEvent("download");
     await page.getByRole("button", { name: "Export JSON" }).click();
@@ -219,9 +279,66 @@ test("registration, session listing, and logout work through the Next proxy", as
     await expect(page.getByText(/Saved revision/)).toBeVisible();
     await page.goto("/settings");
     await page.getByRole("button", { name: "Sign out", exact: true }).click();
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
     await expect(
-      page.getByRole("link", { name: "Sign in or create an account" }),
+      page.getByRole("button", { name: "Sign in", exact: true }),
     ).toBeVisible();
+    // Exercise both dedicated screens against real backend responses using this test's account.
+    await page.goto("/register");
+    await page
+      .getByLabel("Username", { exact: true })
+      .filter({ visible: true })
+      .fill(`browser_${suffix}`);
+    await page
+      .getByLabel("Email address")
+      .filter({ visible: true })
+      .fill(email);
+    await page
+      .getByLabel("Password", { exact: true })
+      .filter({ visible: true })
+      .fill("browser-test-password-123");
+    await page
+      .getByRole("button", { name: "Create account", exact: true })
+      .click();
+    await expect(
+      page.locator(".nexos-auth-form").getByRole("alert"),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/register$/);
+    await page.getByRole("link", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(
+      page.getByRole("button", { name: "Sign in", exact: true }),
+    ).toBeEnabled();
+    await page
+      .getByLabel("Email address")
+      .filter({ visible: true })
+      .fill(email);
+    await page
+      .getByLabel("Password", { exact: true })
+      .filter({ visible: true })
+      .fill("incorrect-test-password");
+    const rejectedLogin = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/api/v1/auth/login",
+    );
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    expect((await rejectedLogin).status()).toBe(401);
+    await expect(
+      page.locator(".nexos-auth-form").getByRole("alert"),
+    ).toHaveText("Invalid email or password");
+    await expect(page).toHaveURL(/\/login$/);
+    await page
+      .getByLabel("Password", { exact: true })
+      .filter({ visible: true })
+      .fill("browser-test-password-123");
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL(/settings/);
+    await page.reload();
+    await expect(
+      page.getByText(`browser_${suffix}`, { exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Sign out", exact: true }).click();
   } finally {
     await db.auditLog.deleteMany({ where: { actor: { email } } });
     await db.user.deleteMany({ where: { email } });
@@ -234,7 +351,10 @@ test("registration, session listing, and logout work through the Next proxy", as
 
 test("creation reports an unavailable catalog without inventing devices", async ({
   page,
+  workspace,
 }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await workspace();
   await page.route("**/api/v1/manufacturers", (route) =>
     route.fulfill({ json: { items: [] } }),
   );
@@ -247,7 +367,9 @@ test("creation reports an unavailable catalog without inventing devices", async 
     .fill("Empty catalog draft");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByText(/No manufacturers are registered/)).toBeVisible();
-  await expect(page.getByText(/No devices match this search/)).toBeVisible();
+  await expect(page.getByText(/No devices match this search/)).toBeVisible({
+    timeout: 15000,
+  });
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Select Device", exact: true }),
@@ -256,19 +378,18 @@ test("creation reports an unavailable catalog without inventing devices", async 
 
 test("creation shows API failures rather than local persistence", async ({
   page,
+  workspace,
 }) => {
-  await page.route("**/api/v1/**", (route) =>
-    route.fulfill({
+  await workspace();
+  await page.route("**/api/v1/**", (route) => {
+    if (new URL(route.request().url()).pathname.startsWith("/api/v1/auth/"))
+      return route.continue();
+    return route.fulfill({
       status: 503,
       json: { error: { message: "Database unavailable. Check PostgreSQL." } },
-    }),
-  );
+    });
+  });
   await page.goto("/projects/new");
-  await expect(
-    page
-      .getByRole("status")
-      .filter({ hasText: "Database unavailable. Check PostgreSQL." }),
-  ).toBeVisible();
   await page.getByLabel("Project name", { exact: true }).fill("Offline draft");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByRole("alert").first()).toContainText(

@@ -1,0 +1,209 @@
+{
+  "reviewedAt": "2026-10-28",
+  "commands": [
+    {
+      "command": "pnpm audit --json",
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 4,
+        "high": 7,
+        "critical": 0
+      }
+    },
+    {
+      "command": "pnpm audit --prod --json",
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 4,
+        "high": 7,
+        "critical": 0
+      }
+    }
+  ],
+  "advisories": [
+    {
+      "id": 1115356,
+      "package": "effect",
+      "severity": "high",
+      "title": "Effect `AsyncLocalStorage` context lost/contaminated inside Effect fibers under concurrent load with RPC",
+      "vulnerableVersions": "<3.20.0",
+      "patchedVersions": ">=3.20.0",
+      "url": "https://github.com/advisories/GHSA-38f7-945m-qr2g",
+      "installedFindings": [
+        {
+          "version": "3.18.4",
+          "paths": ["packages__database>prisma>@prisma/config>effect"]
+        }
+      ],
+      "productionPaths": [
+        "apps__api>@prisma/client>prisma>@prisma/config>effect"
+      ]
+    },
+    {
+      "id": 1145093,
+      "package": "deepmerge-ts",
+      "severity": "high",
+      "title": "DeepmergeTS has stack exhaustion when merging recursive object graphs",
+      "vulnerableVersions": "<8.0.0",
+      "patchedVersions": ">=8.0.0",
+      "url": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx",
+      "installedFindings": [
+        {
+          "version": "7.1.5",
+          "paths": ["packages__database>prisma>@prisma/config>deepmerge-ts"]
+        }
+      ],
+      "productionPaths": [
+        "apps__api>@prisma/client>prisma>@prisma/config>deepmerge-ts"
+      ]
+    },
+    {
+      "id": 1158514,
+      "package": "fastify",
+      "severity": "moderate",
+      "title": "fastify vulnerable to schema validation bypass via root primitive coercion mismatch",
+      "vulnerableVersions": "<5.12.1",
+      "patchedVersions": ">=5.12.1",
+      "url": "https://github.com/advisories/GHSA-w2qp-rph6-63g4",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1158519,
+      "package": "fastify",
+      "severity": "moderate",
+      "title": "fastify vulnerable to X-Forwarded-* spoofing under trustProxy hop-count",
+      "vulnerableVersions": ">=5.8.3 <5.12.1",
+      "patchedVersions": ">=5.12.1",
+      "url": "https://github.com/advisories/GHSA-3m5p-2c4r-xxw2",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1239991,
+      "package": "js-yaml",
+      "severity": "moderate",
+      "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+      "vulnerableVersions": ">=5.0.0 <=5.4.0",
+      "patchedVersions": ">=5.4.1",
+      "url": "https://github.com/advisories/GHSA-r3ph-w7gj-g6xm",
+      "installedFindings": [
+        {
+          "version": "5.3.0",
+          "paths": ["apps__api>@nestjs/swagger>js-yaml"]
+        }
+      ],
+      "productionPaths": ["apps__api>@nestjs/swagger>js-yaml"]
+    },
+    {
+      "id": 1240639,
+      "package": "fastify",
+      "severity": "moderate",
+      "title": "fastify vulnerable to Denial of Service via unhandled exception on HTTP/2 trailer responses",
+      "vulnerableVersions": "<5.12.5",
+      "patchedVersions": ">=5.12.5",
+      "url": "https://github.com/advisories/GHSA-4mh8-r7rc-xpvc",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1240641,
+      "package": "fastify",
+      "severity": "high",
+      "title": "fastify vulnerable to request body replacement via an async validation result collision",
+      "vulnerableVersions": "<5.12.2",
+      "patchedVersions": ">=5.12.2",
+      "url": "https://github.com/advisories/GHSA-667r-xxjv-c9mm",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1240642,
+      "package": "fastify",
+      "severity": "high",
+      "title": "fastify vulnerable to authentication bypass via malformed URLs reaching encapsulated not-found handlers",
+      "vulnerableVersions": ">=4.0.0 <5.12.2",
+      "patchedVersions": ">=5.12.2",
+      "url": "https://github.com/advisories/GHSA-p68q-wchp-6fh7",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1240643,
+      "package": "fastify",
+      "severity": "high",
+      "title": "fastify vulnerable to request validation bypass via skipped boolean false schemas",
+      "vulnerableVersions": "<5.12.2",
+      "patchedVersions": ">=5.12.2",
+      "url": "https://github.com/advisories/GHSA-hwr6-493r-vm6h",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1240644,
+      "package": "fastify",
+      "severity": "high",
+      "title": "fastify vulnerable to header validation bypass via incomplete schema case normalization",
+      "vulnerableVersions": "<5.12.2",
+      "patchedVersions": ">=5.12.2",
+      "url": "https://github.com/advisories/GHSA-9q9j-q6p8-xq58",
+      "installedFindings": [
+        {
+          "version": "5.11.3",
+          "paths": ["apps__api>fastify"]
+        }
+      ],
+      "productionPaths": ["apps__api>fastify"]
+    },
+    {
+      "id": 1243066,
+      "package": "zod",
+      "severity": "high",
+      "title": "Zod can exhaust memory while validating oversized constrained collections",
+      "vulnerableVersions": "<4.6.6",
+      "patchedVersions": ">=4.6.6",
+      "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+      "installedFindings": [
+        {
+          "version": "3.25.76",
+          "paths": ["apps__api>zod"]
+        }
+      ],
+      "productionPaths": ["apps__api>zod"]
+    }
+  ]
+}

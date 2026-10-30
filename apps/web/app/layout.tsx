@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Shell } from "@/components/shell";
 import "./globals.css";
 import "./studio-design.css";
 export const metadata: Metadata = {
@@ -26,7 +25,7 @@ export default function RootLayout({
       </head>
       <body>
         <Suspense fallback={<div className="craft-page">Loading NEXOS…</div>}>
-          <Shell>{children}</Shell>
+          {children}
         </Suspense>
       </body>
     </html>

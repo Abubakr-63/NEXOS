@@ -26,12 +26,24 @@ import {
   type OnModuleInit,
 } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import {
+  ThrottlerGuard,
+  ThrottlerModule,
+  ThrottlerException,
+} from "@nestjs/throttler";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { PrismaClient, Prisma } from "@prisma/client";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { randomBytes } from "node:crypto";
 import {
+  projectListQuerySchema,
+  sessionListQuerySchema,
+  revisionListQuerySchema,
+  auditListQuerySchema,
+  createAPIError,
+  type APIErrorMessage,
+  type PublicUser,
+  type CompatibilityResponse,
   romConfigurationSchema,
   saveConfigurationSchema,
   validateConfiguration,
@@ -41,6 +53,7 @@ import {
   deviceQuerySchema,
 } from "@rom-hub/contracts";
 import { ZodError } from "zod";
+import { readCursor, page, timeBoundary, revisionBoundary } from "./pagination";
 import {
   hashPassword,
   verifyPassword,
@@ -48,6 +61,7 @@ import {
   dummyPasswordHash,
 } from "./security";
 import { upgradePasswordHash } from "./password-upgrade";
+import { RedisAuthLimiter, ApiRateLimitGuard } from "./rate-limit";
 import { StartupConfigurationError, sessionCookieOptions } from "./config";
 
 @Injectable()
@@ -97,14 +111,24 @@ const publicUser = {
   username: true,
   role: true,
   emailVerifiedAt: true,
-} as const;
+} as const satisfies Record<keyof PublicUser, true>;
+// Persisted data is a server trust boundary, not a client request payload.
+function parseStoredConfiguration(configuration: unknown) {
+  try {
+    return romConfigurationSchema.parse(configuration);
+  } catch (error) {
+    if (error instanceof ZodError)
+      throw new Error("Invalid stored ROM configuration", { cause: error });
+    throw error;
+  }
+}
 const cookieName = "romhub_session";
 @Catch()
 export class Errors implements ExceptionFilter {
   catch(error: unknown, host: ArgumentsHost) {
     const reply = host.switchToHttp().getResponse<FastifyReply>();
     let status = 500;
-    let message: unknown = "An unexpected error occurred.";
+    let message: APIErrorMessage = "An unexpected error occurred.";
     if (error instanceof ZodError) {
       status = 400;
       message = error.issues.map((i) => `${i.path.join(".")}: ${i.message}`);
@@ -129,13 +153,11 @@ export class Errors implements ExceptionFilter {
           error: error instanceof Error ? error.name : "unknown",
         }),
       );
-    reply.status(status).send({
-      error: {
-        status,
-        message,
-        requestId: host.switchToHttp().getRequest<FastifyRequest>().id,
-      },
-    });
+    reply.status(status).send(createAPIError(
+      status,
+      message,
+      host.switchToHttp().getRequest<FastifyRequest>().id,
+    ));
   }
 }
 @Injectable()
@@ -231,6 +253,7 @@ class AuthController {
   constructor(
     @Inject(Database) private readonly db: Database,
     @Inject(Accounts) private readonly accounts: Accounts,
+    @Inject(RedisAuthLimiter) private readonly limiter: RedisAuthLimiter,
   ) {}
   @Post("register")
   @ApiOperation({
@@ -255,6 +278,25 @@ class AuthController {
   ) {
     this.accounts.assertOrigin(req);
     const input = loginSchema.parse(body);
+    let admission;
+    try {
+      admission = await this.limiter.consumeAccount(input.email);
+    } catch {
+      reply.header("Retry-After", 1);
+      throw new ServiceUnavailableException(
+        "Authentication temporarily unavailable. Try again later.",
+      );
+    }
+    if (admission.capacityExceeded) {
+      reply.header("Retry-After", 1);
+      throw new ServiceUnavailableException(
+        "Authentication temporarily unavailable. Try again later.",
+      );
+    }
+    if (!admission.allowed) {
+      reply.header("Retry-After", admission.retryAfter);
+      throw new ThrottlerException();
+    }
     const user = await this.db.user.findUnique({
       where: { email: input.email },
     });
@@ -314,13 +356,24 @@ class AuthController {
     return { success: true };
   }
   @Get("sessions")
-  async sessions(@Req() req: FastifyRequest) {
+  async sessions(@Req() req: FastifyRequest, @Query() query: unknown) {
     const user = await this.accounts.user(req);
+    const input = sessionListQuerySchema.parse(query);
+    if (input.pagination === "cursor") {
+      const scope = `sessions:${user.id}`;
+      const cursor = readCursor(input.cursor, scope);
+      const rows = await this.db.session.findMany({
+        where: { userId: user.id, expiresAt: { gt: new Date() }, ...timeBoundary(cursor) },
+        select: { id: true, createdAt: true, expiresAt: true },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: input.limit + 1,
+      });
+      return page(rows, input.limit, scope, cursor, row => ({ id: row.id, createdAt: row.createdAt.toISOString() }));
+    }
     return {
       items: await this.db.session.findMany({
         where: { userId: user.id, expiresAt: { gt: new Date() } },
         select: { id: true, createdAt: true, expiresAt: true },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       }),
     };
   }
@@ -328,6 +381,8 @@ class AuthController {
   async revoke(@Param("id") id: string, @Req() req: FastifyRequest) {
     this.accounts.assertOrigin(req);
     const user = await this.accounts.user(req);
+    if (id.includes("\u0000"))
+      throw new BadRequestException("Invalid session identifier");
     await this.db.session.deleteMany({ where: { id, userId: user.id } });
     return { success: true };
   }
@@ -338,6 +393,7 @@ class CatalogController {
   constructor(
     @Inject(Database) private readonly db: Database,
     @Inject(Accounts) private readonly accounts: Accounts,
+    @Inject(RedisAuthLimiter) private readonly limiter: RedisAuthLimiter,
   ) {}
   @Get("health")
   health() {
@@ -347,9 +403,10 @@ class CatalogController {
   async ready() {
     try {
       await this.db.$queryRaw`SELECT 1`;
+      await this.limiter.check();
       return { status: "ready" };
     } catch {
-      throw new ServiceUnavailableException("Database unavailable");
+      throw new ServiceUnavailableException("Required service unavailable");
     }
   }
   @Get("manufacturers")
@@ -366,7 +423,7 @@ class CatalogController {
   async androidBases() {
     const items = await this.db.androidBase.findMany({
       where: { availability: "SOURCE_AVAILABLE" },
-      orderBy: [{ name: "asc" }, { androidVersion: "asc" }],
+      orderBy: [{ name: "asc" }, { androidVersion: "asc" }, { id: "asc" }],
     });
     return {
       items: items.map((base) => ({
@@ -381,6 +438,8 @@ class CatalogController {
   @Get("devices")
   async devices(@Query() query: unknown) {
     const { q, page, limit, manufacturerId } = deviceQuerySchema.parse(query);
+    if (manufacturerId?.includes("\u0000"))
+      throw new BadRequestException("Invalid manufacturer identifier");
     const where: Prisma.DeviceWhereInput = {
       manufacturerId,
       isDemo: false,
@@ -449,6 +508,8 @@ class CatalogController {
   }
   @Get("legacy/catalog-projects/:slug")
   async project(@Param("slug") slug: string) {
+    if (slug.includes("\u0000"))
+      throw new BadRequestException("Invalid catalog project slug");
     const project = await this.db.project.findUnique({
       where: { slug },
       include: {
@@ -460,14 +521,24 @@ class CatalogController {
     return { project };
   }
   @Get("admin/audit")
-  async audit(@Req() req: FastifyRequest) {
+  async audit(@Req() req: FastifyRequest, @Query() query: unknown) {
     const user = await this.accounts.user(req);
     if (user.role !== "ADMIN")
       throw new ForbiddenException("Administrator role required");
+    const input = auditListQuerySchema.parse(query);
+    if (input.pagination === "cursor") {
+      const scope = `audit:${user.id}`;
+      const cursor = readCursor(input.cursor, scope);
+      const rows = await this.db.auditLog.findMany({
+        where: timeBoundary(cursor),
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: input.limit + 1,
+      });
+      return page(rows, input.limit, scope, cursor, row => ({ id: row.id, createdAt: row.createdAt.toISOString() }));
+    }
     return {
       items: await this.db.auditLog.findMany({
         take: 50,
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       }),
     };
   }
@@ -482,6 +553,9 @@ class ROMProjectsController {
   ) {}
   private async owned(id: string, req: FastifyRequest) {
     const user = await this.accounts.user(req);
+    // Preserve auth-first errors and opaque/legacy IDs; reject unsafe text before Prisma.
+    if (!id || /[\u0000-\u001f\u007f]/.test(id))
+      throw new BadRequestException("Invalid project identifier");
     const project = await this.db.rOMProject.findFirst({
       where: { id, ownerId: user.id },
     });
@@ -520,12 +594,22 @@ class ROMProjectsController {
     }
   }
   @Get()
-  async list(@Req() req: FastifyRequest) {
+  async list(@Req() req: FastifyRequest, @Query() query: unknown) {
     const user = await this.accounts.user(req);
+    const input = projectListQuerySchema.parse(query);
+    if (input.pagination === "cursor") {
+      const scope = `projects:${user.id}`;
+      const cursor = readCursor(input.cursor, scope);
+      const rows = await this.db.rOMProject.findMany({
+        where: { ownerId: user.id, ...timeBoundary(cursor) },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: input.limit + 1,
+      });
+      return page(rows, input.limit, scope, cursor, row => ({ id: row.id, createdAt: row.createdAt.toISOString() }));
+    }
     return {
       items: await this.db.rOMProject.findMany({
         where: { ownerId: user.id },
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
         take: 100,
       }),
     };
@@ -547,7 +631,7 @@ class ROMProjectsController {
   @Get(":id")
   async get(@Param("id") id: string, @Req() req: FastifyRequest) {
     const project = await this.owned(id, req);
-    const configuration = romConfigurationSchema.parse(project.configuration);
+    const configuration = parseStoredConfiguration(project.configuration);
     const deviceVariant = await this.db.deviceVariant.findUnique({
       where: { id: configuration.variantId },
       include: { device: { include: { manufacturer: true } } },
@@ -579,7 +663,7 @@ class ROMProjectsController {
     const { configuration, revision } = saveConfigurationSchema.parse(body);
     await this.checkSelections(
       configuration,
-      romConfigurationSchema.parse(project.configuration),
+      parseStoredConfiguration(project.configuration),
     );
     return this.db.$transaction(async (tx) => {
       const updated = await tx.rOMProject.updateMany({
@@ -597,21 +681,31 @@ class ROMProjectsController {
     });
   }
   @Get(":id/revisions")
-  async revisions(@Param("id") id: string, @Req() req: FastifyRequest) {
-    await this.owned(id, req);
+  async revisions(@Param("id") id: string, @Req() req: FastifyRequest, @Query() query: unknown) {
+    const project = await this.owned(id, req);
+    const input = revisionListQuerySchema.parse(query);
+    if (input.pagination === "cursor") {
+      const scope = `revisions:${project.ownerId}:${id}`;
+      const cursor = readCursor(input.cursor, scope);
+      const rows = await this.db.configurationRevision.findMany({
+        where: { projectId: id, ...revisionBoundary(cursor) },
+        orderBy: [{ number: "desc" }, { id: "desc" }], take: input.limit + 1,
+      });
+      return page(rows, input.limit, scope, cursor, row => ({ id: row.id, number: row.number }));
+    }
     return {
       items: await this.db.configurationRevision.findMany({
         where: { projectId: id },
-        orderBy: { number: "desc" },
+        orderBy: [{ number: "desc" }, { id: "desc" }],
         take: 50,
       }),
     };
   }
   @Post(":id/validate")
-  async validate(@Param("id") id: string, @Req() req: FastifyRequest) {
+  async validate(@Param("id") id: string, @Req() req: FastifyRequest): Promise<CompatibilityResponse> {
     this.accounts.assertOrigin(req);
     const project = await this.owned(id, req);
-    const configuration = romConfigurationSchema.parse(project.configuration);
+    const configuration = parseStoredConfiguration(project.configuration);
     const variant = await this.db.deviceVariant.findUnique({
       where: { id: configuration.variantId },
     });
@@ -631,7 +725,9 @@ class ROMProjectsController {
   providers: [
     Database,
     Accounts,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    RedisAuthLimiter,
+    ThrottlerGuard,
+    { provide: APP_GUARD, useClass: ApiRateLimitGuard },
   ],
 })
 export class AppModule {}

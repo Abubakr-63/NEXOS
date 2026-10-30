@@ -1,4 +1,9 @@
-import type { ROMConfiguration } from "@rom-hub/contracts";
+import { formatAPIErrorMessage } from "@rom-hub/contracts";
+export type {
+  CatalogDevice,
+  CatalogVariant,
+  AndroidBaseOption,
+} from "@rom-hub/contracts";
 
 export class ProjectAPIError extends Error {
   constructor(
@@ -32,64 +37,13 @@ export async function projectAPI<T>(
   }
   const data = await response.json().catch(() => null);
   if (!response.ok || !data) {
-    const message = data?.error?.message;
     throw new ProjectAPIError(
-      Array.isArray(message)
-        ? message.join(". ")
-        : message ||
-            "The API is unavailable. Check the NestJS API, DATABASE_URL and PostgreSQL connection.",
+      formatAPIErrorMessage(
+        data,
+        "The API is unavailable. Check the NestJS API, DATABASE_URL and PostgreSQL connection.",
+      ),
       response.status,
     );
   }
   return data as T;
 }
-export type CatalogDevice = {
-  id: string;
-  name: string;
-  codename: string;
-  isDemo: boolean;
-  deprecatedAt?: string | null;
-  catalogStatus?: "CATALOGED" | "UNVERIFIED";
-  buildSupportStatus?: "NOT_VERIFIED";
-  manufacturer: { id: string; name: string };
-  supportStatus: "UNKNOWN";
-  variants: CatalogVariant[];
-};
-export type CatalogVariant = {
-  id: string;
-  modelNumber: string;
-  region: string;
-  hardwareVariant?: string | null;
-  catalogStatus?: "CATALOGED" | "UNVERIFIED";
-  sourceStatus?: "SOURCE_AVAILABLE" | "UNREVIEWED";
-  buildSupportStatus?: "NOT_VERIFIED";
-  officialSourceUrl?: string | null;
-  evidenceUrls?: string[];
-  sourceCodeUrl?: string | null;
-  reviewedAt?: string | null;
-  notes?: string | null;
-};
-export type AndroidBaseOption = {
-  id: string;
-  name: string;
-  supportStatus: "UNKNOWN";
-  buildSupported: false;
-  androidVersion: string;
-  documentationUrl: string;
-  sourceRepository: string;
-  sourceRef: string;
-  availability: "SOURCE_AVAILABLE" | "DEPRECATED";
-};
-export type SavedProject = {
-  id: string;
-  configuration: ROMConfiguration;
-  revision: number;
-  updatedAt: string;
-  deviceVariant?: (CatalogVariant & { device: CatalogDevice }) | null;
-  androidBase?: AndroidBaseOption | null;
-  compatibility?: {
-    status: string;
-    explanation: string;
-    blockingIssues: string[];
-  };
-};

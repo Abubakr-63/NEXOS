@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { PixelExperience } from "./pixel/pixel-experience";
 import {
   GlassCard,
   SectionHeader,
@@ -11,9 +12,16 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  formatAPIErrorMessage,
   defaultConfiguration,
   romConfigurationSchema,
   type ROMConfiguration,
+  type StoredProjectView as Project,
+  type CatalogDevice as Device,
+  type DevicesResponse,
+  type ProjectDetailResponse,
+  type ProjectWriteResponse,
+  type CompatibilityResponse,
 } from "@rom-hub/contracts";
 import {
   ArrowRight,
@@ -27,18 +35,11 @@ import {
   Save,
 } from "lucide-react";
 
-type Project = {
-  id: string;
-  configuration: ROMConfiguration;
-  revision: number;
-};
-type Device = {
-  id: string;
-  name: string;
-  codename: string;
-  variants: { id: string; modelNumber: string; region: string }[];
-};
-async function api(path: string, method = "GET", body?: unknown) {
+async function api<T>(
+  path: string,
+  method = "GET",
+  body?: unknown,
+): Promise<T> {
   const response = await fetch(`/api/v1/${path}`, {
     method,
     headers: { "Content-Type": "application/json" },
@@ -46,8 +47,10 @@ async function api(path: string, method = "GET", body?: unknown) {
   });
   const data = await response.json();
   if (!response.ok)
-    throw new Error(data.error?.message?.toString() || "Request failed");
-  return data;
+    throw new Error(
+      formatAPIErrorMessage(data, "Request failed", "stringified"),
+    );
+  return data as T;
 }
 const steps = [
   "Device",
@@ -72,14 +75,11 @@ export function Studio({ id }: { id?: string }) {
   );
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(!id);
-  const [result, setResult] = useState<{
-    status: string;
-    blockingIssues: string[];
-  }>();
+  const [result, setResult] = useState<CompatibilityResponse>();
   const [history, setHistory] = useState<ROMConfiguration[]>([]);
   useEffect(() => {
     let active = true;
-    api("devices")
+    api<DevicesResponse>("devices")
       .then((d) => {
         if (active) setDevices(d.items);
       })
@@ -90,7 +90,7 @@ export function Studio({ id }: { id?: string }) {
           );
       });
     if (id)
-      api(`projects/${id}`)
+      api<ProjectDetailResponse>(`projects/${id}`)
         .then((p) => {
           if (active) {
             setProject(p);
@@ -116,7 +116,7 @@ export function Studio({ id }: { id?: string }) {
     setBusy(true);
     try {
       const parsed = romConfigurationSchema.parse(config);
-      const saved = await api(
+      const saved = await api<ProjectWriteResponse>(
         project ? `projects/${project.id}` : "projects",
         project ? "PATCH" : "POST",
         project
@@ -126,7 +126,13 @@ export function Studio({ id }: { id?: string }) {
       setProject(saved);
       setMessage(`Saved revision ${saved.revision}`);
       if (validate)
-        setResult(await api(`projects/${saved.id}/validate`, "POST", {}));
+        setResult(
+          await api<CompatibilityResponse>(
+            `projects/${saved.id}/validate`,
+            "POST",
+            {},
+          ),
+        );
       if (!id) router.replace(`/builder/${saved.id}`);
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Unable to save");
@@ -158,7 +164,10 @@ export function Studio({ id }: { id?: string }) {
         </PrimaryButton>
       </div>
       <div className="craft-status" role="status">
-        {message} <Link href="/login">Account →</Link>
+        {message}{" "}
+        <Link prefetch={false} href="/login">
+          Account →
+        </Link>
       </div>
       <div className="studio-layout">
         <nav className="studio-steps" aria-label="Builder steps">
@@ -431,86 +440,28 @@ export function Studio({ id }: { id?: string }) {
         </section>
         <aside className="studio-preview">
           <div className="craft-kicker">LIVE PREVIEW</div>
-          <div
-            className={`android-preview ${config.darkMode ? "" : "preview-light"}`}
-            style={{ "--phone-accent": config.accent } as React.CSSProperties}
-          >
-            <div className="camera-dot" />
-            <div className="phone-status">
-              9:41 <span>◒ ▰</span>
-            </div>
-            <div className="android-clock">
-              09
-              <br />
-              41
-            </div>
-            <p>Tuesday, October 27</p>
-            <div className="android-widget">
-              <span>YOUR SPACE</span>
-              <h3>{config.name || "My Android"}</h3>
-              <p>A fresh perspective.</p>
-            </div>
-            <div className="android-apps">
-              {config.apps.map((a, i) => (
-                <div key={a}>
-                  <span>{["◎", "▦", "▱", ">_"][i]}</span>
-                  <small>{a}</small>
-                </div>
-              ))}
-            </div>
-            <div className="gesture-bar" />
-          </div>
-          <p>
-            Visual approximation
+          <PixelExperience
+            configuration={config}
+            authenticated
+            compact
+            review={step === 9}
+            context={`Preset: ${config.preset}. Kernel unconfigured; compatibility unverified.`}
+          />
+          <p className="pixel-draft-summary">
+            <strong>{config.name}</strong> ·{" "}
+            {config.darkMode ? "Dark" : "Light"} appearance
             <br />
-            Actual device rendering may differ.
+            {config.apps.join(", ")}
+            <br />
+            Generic visual concept, not a model of the selected hardware.
+            Configuration draft only; device ROM and builds remain unverified.
           </p>
         </aside>
       </div>
     </div>
   );
 }
-export function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [status, setStatus] = useState("Loading your projects…");
-  useEffect(() => {
-    api("projects")
-      .then((d) => {
-        setProjects(d.items);
-        setStatus(
-          d.items.length ? "" : "Your first Android experience starts here.",
-        );
-      })
-      .catch((e) => setStatus(e.message));
-  }, []);
-  return (
-    <div className="craft-page">
-      <div className="craft-heading">
-        <div>
-          <span className="craft-kicker">YOUR WORKSPACE</span>
-          <h1>My projects</h1>
-          <p>Pick up where you left off.</p>
-        </div>
-        <Link className="button primary" href="/projects/new">
-          New ROM <ArrowRight size={16} />
-        </Link>
-      </div>
-      <p role="status">{status}</p>
-      <div className="craft-grid">
-        {projects.map((p) => (
-          <Link className="craft-card" key={p.id} href={`/projects/${p.id}`}>
-            <Layers />
-            <h2>{p.configuration.name}</h2>
-            <p>
-              {p.configuration.preset} · Revision {p.revision}
-            </p>
-            <span>Open project →</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
+export { ProjectLibrary as Projects } from "./workspace-pages";
 export function Welcome() {
   return (
     <div className="craft-page welcome-page">
