@@ -1,6 +1,5 @@
 import { chromium } from "@playwright/test";
 import { existsSync, mkdirSync } from "node:fs";
-import { resolve } from "node:path";
 
 const edgePath = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 

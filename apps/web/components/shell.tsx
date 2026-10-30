@@ -225,6 +225,8 @@ export function Shell({
             href={href}
             icon={<Icon size={24} />}
             active={active === href}
+            title={label}
+            aria-label={label}
             onClick={closeMore}
           >
             {label}
@@ -233,6 +235,7 @@ export function Shell({
         <button
           className="navigation-item"
           aria-label="More navigation"
+          title="More navigation"
           aria-haspopup="dialog"
           aria-expanded={moreOpen}
           aria-controls="more-navigation"
