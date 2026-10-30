@@ -115,6 +115,8 @@ Final cleanup confirmed zero synthetic users, sessions and projects remaining in
 
 ## Delivery and remaining limits
 
+Windows runtime implementation commit: `f6d623ae9e08db7657488d4344c5d0144f2c7171`, pushed with `git push origin ai/codex-backend`. PR #1 was updated through authenticated GitHub tooling to describe both the runtime and worker milestones; it remains open, draft and unmerged, targeting main. Only this backend branch was pushed.
+
 PR #1 remains unmerged. API response/status contracts, Zod and OpenAPI semantics are unchanged. Actual register/login and ROM draft persistence now work locally. Existing auth limits, CSRF checks, session rotation/revocation and ownership tests remain active. No real Android compiler, artifact download or phone flashability is claimed. The runtime is intentionally local development; backups, service supervision, least-privilege deployment roles and Linux production Redis/executor qualification remain separate operational work.
 
 The current Gemini checkout was not modified or launched; live verification used the already running frontend and E2E used this branch's unchanged frontend baseline. Re-test any subsequent Gemini UI changes together before merging. See the backend-to-frontend handoff for exact ports, cookie expectations and coordinated shared-runner changes.

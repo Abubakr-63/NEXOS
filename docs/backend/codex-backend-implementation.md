@@ -2,6 +2,8 @@
 
 ## Current Windows runtime update — 2026-10-30
 
+Windows runtime implementation commit: `f6d623ae9e08db7657488d4344c5d0144f2c7171`, pushed to `origin/ai/codex-backend`. [Draft PR #1](https://github.com/Abubakr-63/NEXOS/pull/1) is open, targets main, and remains unmerged. A subsequent documentation-only commit records this delivery.
+
 The backend is now operational on Windows at `http://127.0.0.1:4000`, with health/readiness 200 and authenticated Redis/PostgreSQL on isolated ports 6380/5433. A real browser using the active `http://localhost:3000` frontend passed registration, login, session refresh, persisted draft display, logout and anonymous rejection. The three Windows unit failures below are fixed: final verification is **78 unit tests, 24 integration tests and eight relevant E2E tests passed**, plus TypeScript/lint, production build and zero-advisory full/production audits.
 
 See [Windows runtime runbook and executed-command ledger](windows-local-runtime.md) for exact startup commands, new local-only environment setup, migration/seed isolation, Windows DLL/build-mode constraints, resolved preliminary failures and Gemini coordination. No frontend implementation, Zod/OpenAPI response contract or migration source changed. PR #1 remains unmerged. The earlier worker milestone and its then-current limitations are preserved below as history; its unavailable-infrastructure test results are superseded by this update.
