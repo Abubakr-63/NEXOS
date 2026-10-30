@@ -32,24 +32,51 @@ function slab(w: number, h: number, d: number, r: number) {
   return g;
 }
 
-/** Authentic Google 'G' emblem geometry centered on the Pixel rear glass. */
-function makeGoogleLogoGeometry() {
+/** Canonical Google G brand shape */
+function makeGoogleLogoShape(R = 0.48, r = 0.28, barHalfH = 0.09) {
   const shape = new THREE.Shape();
-  const ro = 0.46;
-  const ri = 0.28;
-  const aStart = Math.PI * 0.22;
-  const aEnd = Math.PI * 1.78;
+  const aTop = Math.PI * 0.23;
+  const aBottom = -Math.asin(barHalfH / R);
 
-  shape.absarc(0, 0, ro, aStart, aEnd, false);
-  shape.lineTo(0.04, -ri * Math.sin(aStart));
-  shape.lineTo(0.04, 0.045);
-  shape.lineTo(ro * 0.95, 0.045);
-  shape.lineTo(ro * 0.95, -0.045);
-  shape.lineTo(0, -0.045);
-  shape.absarc(0, 0, ri, aEnd, aStart, true);
+  // Outer arc: from aTop (41°) counter-clockwise all the way around to bottom
+  shape.absarc(0, 0, R, aTop, Math.PI * 2 + aBottom, false);
+
+  // Crossbar rightmost tip
+  shape.lineTo(R, barHalfH);
+
+  // Along top of crossbar to center (x = 0)
+  shape.lineTo(0, barHalfH);
+
+  // Down to bottom of crossbar (x = 0, y = -barHalfH)
+  shape.lineTo(0, -barHalfH);
+
+  // Along bottom of crossbar to inner circle
+  const xBottomInner = Math.sqrt(Math.max(0, r * r - barHalfH * barHalfH));
+  shape.lineTo(xBottomInner, -barHalfH);
+
+  // Inner arc: clockwise back to aTop
+  const aBottomInner = -Math.asin(barHalfH / r);
+  shape.absarc(0, 0, r, Math.PI * 2 + aBottomInner, aTop, true);
+
+  // Close back to outer arc start
   shape.closePath();
 
-  return new THREE.ShapeGeometry(shape, 48);
+  return shape;
+}
+
+/** Authentic Google 'G' emblem geometry with subtle 3D metallic extrusion. */
+function makeGoogleLogoGeometry() {
+  const shape = makeGoogleLogoShape(0.48, 0.28, 0.09);
+  const g = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.016,
+    bevelEnabled: true,
+    bevelThickness: 0.005,
+    bevelSize: 0.005,
+    bevelSegments: 2,
+    curveSegments: 36,
+  });
+  g.computeVertexNormals();
+  return g;
 }
 
 export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
@@ -170,7 +197,7 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     "earpiece speaker micro-slit",
   );
 
-  // ==========================================
+    // ==========================================
   // REAR OPAQUE FROSTED MATTE GLASS BACK PANEL
   // ==========================================
   // 100% Opaque Obsidian frosted matte glass back (no fantasy holes or rings)
@@ -188,15 +215,14 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   const gLogoGeom = makeGoogleLogoGeometry();
   const gLogo = add(
     gLogoGeom,
-    m.polishedMetal,
+    m.gLogo,
     0,
-    -0.45,
-    -0.485,
+    -0.5,
+    -0.506,
     rear,
     "Google G brand emblem",
   );
   gLogo.rotation.y = Math.PI;
-  gLogo.scale.x = -1;
 
   // Internal support plate behind back glass
   add(
@@ -214,11 +240,11 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   // ==========================================
   // Elevated dark titanium camera stadium pill (floating inside rear margins, NOT touching side rails)
   const cameraIsland = add(
-    slab(6.1, 2.14, 0.28, 1.07),
+    slab(6.34, 2.32, 0.32, 1.16),
     m.metal,
     0,
-    5.95,
-    -0.62,
+    5.35,
+    -0.63,
     rear,
     "Pixel 10 Pro floating aluminum camera island",
   );
@@ -226,41 +252,42 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
 
   // Diamond-cut polished perimeter chamfer on camera island
   add(
-    new THREE.TorusGeometry(1.04, 0.018, 8, 48),
+    new THREE.TorusGeometry(1.14, 0.018, 8, 48),
     m.polishedMetal,
-    -1.98,
-    5.95,
-    -0.74,
+    -2.01,
+    5.35,
+    -0.79,
     rear,
     "island left chamfer ring",
   );
   add(
-    new THREE.TorusGeometry(1.04, 0.018, 8, 48),
+    new THREE.TorusGeometry(1.14, 0.018, 8, 48),
     m.polishedMetal,
-    1.98,
-    5.95,
-    -0.74,
+    2.01,
+    5.35,
+    -0.79,
     rear,
     "island right chamfer ring",
   );
 
-  // Black sapphire optical glass pill window (spans left 60% of the island)
+    // Black sapphire optical glass pill window (spans left 76% of the island on rear view)
   const cameraWindow = add(
-    slab(3.85, 1.74, 0.04, 0.87),
-    m.black,
-    -0.88,
-    5.95,
-    -0.775,
+    slab(4.72, 1.92, 0.04, 0.96),
+    m.blackSapphire,
+    0.58,
+    5.35,
+    -0.815,
     rear,
     "black sapphire triple-camera pill window",
   );
   cameraWindow.castShadow = false;
 
   // Triple Camera Array inside the black sapphire pill window
+  // When viewed from rear (180deg rotated), positive X appears on the LEFT
   const cameras = [
-    { x: -2.0, y: 5.95, r: 0.35, name: "48MP ultrawide lens" },
-    { x: -0.9, y: 5.95, r: 0.44, name: "50MP wide main camera" },
-    { x: 0.25, y: 5.95, r: 0.38, name: "48MP periscope telephoto" },
+    { x: 2.15, y: 5.35, r: 0.38, name: "48MP ultrawide lens" },
+    { x: 0.95, y: 5.35, r: 0.48, name: "50MP wide main camera" },
+    { x: -0.35, y: 5.35, r: 0.40, name: "48MP periscope telephoto" },
   ];
 
   cameras.forEach(({ x, y, r, name }, idx) => {
@@ -270,7 +297,7 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
       m.darkMetal,
       x,
       y,
-      -0.66,
+      -0.72,
       rear,
       `${name} barrel`,
     );
@@ -284,7 +311,7 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
         layer % 2 ? m.darkMetal : m.polishedMetal,
         x,
         y,
-        -0.77 - layer * 0.018,
+        -0.84 - layer * 0.012,
         rear,
         "machined optical ring",
       );
@@ -296,7 +323,7 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
       m.black,
       x,
       y,
-      -0.765,
+      -0.855,
       rear,
       "optical pupil aperture",
     );
@@ -317,7 +344,7 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
         m.lens,
         x,
         y,
-        -0.78 - layer * 0.03,
+        -0.86 - layer * 0.02,
         rear,
         "sapphire optical lens element",
       );
@@ -331,21 +358,21 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
         m.darkMetal,
         x,
         y,
-        -0.84,
+        -0.88,
         rear,
         "periscope folding prism",
       );
     }
   });
 
-  // Right Side of Island: True-Tone LED Flash, Spectral/Temperature Sensor, Audio Mic
-  // True-tone circular LED flash positioned at [2.0, 6.35]
+  // Right Side of Island on rear view (negative X in model space): True-Tone LED Flash, Spectral/Temperature Sensor, Audio Mic
+  // True-tone circular LED flash positioned at [-2.42, 5.88] (appears at top-right on rear view)
   add(
     new THREE.CylinderGeometry(0.24, 0.24, 0.08, 36),
     m.darkMetal,
-    2.0,
-    6.35,
-    -0.72,
+    -2.42,
+    5.88,
+    -0.78,
     rear,
     "flash bezel ring",
   ).rotation.x = Math.PI / 2;
@@ -355,9 +382,9 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     add(
       new THREE.TorusGeometry(0.06 + ring * 0.05, 0.01, 6, 32),
       m.polishedMetal,
-      2.0,
-      6.35,
-      -0.77,
+      -2.42,
+      5.88,
+      -0.816,
       rear,
       "Fresnel optical ring",
     );
@@ -367,21 +394,21 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   const flashFace = add(
     new THREE.CircleGeometry(0.21, 32),
     m.flash,
-    2.0,
-    6.35,
-    -0.772,
+    -2.42,
+    5.88,
+    -0.818,
     rear,
     "diffused true-tone LED flash",
   );
   flashFace.rotation.y = Math.PI;
 
-  // Infrared Temperature / Multi-Spectral Depth Sensor positioned at [2.0, 5.55]
+  // Infrared Temperature / Multi-Spectral Depth Sensor positioned at [-2.42, 4.82] (appears at bottom-right on rear view)
   add(
     new THREE.CylinderGeometry(0.18, 0.18, 0.08, 32),
     m.darkMetal,
-    2.0,
-    5.55,
-    -0.72,
+    -2.42,
+    4.82,
+    -0.78,
     rear,
     "temperature sensor bezel",
   ).rotation.x = Math.PI / 2;
@@ -389,9 +416,9 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   add(
     new THREE.TorusGeometry(0.14, 0.012, 6, 32),
     m.polishedMetal,
-    2.0,
-    5.55,
-    -0.77,
+    -2.42,
+    4.82,
+    -0.816,
     rear,
     "sensor bezel ring",
   );
@@ -399,9 +426,9 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   const sensorAperture = add(
     new THREE.CircleGeometry(0.14, 32),
     m.lens,
-    2.0,
-    5.55,
-    -0.772,
+    -2.42,
+    4.82,
+    -0.818,
     rear,
     "temperature sensor optical window",
   );
@@ -411,37 +438,98 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   const micPinhole = add(
     new THREE.CircleGeometry(0.045, 16),
     m.black,
-    1.35,
-    5.95,
-    -0.76,
+    -1.68,
+    5.35,
+    -0.812,
     rear,
     "audio zoom microphone pinhole",
   );
   micPinhole.rotation.y = Math.PI;
 
-  // ==========================================
+    // ==========================================
   // HARDWARE RAILS & TACTILE CONTROLS
   // ==========================================
   // Pixel signature key layout: Power button placed ABOVE volume rocker on right rail
-  add(
-    slab(0.09, 0.92, 0.44, 0.04),
-    m.metal,
-    3.73,
+  function makeSideButton(height: number, width = 0.36, protrusion = 0.12, r = 0.14) {
+    const g = new THREE.ExtrudeGeometry(roundedShape(width, height, r), {
+      depth: protrusion,
+      bevelEnabled: true,
+      bevelThickness: 0.02,
+      bevelSize: 0.02,
+      bevelSegments: 3,
+    });
+    g.translate(0, 0, -protrusion / 2);
+    g.computeVertexNormals();
+    return g;
+  }
+
+  // Power button recess & milled tactile key
+  const powerRecess = add(
+    new THREE.BoxGeometry(0.06, 1.12, 0.42),
+    m.black,
+    3.71,
     2.85,
     0,
     group,
-    "milled power button",
+    "power button chassis recess",
   );
+  void powerRecess;
 
-  add(
-    slab(0.09, 1.95, 0.44, 0.04),
+  const powerKey = add(
+    makeSideButton(0.98),
     m.metal,
-    3.73,
+    3.75,
+    2.85,
+    0,
+    group,
+    "milled power button key",
+  );
+  powerKey.rotation.y = Math.PI / 2;
+
+  const powerChamfer = add(
+    makeSideButton(0.96, 0.34, 0.02),
+    m.polishedMetal,
+    3.80,
+    2.85,
+    0,
+    group,
+    "power button chamfer highlight",
+  );
+  powerChamfer.rotation.y = Math.PI / 2;
+
+  // Volume rocker recess & elongated rocker key
+  const volumeRecess = add(
+    new THREE.BoxGeometry(0.06, 2.22, 0.42),
+    m.black,
+    3.71,
     0.65,
     0,
     group,
-    "milled volume rocker",
+    "volume rocker chassis recess",
   );
+  void volumeRecess;
+
+  const volumeKey = add(
+    makeSideButton(2.08),
+    m.metal,
+    3.75,
+    0.65,
+    0,
+    group,
+    "milled volume rocker key",
+  );
+  volumeKey.rotation.y = Math.PI / 2;
+
+  const volumeChamfer = add(
+    makeSideButton(2.06, 0.34, 0.02),
+    m.polishedMetal,
+    3.80,
+    0.65,
+    0,
+    group,
+    "volume rocker chamfer highlight",
+  );
+  volumeChamfer.rotation.y = Math.PI / 2;
 
   // Antenna RF insulation seams
   const polymer = new THREE.MeshStandardMaterial({

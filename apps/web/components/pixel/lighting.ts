@@ -11,12 +11,12 @@ export function studioLighting(
   const pmrem = new THREE.PMREMGenerator(renderer);
   const environment = pmrem.fromScene(room, 0.03, 0.1, 100);
   scene.environment = environment.texture;
-  scene.environmentIntensity = 0.65;
+  scene.environmentIntensity = 0.36;
   room.dispose();
   pmrem.dispose();
 
   // Studio Key Light: Crisp directional sunlight / main key
-  const key = new THREE.DirectionalLight("#ffffff", 2.4);
+  const key = new THREE.DirectionalLight("#ffffff", 2.2);
   key.position.set(-8, 14, 15);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
@@ -29,28 +29,28 @@ export function studioLighting(
   scene.add(key);
 
   // Commercial Rim Light: Brilliant cyan-blue edge reflection
-  const rim = new THREE.DirectionalLight("#38bdf8", 3.8);
+  const rim = new THREE.DirectionalLight("#38bdf8", 3.2);
   rim.position.set(8.5, 5.5, -9);
   scene.add(rim);
 
   // Secondary Fill Light: Deep sapphire blue ambience
-  const fill = new THREE.DirectionalLight("#60a5fa", 1.6);
+  const fill = new THREE.DirectionalLight("#60a5fa", 1.4);
   fill.position.set(6, -2, 11);
   scene.add(fill);
 
-  // Rear Specular Light
-  const rear = new THREE.DirectionalLight("#94a3b8", 0.9);
-  rear.position.set(-7, 9, -14);
+  // Rear Specular Light: Highlights camera island, chamfers & Google G emblem
+  const rear = new THREE.DirectionalLight("#e2e8f0", 1.5);
+  rear.position.set(-6, 8, -16);
   scene.add(rear);
 
   // Commercial Studio Light Strip (long highlight down the metal rails)
-  const strip = new THREE.RectAreaLight("#0ea5e9", 5.2, 2.5, 20);
+  const strip = new THREE.RectAreaLight("#0ea5e9", 4.2, 2.5, 20);
   strip.position.set(-9, 3, -8);
   strip.lookAt(0, 0, 0);
   scene.add(strip);
 
   // Overhead Softbox (smooth reflection across front & back glass)
-  const softbox = new THREE.RectAreaLight("#38bdf8", 1.2, 10, 14);
+  const softbox = new THREE.RectAreaLight("#38bdf8", 1.5, 10, 14);
   softbox.position.set(7, 8, -10);
   softbox.lookAt(0, 0, 0);
   scene.add(softbox);

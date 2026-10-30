@@ -9,7 +9,7 @@ export type PixelEngine = {
   seek: (progress: number) => void;
   film: (progress: number) => void;
   update: (state: PixelScreenState) => void;
-  view: (view: "front" | "rear" | "three-quarter") => void;
+  view: (view: "front" | "rear" | "three-quarter" | "perspective" | "rear-angle" | "side") => void;
   zoom: (value: number) => void;
   active: (value: boolean) => void;
   motion: (value: boolean) => void;
@@ -123,12 +123,16 @@ export function createPixelEngine(
           Math.PI * 2,
         ) - Math.PI;
       smoothY = reduced ? desiredY : smoothY + deltaY * (1 - Math.exp(-8 * dt));
-      model.group.rotation.set(shot.rotation[0], smoothY, shot.rotation[2]);
-      if (pose !== null) target.set(0, 0, 35);
-      else target.set(...shot.camera);
+      if (pose !== null) {
+        model.group.rotation.set(0, smoothY, 0);
+        target.set(0, 0, 32);
+        look.set(0, 0, 0);
+      } else {
+        model.group.rotation.set(shot.rotation[0], smoothY, shot.rotation[2]);
+        target.set(...shot.camera);
+        look.set(...shot.target);
+      }
       target.multiplyScalar(1 / smoothZoom);
-      if (pose !== null) look.set(0, 0, 0);
-      else look.set(...shot.target);
       lighting.intensity(1);
       model.animate(0, 0);
       model.displayMaterial.color.setScalar(1);
@@ -235,7 +239,12 @@ export function createPixelEngine(
     view(view) {
       viewLockUntil = performance.now() + 15000;
       filmTarget = null;
-      pose = view === "rear" ? Math.PI : view === "front" ? 0 : -0.6;
+      if (view === "rear") pose = Math.PI;
+      else if (view === "front") pose = 0;
+      else if (view === "perspective") pose = -0.62;
+      else if (view === "rear-angle") pose = Math.PI - 0.52;
+      else if (view === "side") pose = -Math.PI / 2;
+      else pose = -0.6;
       until = performance.now() + 15000;
       invalidate();
     },

@@ -20,21 +20,43 @@ export function conceptMaterials() {
 
   // Google Pixel 10 Pro Dark Titanium Frame & Camera Island
   const metal = new THREE.MeshPhysicalMaterial({
-    color: "#15181f",
-    metalness: 0.94,
-    roughness: 0.28,
+    color: "#181a1f",
+    metalness: 0.92,
+    roughness: 0.26,
     roughnessMap: brushed,
-    envMapIntensity: 0.35,
-    clearcoat: 0.45,
-    clearcoatRoughness: 0.1,
+    envMapIntensity: 0.45,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.12,
   });
 
   // Polished Chrome Google G Emblem & Diamond Chamfers
   const polishedMetal = new THREE.MeshStandardMaterial({
     color: "#cbd5e1",
     metalness: 0.96,
+    roughness: 0.1,
+    envMapIntensity: 1.0,
+    side: THREE.DoubleSide,
+  });
+
+  // Dedicated Google G Emblem Material (Refined Brushed Chrome / Satin Slate)
+  const gLogo = new THREE.MeshPhysicalMaterial({
+    color: "#64748b",
+    metalness: 0.94,
     roughness: 0.12,
-    envMapIntensity: 0.8,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.4,
+    side: THREE.DoubleSide,
+  });
+
+  // Deep Glossy Black Sapphire Glass (Camera Window Pill)
+  const blackSapphire = new THREE.MeshPhysicalMaterial({
+    color: "#050608",
+    metalness: 0.1,
+    roughness: 0.12,
+    clearcoat: 0.6,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 0.15,
     side: THREE.DoubleSide,
   });
 
@@ -46,14 +68,14 @@ export function conceptMaterials() {
     envMapIntensity: 0.4,
   });
 
-  // Google Pixel 10 Pro Matte Frosted Glass Back (Obsidian Deep Charcoal)
+  // Google Pixel 10 Pro Matte Frosted Glass Back (Obsidian Deep Slate/Charcoal)
   const glassBack = new THREE.MeshPhysicalMaterial({
-    color: "#080a0d",
-    metalness: 0.02,
-    roughness: 0.48,
+    color: "#24272c",
+    metalness: 0.05,
+    roughness: 0.44,
     clearcoat: 0.3,
     clearcoatRoughness: 0.2,
-    envMapIntensity: 0.18,
+    envMapIntensity: 0.32,
     transparent: false,
     opacity: 1.0,
   });
@@ -126,6 +148,8 @@ export function conceptMaterials() {
     glass,
     glassBack,
     polishedMetal,
+    gLogo,
+    blackSapphire,
     flash,
     black,
     copper,
