@@ -72,6 +72,7 @@ model User {
   subscriptions Subscription[]
   notifications Notification[]
   audits AuditLog[]
+  durableBuildJobs DurableBuildJob[]
 }
 model Session {
   id String @id @default(cuid())
@@ -337,6 +338,7 @@ model ROMProject {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   revisions ConfigurationRevision[]
+  durableBuildJobs DurableBuildJob[]
   @@index([ownerId, updatedAt])
 }
 model ConfigurationRevision {
@@ -346,6 +348,7 @@ model ConfigurationRevision {
   number Int
   configuration Json
   createdAt DateTime @default(now())
+  durableBuildJobs DurableBuildJob[]
   @@unique([projectId, number])
 }
 
@@ -362,4 +365,97 @@ model AndroidBase {
   buildSupportStatus BuildSupportStatus @default(NOT_VERIFIED)
   reviewedAt DateTime
   @@unique([name, androidVersion, sourceRef])
+}
+
+// D5 additive proposal. Apply to disposable databases only until live approval.
+enum DurableBuildState {
+  QUEUED
+  PREPARING
+  RUNNING
+  CHECKED
+  FAILED
+  CANCELLED
+  RECOVERY_REQUIRED
+}
+enum DurableOutboxState {
+  PENDING
+  DISPATCHING
+  SENT
+  DEAD
+}
+model DurableBuildJob {
+  id String @id @default(uuid()) @db.Uuid
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  projectId String
+  project ROMProject @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  revisionId String
+  revision ConfigurationRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  idempotencyKey String @db.VarChar(64)
+  requestDigest String @db.Char(64)
+  configurationDigest String @db.Char(64)
+  readinessDigest String @db.Char(64)
+  readinessValidUntil DateTime
+  targetDigest String @db.Char(64)
+  targetId String @db.VarChar(100)
+  configuration Json
+  kind String @default("ISOLATION_PREFLIGHT") @db.VarChar(32)
+  compiled Boolean @default(false)
+  state DurableBuildState @default(QUEUED)
+  fence Int @default(0)
+  attemptCount Int @default(0)
+  maxAttempts Int @default(2)
+  deliveryGeneration Int @default(0)
+  stage Int @default(0)
+  cancelRequestedAt DateTime?
+  failureCode String? @db.VarChar(32)
+  startedAt DateTime?
+  finishedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  currentAttemptId String? @unique @db.Uuid
+  currentAttempt DurableBuildAttempt? @relation("CurrentDurableAttempt", fields: [currentAttemptId], references: [id], onDelete: SetNull)
+  attempts DurableBuildAttempt[] @relation("JobDurableAttempts")
+  outbox DurableBuildOutbox[]
+  @@unique([ownerId, idempotencyKey])
+  @@index([ownerId, createdAt, id])
+  @@index([state, updatedAt])
+}
+model DurableBuildAttempt {
+  id String @id @default(uuid()) @db.Uuid
+  jobId String @db.Uuid
+  job DurableBuildJob @relation("JobDurableAttempts", fields: [jobId], references: [id], onDelete: Cascade)
+  currentFor DurableBuildJob? @relation("CurrentDurableAttempt")
+  number Int
+  fence Int
+  workerId String @db.VarChar(100)
+  state DurableBuildState
+  leaseUntil DateTime
+  deadline DateTime
+  cleanupConfirmedAt DateTime?
+  failureCode String? @db.VarChar(32)
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  @@unique([jobId, number])
+  @@unique([jobId, fence])
+  @@index([state, leaseUntil])
+}
+model DurableBuildOutbox {
+  id String @id @default(uuid()) @db.Uuid
+  jobId String @db.Uuid
+  job DurableBuildJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  generation Int
+  state DurableOutboxState @default(PENDING)
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  dispatchToken String? @db.Uuid
+  dispatchLeaseUntil DateTime?
+  failureCode String? @db.VarChar(32)
+  lastAttemptAt DateTime?
+  sentAt DateTime?
+  deadAt DateTime?
+  createdAt DateTime @default(now())
+  @@unique([jobId, generation])
+  @@index([state, nextAttemptAt])
+  @@index([state, dispatchLeaseUntil])
 }

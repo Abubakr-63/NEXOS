@@ -10,6 +10,7 @@
     "start": "node ../../scripts/with-env.mjs node dist/main.js"
   },
   "dependencies": {
+    "@prisma/client": "6.19.0",
     "bullmq": "^5.61.0",
     "@rom-hub/contracts": "workspace:*"
   },

@@ -1,5 +1,9 @@
 # Codex backend implementation and integration handoff
 
+## D5 migration-gate update — 2026-10-31
+
+PostgreSQL-backed internal preflight admission, attempts/fencing, transactional outbox, BullMQ delivery and cleanup-gated recovery are implemented and tested on disposable services. See [D5 architecture, migration proposal and verification](../build/phase-d5-durable-jobs-outbox.md). The additive migration is **not applied to the existing development database** and needs explicit approval. Do not run `db:migrate` against that database before approval. Public builds remain 503; default readiness denies admission; no production worker wiring, Android compilation, shared contract or frontend change is included. Earlier D4 inventory below is historical and superseded for the new internal durable service only.
+
 ## Current D4 foundation update — 2026-10-30
 
 Added an internal, test-isolated fenced executor handoff and a gated Linux isolation-preflight transport. See [D4 architecture, coverage and verification](../build/phase-d4-isolated-executor-foundation.md). This is a smallest safe D3 prerequisite plus a D4 foundation: production PostgreSQL jobs/attempts/outbox, authenticated submission and Linux host/image/reaper qualification remain missing. The new executor is not connected to the API or production worker. Public build requests stay 503; all preflight results remain compiled:false. No schema/migration, shared API contract, frontend or environment change occurred.

@@ -16,6 +16,17 @@ export interface PreflightTransport {
   /** True only after the exact attempt's container/process tree is absent. */
   terminate(grant: Grant): Promise<boolean>;
 }
+export type ExecutionAuthority = Pick<
+  AttemptStore,
+  | "claim"
+  | "renew"
+  | "progress"
+  | "finish"
+  | "quarantine"
+  | "recover"
+  | "recovered"
+  | "timings"
+>;
 function grantFor(record: CheckRecord): Grant {
   if (!record.attemptId) throw new HandoffError("NO_ATTEMPT");
   return {
@@ -45,9 +56,9 @@ async function cleanup(
     clearTimeout(timer);
   }
 }
-/** No queue acknowledgement is execution authority. Redis grant/fence remains mandatory. */
+/** No queue acknowledgement is execution authority. A current authority grant/fence is mandatory. */
 export async function runPreflight(
-  store: AttemptStore,
+  store: ExecutionAuthority,
   item: Handle,
   transport: PreflightTransport,
   options: {
@@ -81,10 +92,13 @@ export async function runPreflight(
   };
   options.signal?.addEventListener("abort", cancel, { once: true });
   if (options.signal?.aborted) cancel();
-  const deadline = setTimeout(() => {
-    outcome.failure = "TIMEOUT";
-    controller.abort();
-  }, store.timings.timeoutMs);
+  const deadline = setTimeout(
+    () => {
+      outcome.failure = "TIMEOUT";
+      controller.abort();
+    },
+    Math.min(store.timings.timeoutMs, Math.max(0, grant.deadline - Date.now())),
+  );
   let renewing = false;
   const heartbeat = setInterval(
     () => {
@@ -188,7 +202,7 @@ export async function runPreflight(
   }
 }
 export async function recoverPreflight(
-  store: AttemptStore,
+  store: ExecutionAuthority,
   item: Handle,
   transport: PreflightTransport,
 ) {

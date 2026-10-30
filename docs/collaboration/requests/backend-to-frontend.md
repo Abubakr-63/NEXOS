@@ -1,5 +1,21 @@
 # Backend handoff to Gemini and integration coordinator
 
+## D5 contract proposal — coordination required, not implemented HTTP endpoints
+
+The backend now has internal PostgreSQL admission/outbox/attempt services, verified on disposable PostgreSQL/Redis. Existing development migration/activation awaits explicit approval. No `apps/web`, shared Zod or OpenAPI files changed. The public build POST remains authenticated 503; continue displaying compilation as unavailable. Existing cookies/origin/session requirements below still apply.
+
+For a future coordinated **preflight** API, propose these shapes for review (paths/statuses are not available routes):
+
+- `POST /api/v1/projects/:projectId/preflight-jobs`, cookie-authenticated and Origin-checked. Body exactly `{ "revisionId": "...", "targetId": "aosp16-r4-cuttlefish-x86_64-userdebug-v1", "idempotencyKey": "client-generated-1..64-alphanumeric-underscore-hyphen" }`. Server derives actor and project path; never accepts owner, command, environment, image or artifact path. Proposed first admission 201 and identical authorized replay 200. Changed request with the same owner-scoped key: 409.
+- `GET /api/v1/projects/:projectId/preflight-jobs/:jobId` and `POST .../:jobId/cancel`, both owner-scoped; absent/nonowned/mismatched-project resources share 404. Cancel body empty. Queued cancellation completes immediately; active cancellation returns the persisted request until cleanup confirms termination. Repeat cancellation preserves terminal outcomes.
+- Proposed response `{ "id": "uuid", "projectId": "...", "revisionId": "...", "kind": "ISOLATION_PREFLIGHT", "state": "QUEUED", "stage": 0, "compiled": false, "cancelRequested": false, "attemptCount": 0, "failureCode": null, "createdAt": "ISO8601", "updatedAt": "ISO8601", "finishedAt": null }`. Project/revision IDs follow existing contracts. Stage is integer 0..3. No configuration, lease token, worker identity or internal raw error is exposed. Response mapping and shared schemas require separate implementation/review.
+
+Lifecycle: QUEUED → PREPARING → RUNNING → CHECKED/FAILED/CANCELLED. PREPARING/RUNNING may enter RECOVERY_REQUIRED; confirmed cleanup then queues a bounded retry or ends FAILED/CANCELLED. Terminal states cannot change. CHECKED means preflight only; **compiled is always false**, with no download/flash eligibility. Do not show it as a built ROM.
+
+Use the existing `createAPIError` envelope and request correlation for future failures. Proposed HTTP mappings: 401 missing session; 403 rejected Origin; 404 absent/nonowned resource; 400 malformed/unknown fields; 409 idempotency conflict; 429 owner/global admission capacity; 503 missing readiness/database/delivery availability. Fixed machine-code mapping for BUILD_UNAVAILABLE, DATABASE_UNAVAILABLE, DELIVERY_EXHAUSTED, READINESS_EXPIRED, ATTEMPTS_EXHAUSTED and cleanup/timeout failures needs coordinated contract review; do not expose exception/Redis/SQL text. The internal TypeScript HandoffError is not a public API response contract.
+
+Start with owner-scoped polling while visible: ~1s, back off to 5s, honor Retry-After on 429/503, stop on terminal state, pause in hidden tabs, abort on logout/navigation. No SSE/WebSocket delivery is implemented; any later event stream needs authentication, resume/cursor and ownership review. A project/job listing route and pagination/retention contract also need coordination. No UI changes are required now. Architecture and approval gate: [D5 report](../../build/phase-d5-durable-jobs-outbox.md).
+
 ## D4 executor foundation update
 
 The backend branch now contains internal fenced handoff qualification and a Linux-only fixed-command isolation preflight adapter. It does not activate build submission, compilation, artifact downloads or flashing. No API/Zod/OpenAPI contract or frontend implementation changed; no new frontend behavior is required. Continue saving ordinary configuration drafts and presenting build POST's existing authenticated 503 as unavailable. CHECKED/compiled:false is an internal preflight result, never an Android build success.
