@@ -1,5 +1,11 @@
 # Codex backend implementation and integration handoff
 
+## Current D4 foundation update — 2026-10-30
+
+Added an internal, test-isolated fenced executor handoff and a gated Linux isolation-preflight transport. See [D4 architecture, coverage and verification](../build/phase-d4-isolated-executor-foundation.md). This is a smallest safe D3 prerequisite plus a D4 foundation: production PostgreSQL jobs/attempts/outbox, authenticated submission and Linux host/image/reaper qualification remain missing. The new executor is not connected to the API or production worker. Public build requests stay 503; all preflight results remain compiled:false. No schema/migration, shared API contract, frontend or environment change occurred.
+
+All 28 development model digests and .env matched after recovery of an observed local infrastructure interruption. Later live account activity changed User/Session/AuditLog while the frontend returned on port 3000: original users/audit rows were verified intact, the other 25 model digests and .env stayed unchanged, and live changes were left untouched. The API was restored on port 4000. Detailed test results and preliminary failures are in the D4 report; earlier phase reports below remain historical.
+
 ## Current Windows runtime update — 2026-10-30
 
 Windows runtime implementation commit: `f6d623ae9e08db7657488d4344c5d0144f2c7171`, pushed to `origin/ai/codex-backend`. [Draft PR #1](https://github.com/Abubakr-63/NEXOS/pull/1) is open, targets main, and remains unmerged. A subsequent documentation-only commit records this delivery.

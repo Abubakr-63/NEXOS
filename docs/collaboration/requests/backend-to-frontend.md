@@ -1,5 +1,11 @@
 # Backend handoff to Gemini and integration coordinator
 
+## D4 executor foundation update
+
+The backend branch now contains internal fenced handoff qualification and a Linux-only fixed-command isolation preflight adapter. It does not activate build submission, compilation, artifact downloads or flashing. No API/Zod/OpenAPI contract or frontend implementation changed; no new frontend behavior is required. Continue saving ordinary configuration drafts and presenting build POST's existing authenticated 503 as unavailable. CHECKED/compiled:false is an internal preflight result, never an Android build success.
+
+Production jobs/outbox/admission and Linux host/image/reaper qualification remain future coordinated work. See `docs/build/phase-d4-isolated-executor-foundation.md` for exact coverage and limits. Do not build new job/status/cancel/download UI against these internal test types. PR #1 remains draft and unmerged.
+
 Verified 2026-10-30 (Asia/Tashkent). Backend branch: `ai/codex-backend`; PR #1 stays unmerged.
 
 The real local backend is running at **http://127.0.0.1:4000**. Health and readiness are both 200. The existing frontend at **http://localhost:3000** successfully proxies `/api/v1` requests. A live browser registered and logged in, retained its session on refresh, displayed a persisted ROM draft, logged out and was denied protected access afterward. Eight additional browser tests passed on isolated test ports; 78 unit tests and 24 real PostgreSQL/Redis integration tests pass.
