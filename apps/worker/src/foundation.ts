@@ -276,6 +276,7 @@ export function createFoundationWorker(
   options: {
     prefix?: string;
     log?: (record: { event: string }) => void;
+    onFatal?: () => void;
     testHooks?: {
       beforeProbe?: (payload: FoundationJob) => Promise<void>;
       lockDuration?: number;
@@ -340,18 +341,27 @@ export function createFoundationWorker(
   return {
     worker,
     async ready() {
+      if (closing) throw new ProbeUnavailableError();
       await waitForQueue(queue);
       await queue.setGlobalConcurrency(CONCURRENCY);
       await worker.waitUntilReady();
-      if (!worker.isRunning())
-        void worker
-          .run()
-          .catch(() => options.log?.({ event: "worker.run_failed" }));
+      if (closing) throw new ProbeUnavailableError();
+      if (!worker.isRunning()) {
+        const stopped = () => {
+          if (closing) return;
+          if (options.onFatal) options.onFatal();
+          else options.log?.({ event: "worker.run_failed" });
+        };
+        void worker.run().then(stopped, stopped);
+      }
     },
     close() {
       return (closing ??= (async () => {
-        await worker.close();
-        await closeQueue(queue);
+        try {
+          await worker.close();
+        } finally {
+          await closeQueue(queue);
+        }
       })());
     },
   };
