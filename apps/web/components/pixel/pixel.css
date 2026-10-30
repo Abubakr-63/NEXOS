@@ -1,11 +1,11 @@
 .pixel-story {
   position: relative;
   height: 290svh;
-  color: #fbfaff;
+  color: #f0f6fc;
   background:
-    radial-gradient(ellipse at 50% 25%, rgba(168, 85, 247, 0.22), transparent 60%),
-    radial-gradient(ellipse at 80% 75%, rgba(139, 92, 246, 0.16), transparent 55%),
-    #0c0718;
+    radial-gradient(ellipse at 50% 25%, rgba(56, 189, 248, 0.22), transparent 60%),
+    radial-gradient(ellipse at 80% 75%, rgba(37, 99, 235, 0.18), transparent 55%),
+    #040916;
 }
 .pixel-stage {
   position: sticky;
@@ -56,8 +56,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse, #251343, #0c0718);
-  color: #e9d5ff;
+  background: radial-gradient(ellipse, #0a1733, #030814);
+  color: #bae6fd;
   text-align: center;
   padding: 20px;
 }
@@ -68,11 +68,11 @@
   font-size: 14px;
 }
 .pixel-fallback small {
-  color: #a79bbe;
+  color: #94a3b8;
   font-size: 11px;
 }
 .pixel-copy > span {
-  color: #c084fc;
+  color: #38bdf8;
   text-transform: uppercase;
   letter-spacing: 2px;
   font-size: 9px;
@@ -333,6 +333,6 @@
 
 .auth-visual-side .pixel-story {
   background:
-    radial-gradient(ellipse at 45% 22%, rgba(168, 85, 247, 0.25), transparent 65%),
-    linear-gradient(150deg, #180d33, #0b0616 75%);
+    radial-gradient(ellipse at 45% 22%, rgba(56, 189, 248, 0.25), transparent 65%),
+    linear-gradient(150deg, #091738, #030816 75%);
 }

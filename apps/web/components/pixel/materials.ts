@@ -15,31 +15,31 @@ export function conceptMaterials() {
   brushed.wrapS = brushed.wrapT = THREE.RepeatWrapping;
   brushed.repeat.set(3, 8);
   const metal = new THREE.MeshPhysicalMaterial({
-    color: "#bac5d0",
-    metalness: 1,
-    roughness: 0.25,
+    color: "#d0d9e2",
+    metalness: 0.95,
+    roughness: 0.18,
     roughnessMap: brushed,
-    envMapIntensity: 0.75,
-    clearcoat: 0.25,
+    envMapIntensity: 0.85,
+    clearcoat: 0.35,
   });
   const darkMetal = new THREE.MeshStandardMaterial({
-    color: "#677783",
+    color: "#475569",
     metalness: 0.85,
-    roughness: 0.35,
-    envMapIntensity: 0.4,
+    roughness: 0.3,
+    envMapIntensity: 0.5,
   });
   const glass = new THREE.MeshPhysicalMaterial({
-    color: "#a9c0d2",
-    metalness: 0.18,
-    roughness: 0.13,
+    color: "#94b8d7",
+    metalness: 0.15,
+    roughness: 0.08,
     clearcoat: 1,
-    clearcoatRoughness: 0.1,
-    envMapIntensity: 0.3,
+    clearcoatRoughness: 0.06,
+    envMapIntensity: 0.45,
   });
   const black = new THREE.MeshStandardMaterial({
-    color: "#02050a",
-    roughness: 0.22,
-    envMapIntensity: 0.08,
+    color: "#030712",
+    roughness: 0.18,
+    envMapIntensity: 0.12,
   });
   const copper = new THREE.MeshStandardMaterial({
     color: "#b58157",
@@ -48,26 +48,26 @@ export function conceptMaterials() {
     envMapIntensity: 0.6,
   });
   const board = new THREE.MeshStandardMaterial({
-    color: "#647481",
+    color: "#334155",
     metalness: 0.4,
     roughness: 0.55,
   });
   const cyan = new THREE.MeshStandardMaterial({
-    color: "#477aff",
-    emissive: "#254cff",
-    emissiveIntensity: 1.3,
+    color: "#38bdf8",
+    emissive: "#0ea5e9",
+    emissiveIntensity: 1.5,
     metalness: 0.35,
-    roughness: 0.25,
+    roughness: 0.22,
   });
   const lens = new THREE.MeshPhysicalMaterial({
-    color: "#142b48",
+    color: "#0a2540",
     metalness: 0.45,
-    roughness: 0.06,
+    roughness: 0.05,
     clearcoat: 1,
-    clearcoatRoughness: 0.04,
-    envMapIntensity: 0.65,
+    clearcoatRoughness: 0.03,
+    envMapIntensity: 0.8,
     transparent: true,
-    opacity: 0.65,
+    opacity: 0.72,
     depthWrite: false,
     side: THREE.DoubleSide,
   });

@@ -47,7 +47,7 @@ export function DesktopExperience({
         configuration ?? {
           ...defaultConfiguration,
           name: mode === "register" ? "Your Android journey" : "Welcome back",
-          accent: chapter === 5 ? "#c6b6e8" : "#91d5ef",
+          accent: chapter === 5 ? "#38bdf8" : "#60a5fa",
           darkMode: chapter !== 5,
           apps:
             chapter >= 2
@@ -64,6 +64,7 @@ export function DesktopExperience({
   const stateRef = useRef(screenState),
     previous = useRef(screenState);
   const previousReview = useRef(false);
+
   useEffect(() => {
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
     const changed = () => {
@@ -74,6 +75,7 @@ export function DesktopExperience({
     preference.addEventListener("change", changed);
     return () => preference.removeEventListener("change", changed);
   }, []);
+
   useEffect(() => {
     let active = true,
       loading = false;
@@ -160,10 +162,12 @@ export function DesktopExperience({
       engine.current = null;
     };
   }, [compact]);
+
   useEffect(() => {
     stateRef.current = screenState;
     engine.current?.update(screenState);
   }, [screenState]);
+
   useEffect(() => {
     engine.current?.motion(reduced);
   }, [reduced]);
@@ -191,6 +195,7 @@ export function DesktopExperience({
     return () => stop.current?.();
   }, [ready, compact, mode, reduced, visible]);
 
+  // Event-driven reactive camera animation for Create ROM / Studio settings
   useEffect(() => {
     const event = configurationEvent(previous.current, screenState);
     previous.current = screenState;
@@ -211,6 +216,7 @@ export function DesktopExperience({
     engine.current?.zoom(1);
     engine.current?.seek(1 / 3);
     if (reduced) return;
+
     // Replacing a running event always applies the latest screen state, then returns to rest.
     let announced = false;
     stop.current = animationClock(
@@ -223,14 +229,20 @@ export function DesktopExperience({
               ? "Calendar added"
               : action === "calendar-removed"
                 ? "Calendar removed"
-                : action === "review"
-                  ? "Reviewing your draft"
-                  : "Preview updated",
+                : action === "appearance"
+                  ? "Appearance updated"
+                  : action === "performance"
+                    ? "Performance preset updated"
+                    : action === "review"
+                      ? "Reviewing your draft"
+                      : "Preview updated",
           );
         }
         if (action === "review" && elapsed < 1100) {
           engine.current?.seek(1);
           engine.current?.view("rear");
+        } else if (action === "appearance" && elapsed < 1200) {
+          engine.current?.seek(0.36);
         } else {
           engine.current?.seek(
             action === "performance" && elapsed < 1100 ? 4 / 6 : 1 / 3,
@@ -241,7 +253,7 @@ export function DesktopExperience({
           "calendar-removed",
           "applications",
         ].includes(action);
-        engine.current?.zoom(focus && elapsed < 1500 ? 1.15 : 1);
+        engine.current?.zoom(focus && elapsed < 1600 ? 1.2 : 1);
         if (elapsed >= (action === "review" ? 3400 : 2800)) {
           engine.current?.seek(1 / 3);
           engine.current?.zoom(1);
@@ -250,6 +262,7 @@ export function DesktopExperience({
       },
     );
   }, [screenState, compact, ready, review, reduced, visible]);
+
   useEffect(() => {
     if (!visible || reduced) {
       stop.current?.();
@@ -257,6 +270,7 @@ export function DesktopExperience({
       if (compact) engine.current?.seek(1 / 3);
     }
   }, [visible, reduced, compact]);
+
   return (
     <div
       className={`pixel-story${compact ? " pixel-compact" : ""}`}
@@ -269,7 +283,7 @@ export function DesktopExperience({
           <span>
             {compact
               ? "CONFIGURATION CONCEPT"
-              : "REDMAGIC-INSPIRED / NEXOS STUDY"}
+              : "PIXEL-INSPIRED / NEXOS STUDY"}
           </span>
         </div>
         <div className="pixel-viewport">

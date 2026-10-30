@@ -5,8 +5,8 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-panel);
   background:
-    radial-gradient(ellipse 70% 60% at 85% 15%, rgba(168, 85, 247, 0.16), transparent 60%),
-    radial-gradient(ellipse 50% 50% at 20% 85%, rgba(139, 92, 246, 0.12), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 85% 15%, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 85%, rgba(37, 99, 235, 0.12), transparent 55%),
     var(--glass-bg);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(28px) saturate(160%);
@@ -21,7 +21,7 @@
   height: 320px;
   right: -60px;
   top: -60px;
-  background: radial-gradient(circle, rgba(192, 132, 252, 0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.14) 0%, transparent 70%);
   filter: blur(40px);
   z-index: -1;
   pointer-events: none;
@@ -43,7 +43,7 @@
   letter-spacing: -0.035em;
   margin: 18px 0;
   overflow-wrap: anywhere;
-  background: linear-gradient(135deg, #ffffff 40%, #f3e8ff 75%, #d8b4fe 100%);
+  background: linear-gradient(135deg, #ffffff 40%, #bae6fd 75%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -65,19 +65,19 @@
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  background: rgba(216, 180, 254, 0.08);
-  border: 1px solid rgba(216, 180, 254, 0.16);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.16);
   border-radius: 20px;
   font-size: 11px;
   font-weight: 550;
-  color: #e9d5ff;
+  color: #bae6fd;
 }
 .hero-stat-pill span {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #c084fc;
-  box-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
 }
 
 /* Superconscious Animated Feature Panels */
@@ -105,7 +105,7 @@
 .super-feature-card:hover {
   transform: translateY(-4px);
   border-color: var(--active-border);
-  box-shadow: 0 24px 60px rgba(5, 2, 14, 0.7), 0 0 28px rgba(168, 85, 247, 0.12);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.75), 0 0 28px rgba(56, 189, 248, 0.14);
 }
 .super-feature-card .feature-icon-badge {
   display: grid;
@@ -113,9 +113,9 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: rgba(168, 85, 247, 0.14);
-  border: 1px solid rgba(216, 180, 254, 0.22);
-  color: #d8b4fe;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #7dd3fc;
   margin-bottom: 18px;
   flex-shrink: 0;
 }
@@ -136,8 +136,8 @@
 .feature-micro-ui {
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(15, 10, 30, 0.65);
-  border: 1px solid rgba(216, 180, 254, 0.1);
+  background: rgba(8, 16, 36, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.12);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -147,7 +147,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #d8b4fe;
+  color: #7dd3fc;
 }
 .micro-ui-item small {
   color: var(--dim);
@@ -156,13 +156,13 @@
   width: 100%;
   height: 4px;
   border-radius: 2px;
-  background: rgba(216, 180, 254, 0.1);
+  background: rgba(56, 189, 248, 0.12);
   overflow: hidden;
 }
 .micro-ui-bar > div {
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, #a855f7, #c084fc);
+  background: linear-gradient(90deg, #38bdf8, #60a5fa);
 }
 
 /* Workspace Facts and Library Tools */
@@ -222,10 +222,10 @@
 .craft-card:hover {
   transform: translateY(-4px);
   border-color: var(--active-border);
-  box-shadow: 0 24px 50px rgba(5, 2, 14, 0.65), 0 0 24px rgba(168, 85, 247, 0.1);
+  box-shadow: 0 24px 50px rgba(2, 6, 23, 0.7), 0 0 24px rgba(56, 189, 248, 0.12);
 }
 .craft-card > svg {
-  color: #c084fc;
+  color: #38bdf8;
   margin-bottom: 14px;
 }
 .craft-card h2 {
@@ -284,8 +284,8 @@
   height: 68px;
   border-radius: 22px;
   color: #ffffff;
-  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
-  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35);
+  background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
   font-size: 24px;
   font-weight: 700;
   flex-shrink: 0;

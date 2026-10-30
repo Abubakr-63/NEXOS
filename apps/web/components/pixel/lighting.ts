@@ -13,7 +13,7 @@ export function studioLighting(
   scene.environmentIntensity = 0.55;
   room.dispose();
   pmrem.dispose();
-  const key = new THREE.DirectionalLight("#ffffff", 2);
+  const key = new THREE.DirectionalLight("#ffffff", 2.2);
   key.position.set(-8, 13, 14);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
@@ -24,26 +24,26 @@ export function studioLighting(
   key.shadow.bias = -0.001;
   key.shadow.radius = 4;
   scene.add(key);
-  const rim = new THREE.DirectionalLight("#dae5f0", 3.2);
+  const rim = new THREE.DirectionalLight("#38bdf8", 3.4);
   rim.position.set(8, 5, -9);
   scene.add(rim);
-  const fill = new THREE.DirectionalLight("#c6d5e6", 1.35);
+  const fill = new THREE.DirectionalLight("#60a5fa", 1.4);
   fill.position.set(6, -2, 10);
   scene.add(fill);
-  const rear = new THREE.DirectionalLight("#e6edf5", 2.2);
+  const rear = new THREE.DirectionalLight("#dbeafe", 2.2);
   rear.position.set(-7, 9, -14);
   scene.add(rear);
-  const strip = new THREE.RectAreaLight("#e7efff", 5, 2, 18);
+  const strip = new THREE.RectAreaLight("#0ea5e9", 4.8, 2, 18);
   strip.position.set(-9, 3, -8);
   strip.lookAt(0, 0, 0);
   scene.add(strip);
-  const softbox = new THREE.RectAreaLight("#bde7f4", 3, 9, 12);
+  const softbox = new THREE.RectAreaLight("#7dd3fc", 3.2, 9, 12);
   softbox.position.set(7, 7, -10);
   softbox.lookAt(0, 0, 0);
   scene.add(softbox);
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(140, 140),
-    new THREE.ShadowMaterial({ opacity: 0.1 }),
+    new THREE.ShadowMaterial({ opacity: 0.12 }),
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -7.85;
@@ -72,12 +72,12 @@ export function studioLighting(
   return {
     key,
     intensity(amount: number) {
-      key.intensity = 2 * amount;
+      key.intensity = 2.2 * amount;
       rear.intensity = 2.2 * amount;
-      fill.intensity = 1.1 * amount;
-      rim.intensity = 1.8 * Math.max(0.25, amount);
-      strip.intensity = 4 * amount;
-      softbox.intensity = 2.5 * amount;
+      fill.intensity = 1.2 * amount;
+      rim.intensity = 2.0 * Math.max(0.25, amount);
+      strip.intensity = 4.2 * amount;
+      softbox.intensity = 2.8 * amount;
     },
     dispose() {
       key.shadow.dispose();

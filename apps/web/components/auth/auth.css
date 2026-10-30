@@ -1,18 +1,18 @@
-/* Superconscious-inspired Auth experience with deep dark violet and electric lavender */
+/* Superconscious-inspired Auth experience with deep dark sapphire and electric cyan */
 .auth-experience {
-  --auth-line: rgba(216, 180, 254, 0.14);
+  --auth-line: rgba(56, 189, 248, 0.16);
   display: grid;
   grid-template-columns: minmax(330px, 0.9fr) minmax(360px, 1.1fr);
   max-width: 1440px;
   min-height: 790px;
   margin: 24px 38px 40px;
-  background: linear-gradient(135deg, rgba(20, 13, 38, 0.78), rgba(14, 9, 28, 0.85));
+  background: linear-gradient(135deg, rgba(8, 16, 36, 0.82), rgba(4, 9, 22, 0.88));
   border: 1px solid var(--auth-line);
   border-radius: 28px;
   overflow: hidden;
   isolation: isolate;
   backdrop-filter: blur(28px) saturate(160%);
-  box-shadow: 0 30px 80px rgba(5, 2, 14, 0.7), 0 0 50px rgba(168, 85, 247, 0.08);
+  box-shadow: 0 30px 80px rgba(2, 6, 23, 0.75), 0 0 50px rgba(56, 189, 248, 0.10);
 }
 .auth-experience a {
   text-decoration: none;
@@ -54,7 +54,7 @@
   font-weight: 750;
   letter-spacing: 2px;
   line-height: 1.1;
-  background: linear-gradient(135deg, #ffffff 40%, #e9d5ff 80%, #c084fc 100%);
+  background: linear-gradient(135deg, #ffffff 40%, #bae6fd 80%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -89,7 +89,7 @@
   font-weight: 750;
   line-height: 1.08;
   letter-spacing: -0.035em;
-  background: linear-gradient(135deg, #ffffff 35%, #f5e8ff 75%, #d8b4fe 100%);
+  background: linear-gradient(135deg, #ffffff 35%, #bae6fd 75%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -123,7 +123,7 @@
   height: 48px;
   border-radius: 12px;
   border: 1px solid var(--auth-line);
-  background: rgba(15, 10, 30, 0.65);
+  background: rgba(8, 16, 36, 0.65);
   padding: 0 14px;
   color: var(--text);
   font-size: 13px;
@@ -139,9 +139,9 @@
 }
 .auth-field input:focus {
   outline: none;
-  background: rgba(22, 14, 44, 0.85);
+  background: rgba(12, 24, 52, 0.85);
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.22), 0 0 16px rgba(168, 85, 247, 0.15);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25), 0 0 16px rgba(56, 189, 248, 0.18);
 }
 .auth-field > small {
   display: block;
@@ -171,7 +171,7 @@
 }
 .auth-password-field button:hover {
   color: var(--text);
-  background: rgba(216, 180, 254, 0.08);
+  background: rgba(56, 189, 248, 0.08);
 }
 .auth-submit {
   width: 100%;
@@ -183,11 +183,11 @@
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 12px;
   color: #ffffff;
-  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+  background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #1d4ed8 100%);
   font-size: 13px;
   font-weight: 650;
   box-shadow:
-    0 8px 24px rgba(168, 85, 247, 0.35),
+    0 8px 24px rgba(37, 99, 235, 0.4),
     0 2px 6px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
   margin-top: 23px;
@@ -205,7 +205,7 @@
 .auth-submit:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow:
-    0 12px 30px rgba(168, 85, 247, 0.5),
+    0 12px 30px rgba(56, 189, 248, 0.5),
     0 4px 10px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
@@ -300,9 +300,9 @@
   padding: 34px 36px 28px;
   color: #fbfaff;
   background:
-    radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.22), transparent 65%),
-    radial-gradient(ellipse at 85% 15%, rgba(216, 180, 254, 0.12), transparent 50%),
-    linear-gradient(145deg, #160c2e, #0c071a 52%, #120926);
+    radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.18), transparent 65%),
+    radial-gradient(ellipse at 85% 15%, rgba(37, 99, 235, 0.14), transparent 50%),
+    linear-gradient(145deg, #071228, #030816 52%, #050d20);
   border-left: 1px solid var(--auth-line);
 }
 .auth-visual-side::before {
@@ -312,8 +312,8 @@
   pointer-events: none;
   opacity: 0.12;
   background-image:
-    linear-gradient(rgba(216, 180, 254, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(216, 180, 254, 0.15) 1px, transparent 1px);
+    linear-gradient(rgba(56, 189, 248, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.15) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 80%);
 }
@@ -432,8 +432,8 @@
 .auth-standalone {
   min-height: 100svh;
   background:
-    radial-gradient(ellipse 70% 60% at 85% 15%, rgba(168, 85, 247, 0.16), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 15% 85%, rgba(139, 92, 246, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 85% 15%, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 15% 85%, rgba(37, 99, 235, 0.14), transparent 55%),
     var(--bg);
   padding: 1px;
 }

@@ -1,22 +1,22 @@
 /* NEXOS Superconscious-inspired presentation tokens & motion choreography */
 :root {
-  --bg: #090514;
-  --surface: #120c24;
-  --raised: #1a1233;
-  --line: rgba(216, 180, 254, 0.12);
-  --text: #fbfaff;
-  --muted: #a79bbe;
-  --dim: #7e7099;
-  --accent: #c084fc;
-  --accent-secondary: #e879f9;
-  --accent-glow: rgba(168, 85, 247, 0.35);
-  --glass-bg: rgba(20, 13, 38, 0.72);
-  --glass-border: rgba(216, 180, 254, 0.16);
-  --glass-highlight: rgba(255, 255, 255, 0.09);
-  --glass-shadow: 0 24px 64px rgba(5, 2, 14, 0.65), 0 0 36px rgba(168, 85, 247, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  --active-bg: rgba(168, 85, 247, 0.18);
-  --active-border: rgba(216, 180, 254, 0.38);
-  --button-bg: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+  --bg: #030712;
+  --surface: #0a1329;
+  --raised: #0f1d3d;
+  --line: rgba(56, 189, 248, 0.14);
+  --text: #f0f6fc;
+  --muted: #94a3b8;
+  --dim: #64748b;
+  --accent: #38bdf8;
+  --accent-secondary: #60a5fa;
+  --accent-glow: rgba(56, 189, 248, 0.35);
+  --glass-bg: rgba(10, 19, 41, 0.72);
+  --glass-border: rgba(56, 189, 248, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 24px 64px rgba(2, 6, 23, 0.75), 0 0 36px rgba(56, 189, 248, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --active-bg: rgba(56, 189, 248, 0.16);
+  --active-border: rgba(56, 189, 248, 0.42);
+  --button-bg: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #1d4ed8 100%);
   --button-text: #ffffff;
   --radius-panel: 28px;
   --radius-card: 22px;
@@ -24,23 +24,23 @@
   --rail-width: 76px;
 }
 :root[data-theme="light"] {
-  --bg: #faf7fd;
+  --bg: #f0f7ff;
   --surface: #ffffff;
-  --raised: #f3eefb;
-  --line: rgba(168, 85, 247, 0.16);
-  --text: #1d1233;
-  --muted: #695780;
-  --dim: #8b78a3;
-  --accent: #8b5cf6;
-  --accent-secondary: #d946ef;
-  --accent-glow: rgba(139, 92, 246, 0.25);
+  --raised: #e0eeff;
+  --line: rgba(37, 99, 235, 0.16);
+  --text: #091e42;
+  --muted: #475569;
+  --dim: #64748b;
+  --accent: #0284c7;
+  --accent-secondary: #2563eb;
+  --accent-glow: rgba(2, 132, 199, 0.25);
   --glass-bg: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(168, 85, 247, 0.22);
+  --glass-border: rgba(37, 99, 235, 0.20);
   --glass-highlight: #ffffff;
-  --glass-shadow: 0 20px 50px rgba(76, 29, 149, 0.08), inset 0 1px 0 #ffffff;
-  --active-bg: rgba(139, 92, 246, 0.12);
-  --active-border: rgba(139, 92, 246, 0.32);
-  --button-bg: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --glass-shadow: 0 20px 50px rgba(37, 99, 235, 0.08), inset 0 1px 0 #ffffff;
+  --active-bg: rgba(2, 132, 199, 0.12);
+  --active-border: rgba(2, 132, 199, 0.32);
+  --button-bg: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
   --button-text: #ffffff;
 }
 body {
@@ -71,9 +71,9 @@ select {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 50% at 75% 12%, rgba(168, 85, 247, 0.14), transparent 70%),
-    radial-gradient(ellipse 50% 45% at 18% 78%, rgba(139, 92, 246, 0.12), transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 45%, rgba(216, 180, 254, 0.05), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 75% 12%, rgba(56, 189, 248, 0.15), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 18% 78%, rgba(37, 99, 235, 0.14), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 50% 45%, rgba(56, 189, 248, 0.06), transparent 70%),
     var(--bg);
 }
 .craft-shell::after {
@@ -84,7 +84,7 @@ select {
   right: -100px;
   top: 15%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.09) 0%, rgba(126, 34, 206, 0.04) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(37, 99, 235, 0.05) 45%, transparent 70%);
   filter: blur(60px);
   z-index: -1;
   pointer-events: none;
@@ -620,7 +620,7 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--button-text);
   box-shadow:
-    0 8px 24px rgba(168, 85, 247, 0.35),
+    0 8px 24px rgba(37, 99, 235, 0.4),
     0 2px 6px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
@@ -628,7 +628,7 @@ select {
   background: var(--button-bg);
   transform: translateY(-2px);
   box-shadow:
-    0 12px 30px rgba(168, 85, 247, 0.5),
+    0 12px 30px rgba(56, 189, 248, 0.45),
     0 3px 8px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
@@ -929,7 +929,7 @@ select {
 .studio-steps button[aria-current] {
   background: var(--active-bg);
   border-color: var(--active-border);
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   color: #ffffff;
 }
 .craft-status {

@@ -1,6 +1,8 @@
 import type { PixelScreenState } from "./adapter";
+
 const W = 480,
   H = 1066;
+
 const round = (
   c: CanvasRenderingContext2D,
   x: number,
@@ -15,6 +17,7 @@ const round = (
   c.roundRect(x, y, w, h, r);
   c.fill();
 };
+
 function icon(
   c: CanvasRenderingContext2D,
   app: string,
@@ -25,17 +28,25 @@ function icon(
 ) {
   c.save();
   c.globalAlpha = opacity;
-  round(c, x, y, 74, 74, 25, app === "calendar" ? "#e5d8bd" : accent);
-  c.strokeStyle = "#142532";
+  // Adaptive squircle icon background
+  const bg = app === "calendar" ? "#f1f5f9" : accent;
+  round(c, x, y, 74, 74, 24, bg);
+
+  c.strokeStyle = app === "calendar" ? "#0f172a" : "#ffffff";
   c.lineWidth = 3;
-  c.fillStyle = "#142532";
+  c.fillStyle = app === "calendar" ? "#0f172a" : "#ffffff";
+
   if (app === "calendar") {
-    c.strokeRect(x + 18, y + 19, 38, 38);
-    c.fillRect(x + 18, y + 26, 38, 5);
-    c.font = "bold 22px Arial";
+    // Pixel Calendar Icon
+    c.strokeRect(x + 18, y + 18, 38, 38);
+    c.fillStyle = "#38bdf8";
+    c.fillRect(x + 18, y + 18, 38, 10);
+    c.fillStyle = "#0f172a";
+    c.font = "bold 20px Arial";
     c.textAlign = "center";
-    c.fillText("29", x + 37, y + 51);
+    c.fillText("29", x + 37, y + 48);
   } else if (app === "browser") {
+    // Pixel Chrome/Browser Globe
     c.beginPath();
     c.arc(x + 37, y + 37, 20, 0, Math.PI * 2);
     c.stroke();
@@ -47,6 +58,7 @@ function icon(
     c.lineTo(x + 57, y + 37);
     c.stroke();
   } else if (app === "files") {
+    // Pixel Files Folder
     c.beginPath();
     c.moveTo(x + 17, y + 23);
     c.lineTo(x + 32, y + 23);
@@ -57,12 +69,14 @@ function icon(
     c.closePath();
     c.stroke();
   } else {
-    c.font = "28px monospace";
+    // Terminal / Tools
+    c.font = "bold 26px monospace";
     c.textAlign = "center";
     c.fillText(">_", x + 37, y + 47);
   }
   c.restore();
 }
+
 export function createScreen(scale = 1) {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(W * scale);
@@ -70,16 +84,19 @@ export function createScreen(scale = 1) {
   const c = canvas.getContext("2d");
   if (!c) throw new Error("Screen composition unavailable");
   c.scale(scale, scale);
+
   const previousFrame = document.createElement("canvas");
   previousFrame.width = canvas.width;
   previousFrame.height = canvas.height;
   const previousContext = previousFrame.getContext("2d");
+
   let lastState = "",
     paletteAt = -Infinity;
   let lastSignature = "";
   let currentApps: readonly string[] = [],
     previousApps: readonly string[] = [];
   let changedAt = 0;
+
   return {
     canvas,
     draw(state: PixelScreenState, progress: number, motion: number) {
@@ -91,6 +108,7 @@ export function createScreen(scale = 1) {
       ]);
       if (signature === lastSignature) return false;
       lastSignature = signature;
+
       const nextState = JSON.stringify([state, chapter]);
       if (nextState !== lastState) {
         if (lastState && previousContext && motion !== 0) {
@@ -100,6 +118,7 @@ export function createScreen(scale = 1) {
         }
         lastState = nextState;
       }
+
       const finish = () => {
         const amount =
           motion === 0
@@ -113,9 +132,19 @@ export function createScreen(scale = 1) {
         }
         return true;
       };
+
+      // Chapter 0: Minimalist Nexus / Pixel boot & welcome sequence
       if (chapter === 0) {
-        c.fillStyle = "#0b1421";
+        c.fillStyle = "#030816";
         c.fillRect(0, 0, W, H);
+
+        // Radiant cyan ambient orb
+        const glow = c.createRadialGradient(240, 460, 10, 240, 460, 140);
+        glow.addColorStop(0, "rgba(56, 189, 248, 0.25)");
+        glow.addColorStop(1, "transparent");
+        c.fillStyle = glow;
+        c.fillRect(100, 320, 280, 280);
+
         c.strokeStyle = state.accent;
         c.lineWidth = 4;
         c.beginPath();
@@ -124,28 +153,35 @@ export function createScreen(scale = 1) {
         c.beginPath();
         c.arc(240, 460, 24, 0, Math.PI * 2);
         c.stroke();
-        c.fillStyle = "#edf2fa";
+
+        c.fillStyle = "#f0f6fc";
         c.textAlign = "center";
-        c.font = "500 40px Arial";
-        c.fillText("NEXOS", 240, 570);
-        c.font = "18px Arial";
+        c.font = "700 42px Arial";
+        c.fillText("NEXOS", 240, 565);
+        c.font = "500 18px Arial";
+        c.fillStyle = "#94a3b8";
         c.fillText(
           state.unlocked ? "Welcome to your workspace" : "Android, reimagined.",
           240,
-          610,
+          605,
         );
-        c.font = "13px Arial";
-        c.fillStyle = "#a1acbf";
+        c.font = "12px Arial";
+        c.fillStyle = "#38bdf8";
         c.fillText("WELCOME CONCEPT · NOT AN OS BOOT", 240, 990);
         return finish();
       }
-      const text = state.dark ? "#edf2fa" : "#142737";
+
+      const text = state.dark ? "#f0f6fc" : "#091e42";
       c.clearRect(0, 0, W, H);
-      c.fillStyle = state.dark ? "#0c1a2a" : "#d9e6eb";
+
+      // Deep dark blue Material You wallpaper with soft organic curves
+      c.fillStyle = state.dark ? "#040916" : "#e0eeff";
       c.fillRect(0, 0, W, H);
+
       const gradient = c.createLinearGradient(0, 0, W, H);
       gradient.addColorStop(0, state.accent);
-      gradient.addColorStop(1, state.dark ? "#13263e" : "#e0ebe9");
+      gradient.addColorStop(0.5, state.dark ? "#1d4ed8" : "#93c5fd");
+      gradient.addColorStop(1, state.dark ? "#091b3e" : "#dbeafe");
       c.fillStyle = gradient;
       c.beginPath();
       c.ellipse(
@@ -158,26 +194,62 @@ export function createScreen(scale = 1) {
         Math.PI * 2,
       );
       c.fill();
-      c.fillStyle = state.dark ? "#19354a" : "#b6cdd6";
+
+      // Secondary floating cyan curve
+      c.fillStyle = state.dark ? "#0b2046" : "#bfdbfe";
       c.beginPath();
       c.ellipse(40, 920, 420, 410, 0.35, 0, Math.PI * 2);
       c.fill();
+
+      // Top status bar (Pixel style)
       c.fillStyle = text;
       c.textAlign = "left";
-      c.font = "500 21px Arial";
-      c.fillText("9:41", 35, 45);
-      c.font = "18px Arial";
-      c.fillText("NEXOS", 355, 45);
-      c.font = "300 142px Arial";
-      c.fillText("09", 36, 244);
-      c.fillText("41", 36, 380);
+      c.font = "600 20px Arial";
+      c.fillText("9:41", 36, 44);
+
+      // Status icons: 5G, Wi-Fi, battery pill
+      c.textAlign = "right";
+      c.font = "500 14px Arial";
+      c.fillText("5G  100%", 444, 44);
+
+      // Pixel "At a Glance" Weather & Date Widget
+      c.textAlign = "left";
       c.font = "500 17px Arial";
-      c.fillText("THURSDAY, OCTOBER 29", 42, 426);
-      round(c, 28, 488, 424, 144, 35, state.dark ? "#122436e8" : "#f5f9f4e8");
+      c.fillStyle = state.dark ? "#7dd3fc" : "#0284c7";
+      c.fillText("Thursday, Oct 29 · 21°C Clear", 40, 95);
+
+      // Pixel Signature Dual-Row Lockscreen Clock
       c.fillStyle = text;
-      c.font = "bold 29px Arial";
-      c.fillText(state.name.slice(0, 23), 52, 536);
-      c.font = "19px Arial";
+      c.font = "300 138px Arial";
+      c.fillText("09", 36, 235);
+      c.fillText("41", 36, 368);
+
+      c.font = "600 16px Arial";
+      c.fillStyle = state.dark ? "#94a3b8" : "#475569";
+      c.fillText("THURSDAY, OCTOBER 29", 40, 416);
+
+      // Floating Glass Feature Card (Superconscious & Video Reference Style)
+      round(
+        c,
+        28,
+        475,
+        424,
+        146,
+        30,
+        state.dark ? "rgba(7, 18, 44, 0.88)" : "rgba(255, 255, 255, 0.88)",
+      );
+      c.strokeStyle = state.dark
+        ? "rgba(56, 189, 248, 0.22)"
+        : "rgba(37, 99, 235, 0.2)";
+      c.lineWidth = 1.5;
+      c.stroke();
+
+      c.fillStyle = text;
+      c.font = "bold 28px Arial";
+      c.fillText(state.name.slice(0, 23), 50, 522);
+
+      c.font = "18px Arial";
+      c.fillStyle = state.dark ? "#7dd3fc" : "#0369a1";
       c.fillText(
         chapter === 4
           ? `Preset: ${state.preset}`
@@ -186,17 +258,21 @@ export function createScreen(scale = 1) {
             : chapter === 6
               ? "Configuration draft · build unverified"
               : "Your Android. Your Rules.",
-        52,
-        575,
+        50,
+        560,
       );
-      c.font = "15px Arial";
+
+      c.font = "14px Arial";
+      c.fillStyle = state.dark ? "#94a3b8" : "#64748b";
       c.fillText(
         chapter === 4
           ? "Configuration intent · no benchmarks"
           : "Visual concept · not a running Android OS",
-        52,
-        607,
+        50,
+        592,
       );
+
+      // App state tracking for smooth entrance animation
       if (currentApps.join() !== state.apps.join()) {
         previousApps = currentApps;
         currentApps = [...state.apps];
@@ -205,20 +281,23 @@ export function createScreen(scale = 1) {
       const fraction =
         motion === 0 ? 1 : Math.min(1, Math.max(0, (motion - changedAt) / 0.3));
       const eased = fraction * fraction * (3 - 2 * fraction);
+
+      // Applications Drawer / Section
       if (chapter === 3) {
         round(
           c,
           18,
-          640 + (1 - eased) * 30,
+          635 + (1 - eased) * 30,
           444,
-          270,
-          35,
-          state.dark ? "#102236ed" : "#edf4f7ed",
+          275,
+          32,
+          state.dark ? "rgba(8, 20, 48, 0.9)" : "rgba(240, 246, 255, 0.9)",
         );
         c.fillStyle = text;
-        c.font = "17px Arial";
-        c.fillText("YOUR APPLICATIONS", 40, 868);
+        c.font = "600 17px Arial";
+        c.fillText("YOUR APPLICATIONS", 40, 865);
       }
+
       const union = [...new Set([...previousApps, ...currentApps])];
       union.forEach((app) => {
         const before = previousApps.indexOf(app),
@@ -230,29 +309,51 @@ export function createScreen(scale = 1) {
           c,
           app,
           28 + (from + (to - from) * eased) * 108,
-          676 + (before < 0 ? (1 - eased) * 16 : 0),
+          672 + (before < 0 ? (1 - eased) * 16 : 0),
           state.accent,
           opacity,
         );
       });
+
+      // Chapter 4: Performance card
       if (chapter === 4) {
-        round(c, 28, 794, 424, 100, 25, state.dark ? "#122436dd" : "#f5f9f4dd");
+        round(
+          c,
+          28,
+          794,
+          424,
+          100,
+          24,
+          state.dark ? "rgba(9, 22, 54, 0.88)" : "rgba(241, 245, 249, 0.9)",
+        );
         c.fillStyle = text;
-        c.font = "19px Arial";
+        c.font = "bold 19px Arial";
         c.fillText("CONFIGURATION INTENT", 50, 835);
         c.font = "15px Arial";
+        c.fillStyle = state.dark ? "#94a3b8" : "#64748b";
         c.fillText("No kernel or clock changes applied", 50, 866);
       }
+
+      // Chapters 5 & 6: Verification & Compilation cards
       if (chapter === 5 || chapter === 6) {
-        round(c, 28, 786, 424, 132, 24, state.dark ? "#122436e8" : "#f5f9f4e8");
+        round(
+          c,
+          28,
+          786,
+          424,
+          132,
+          24,
+          state.dark ? "rgba(9, 22, 54, 0.92)" : "rgba(241, 245, 249, 0.92)",
+        );
         c.fillStyle = text;
-        c.font = "18px Arial";
+        c.font = "bold 18px Arial";
         c.fillText(
           chapter === 5 ? "SERVER-VERIFIED SESSIONS" : "CONFIGURATION SUMMARY",
           48,
           820,
         );
         c.font = "15px Arial";
+        c.fillStyle = state.dark ? "#94a3b8" : "#64748b";
         c.fillText(
           chapter === 5
             ? "Projects are scoped to their owner"
@@ -260,23 +361,29 @@ export function createScreen(scale = 1) {
           48,
           854,
         );
+        c.fillStyle = state.dark ? "#38bdf8" : "#0284c7";
         c.fillText("COMPILATION UNAVAILABLE", 48, 888);
       }
+
+      // Pixel Lock icon
       c.strokeStyle = text;
       c.lineWidth = 4;
       c.beginPath();
-      c.roundRect(224, 964, 32, 26, 5);
+      c.roundRect(224, 960, 32, 26, 5);
       c.stroke();
       c.beginPath();
       c.arc(
         240,
-        962,
+        958,
         12,
         Math.PI,
         state.unlocked ? Math.PI * 1.8 : Math.PI * 2,
       );
       c.stroke();
-      round(c, 180, 1045, 120, 4, 2, text);
+
+      // Bottom gesture pill bar
+      round(c, 180, 1042, 120, 4, 2, text);
+
       return finish();
     },
     dispose() {
