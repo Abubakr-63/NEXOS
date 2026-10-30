@@ -105,3 +105,4 @@ verifyMobileNav().catch((err) => {
   console.error("Mobile nav verification failed:", err);
   process.exit(1);
 });
+

@@ -73,6 +73,7 @@ export function createPixelEngine(
   let filmTarget: number | null = null,
     filmCurrent = 0;
   let pose: number | null = null,
+    viewLockUntil = 0,
     zoom = 1,
     smoothZoom = 1,
     smoothY = sampleTimeline(currentProgress).rotation[1],
@@ -208,7 +209,7 @@ export function createPixelEngine(
   canvas.dataset.instancedDetails = String(instances);
   return {
     film(progress) {
-      if (reduced || compact) return;
+      if (reduced || compact || performance.now() < viewLockUntil) return;
       const value = Math.max(0, Math.min(1, progress));
       // The identical endpoints make wrapping continuous; never interpolate backwards through the film.
       if (filmTarget !== null && filmTarget > 0.98 && value < 0.02)
@@ -232,8 +233,10 @@ export function createPixelEngine(
       invalidate();
     },
     view(view) {
+      viewLockUntil = performance.now() + 15000;
+      filmTarget = null;
       pose = view === "rear" ? Math.PI : view === "front" ? 0 : -0.6;
-      until = performance.now() + 1500;
+      until = performance.now() + 15000;
       invalidate();
     },
     zoom(value) {

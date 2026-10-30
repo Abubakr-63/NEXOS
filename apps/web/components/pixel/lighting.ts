@@ -39,7 +39,7 @@ export function studioLighting(
   scene.add(fill);
 
   // Rear Specular Light
-  const rear = new THREE.DirectionalLight("#dbeafe", 2.4);
+  const rear = new THREE.DirectionalLight("#94a3b8", 0.9);
   rear.position.set(-7, 9, -14);
   scene.add(rear);
 
@@ -50,7 +50,7 @@ export function studioLighting(
   scene.add(strip);
 
   // Overhead Softbox (smooth reflection across front & back glass)
-  const softbox = new THREE.RectAreaLight("#7dd3fc", 3.6, 10, 14);
+  const softbox = new THREE.RectAreaLight("#38bdf8", 1.2, 10, 14);
   softbox.position.set(7, 8, -10);
   softbox.lookAt(0, 0, 0);
   scene.add(softbox);
@@ -94,7 +94,7 @@ export function studioLighting(
     key,
     intensity(amount: number) {
       key.intensity = 2.4 * amount;
-      rear.intensity = 2.4 * amount;
+      rear.intensity = 0.9 * amount;
       fill.intensity = 1.4 * amount;
       rim.intensity = 2.2 * Math.max(0.3, amount);
       strip.intensity = 4.6 * amount;

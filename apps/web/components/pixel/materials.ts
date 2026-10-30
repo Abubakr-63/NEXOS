@@ -1,17 +1,16 @@
 import * as THREE from "three";
 
-/** Flagship smartphone materials with photorealistic physical properties. */
+/** Google Pixel 10 Pro flagship hardware materials. */
 export function conceptMaterials() {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 512;
   const context = canvas.getContext("2d")!;
-  context.fillStyle = "#d4d4d8";
+  context.fillStyle = "#181a20";
   context.fillRect(0, 0, 512, 512);
 
-  // Micro-brushed anisotropic grain for anodized aluminum frame
   for (let y = 0; y < 512; y++) {
-    const level = 190 + ((y * 137) % 55);
-    context.fillStyle = `rgb(${level},${level},${level})`;
+    const level = 20 + ((y * 137) % 15);
+    context.fillStyle = `rgb(${level},${level},${level + 2})`;
     context.fillRect(0, y, 512, 1);
   }
 
@@ -19,76 +18,104 @@ export function conceptMaterials() {
   brushed.wrapS = brushed.wrapT = THREE.RepeatWrapping;
   brushed.repeat.set(4, 16);
 
-  // Aerospace Anodized Aluminum (Frame & Camera Visor Bar)
+  // Google Pixel 10 Pro Dark Titanium Frame & Camera Island
   const metal = new THREE.MeshPhysicalMaterial({
-    color: "#e2e8f0",
-    metalness: 0.98,
-    roughness: 0.14,
+    color: "#15181f",
+    metalness: 0.94,
+    roughness: 0.28,
     roughnessMap: brushed,
-    envMapIntensity: 0.95,
+    envMapIntensity: 0.35,
     clearcoat: 0.45,
-    clearcoatRoughness: 0.08,
+    clearcoatRoughness: 0.1,
   });
 
-  // Gunmetal Anodized Aluminum (Interior & Optics)
-  const darkMetal = new THREE.MeshStandardMaterial({
-    color: "#334155",
-    metalness: 0.9,
-    roughness: 0.22,
-    envMapIntensity: 0.6,
-  });
-
-  // Corning Gorilla Glass Victus (Back Panel with deep sapphire obsidian tone)
-  const glass = new THREE.MeshPhysicalMaterial({
-    color: "#08162b",
-    metalness: 0.15,
-    roughness: 0.06,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.03,
-    envMapIntensity: 0.75,
-  });
-
-  // High-gloss Obsidian Optical Black (Camera Visor Pill & Bezels)
-  const black = new THREE.MeshStandardMaterial({
-    color: "#020408",
+  // Polished Chrome Google G Emblem & Diamond Chamfers
+  const polishedMetal = new THREE.MeshStandardMaterial({
+    color: "#cbd5e1",
+    metalness: 0.96,
     roughness: 0.12,
-    envMapIntensity: 0.25,
+    envMapIntensity: 0.8,
+    side: THREE.DoubleSide,
   });
 
-  // Thermal Copper (Vapor chamber & contact pins)
+  // Interior Gunmetal & Optical Barrels
+  const darkMetal = new THREE.MeshStandardMaterial({
+    color: "#181c24",
+    metalness: 0.9,
+    roughness: 0.25,
+    envMapIntensity: 0.4,
+  });
+
+  // Google Pixel 10 Pro Matte Frosted Glass Back (Obsidian Deep Charcoal)
+  const glassBack = new THREE.MeshPhysicalMaterial({
+    color: "#080a0d",
+    metalness: 0.02,
+    roughness: 0.48,
+    clearcoat: 0.3,
+    clearcoatRoughness: 0.2,
+    envMapIntensity: 0.18,
+    transparent: false,
+    opacity: 1.0,
+  });
+
+  // Front 2.5D Protective Display Glass
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: "#05070a",
+    metalness: 0.1,
+    roughness: 0.04,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.02,
+    envMapIntensity: 0.7,
+  });
+
+  // Deep Obsidian High-Gloss Optical Black (Jet Black Camera Cutout & Bezels)
+  const black = new THREE.MeshBasicMaterial({
+    color: "#000000",
+  });
+
+  // True-Tone Diffused LED Flash
+  const flash = new THREE.MeshStandardMaterial({
+    color: "#fef9c3",
+    roughness: 0.2,
+    metalness: 0.1,
+    emissive: "#fef08a",
+    emissiveIntensity: 0.5,
+  });
+
+  // Thermal Copper (Vapor Chamber & Contacts)
   const copper = new THREE.MeshStandardMaterial({
     color: "#b45309",
     metalness: 0.92,
     roughness: 0.25,
-    envMapIntensity: 0.7,
+    envMapIntensity: 0.6,
   });
 
-  // High-density PCB Substrate
+  // Motherboard PCB Substrate
   const board = new THREE.MeshStandardMaterial({
-    color: "#1e293b",
-    metalness: 0.45,
+    color: "#0f172a",
+    metalness: 0.4,
     roughness: 0.5,
   });
 
-  // Radiant Electric Cyan (Energy buses & status glow)
+  // Radiant Cyan (Technical Buses)
   const cyan = new THREE.MeshStandardMaterial({
     color: "#38bdf8",
     emissive: "#0ea5e9",
-    emissiveIntensity: 1.6,
+    emissiveIntensity: 1.5,
     metalness: 0.3,
     roughness: 0.2,
   });
 
-  // Anti-reflective Sapphire Optical Glass (Camera Lenses)
+  // Anti-reflective Sapphire Optical Glass (Lenses & Temperature Sensor)
   const lens = new THREE.MeshPhysicalMaterial({
-    color: "#031930",
+    color: "#021324",
     metalness: 0.4,
-    roughness: 0.04,
+    roughness: 0.03,
     clearcoat: 1.0,
     clearcoatRoughness: 0.02,
-    envMapIntensity: 0.95,
+    envMapIntensity: 0.9,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.8,
     depthWrite: false,
     side: THREE.DoubleSide,
   });
@@ -97,6 +124,9 @@ export function conceptMaterials() {
     metal,
     darkMetal,
     glass,
+    glassBack,
+    polishedMetal,
+    flash,
     black,
     copper,
     board,

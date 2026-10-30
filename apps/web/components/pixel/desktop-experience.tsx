@@ -138,6 +138,8 @@ export function DesktopExperience({
             matchMedia("(prefers-reduced-motion: reduce)").matches,
             compact,
           );
+          (element as unknown as { __pixelEngine: PixelEngine | null }).__pixelEngine =
+            engine.current;
           if (compact || matchMedia("(prefers-reduced-motion: reduce)").matches)
             engine.current.seek(1 / 3);
           else
