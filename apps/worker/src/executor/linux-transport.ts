@@ -5,6 +5,7 @@ import {
   mkdir,
   writeFile,
   readFile,
+  unlink,
   rm,
 } from "node:fs/promises";
 import { join } from "node:path";
@@ -70,7 +71,15 @@ async function docker(
       escalation = setTimeout(() => kill("SIGKILL"), 250);
       forced = setTimeout(() => {
         kill("SIGKILL");
-        finish(false);
+        // Persist uncertainty if the control process never acknowledged exit.
+        void writeFile(
+          join(home, "control-uncertain"),
+          "control-exit-unconfirmed",
+          { mode: 0o600 },
+        ).then(
+          () => finish(false),
+          () => finish(false),
+        );
       }, 1000);
     };
     const timer = setTimeout(abort, timeoutMs);
@@ -130,11 +139,19 @@ export async function createLinuxPreflightTransport(
       );
       await mkdir(join(workspace, "docker-config"), { mode: 0o700 });
       await mkdir(join(workspace, "artifacts-quarantine"), { mode: 0o700 });
+      // A lost create/start acknowledgement can leave a pending daemon operation.
+      // A new worker must not infer safety from a momentarily empty inventory.
+      const pending = join(workspace, "control-pending");
+      await writeFile(pending, "create-start-not-acknowledged", {
+        flag: "wx",
+        mode: 0o600,
+      });
       const id = (await docker(plan.args, workspace, signal)).trim();
       if (!/^[a-f0-9]{64}$/.test(id))
         throw new Error("Executor container identity unavailable");
       await progress("ISOLATED");
       await docker([HOST, "start", plan.name], workspace, signal);
+      await unlink(pending);
       await progress("PREFLIGHT_RUNNING");
       const exit = (
         await docker(
@@ -215,6 +232,16 @@ export async function createLinuxPreflightTransport(
           stop.signal,
         );
         if (remaining.trim()) return false;
+        // Only an independently verified host reconciler may clear these markers.
+        for (const marker of ["control-pending", "control-uncertain"]) {
+          try {
+            await lstat(join(home, marker));
+            return false;
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+              return false;
+          }
+        }
         if (exists) {
           // Exact canonical UUID directory and marker were checked, under private root.
           await rm(workspace, { recursive: true, force: false });
