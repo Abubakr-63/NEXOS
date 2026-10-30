@@ -77,4 +77,4 @@ Recommended next phase: provision isolated Redis/PostgreSQL verification, resolv
 
 ## Git delivery
 
-Branch: `ai/codex-backend`. Implementation commit and PR delivery result will be recorded after delivery; this report does not claim a push or PR before those actions succeed.
+Branch: `ai/codex-backend`. Implementation commit: `175f0258cf2e7c06a62aba41cbe3e1048487ba98`, pushed to origin. Draft PR targeting main: [PR #1](https://github.com/Abubakr-63/NEXOS/pull/1). It is unmerged; draft status reflects the outstanding infrastructure/integration checks. This report is updated in a subsequent documentation commit; use `git rev-parse origin/ai/codex-backend` for the final branch tip.
