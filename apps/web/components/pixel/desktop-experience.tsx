@@ -242,7 +242,7 @@ export function DesktopExperience({
         }
         if (action === "review" && elapsed < 1100) {
           engine.current?.seek(1);
-          engine.current?.view("rear");
+          engine.current?.view("three-quarter");
         } else if (action === "appearance" && elapsed < 1200) {
           engine.current?.seek(0.36);
         } else {

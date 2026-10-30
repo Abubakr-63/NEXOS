@@ -4,31 +4,31 @@ export const filmScenes = [
     title: "Device reveal",
     label: "Designed from the inside out.",
     detail:
-      "An original NEXOS concept device. Metal, optical glass and considered detail.",
+      "An original NEXOS concept device. Precision titanium frame and considered detail.",
   },
   {
-    title: "Optical macro",
+    title: "Side-frame macro",
     label: "A closer kind of clarity.",
     detail:
-      "Layered optical surfaces and machined rings, rendered as real geometry.",
+      "Machined tactile controls and curved 2.5D front glass, rendered as real geometry.",
   },
   {
-    title: "Technical cutaway",
+    title: "Front architecture",
     label: "Beneath the surface.",
     detail:
-      "An original technical illustration. Components and light paths are conceptual hardware, not verified specifications.",
+      "Layered OLED architecture and front chassis engineering in balanced perspective.",
   },
   {
     title: "Configuration intent",
     label: "Precision, in every choice.",
     detail:
-      "Visualizing configuration preferences. No measured CPU, FPS or thermal improvements.",
+      "Visualizing configuration preferences across the dynamic front interface.",
   },
   {
-    title: "Cooling study",
+    title: "Screen illumination",
     label: "Form. Flow. Focus.",
     detail:
-      "A sculptural cooling-inspired study. NEXOS does not add a physical cooling system.",
+      "A refined front study with responsive lighting and glass reflections.",
   },
   {
     title: "NEXOS Android",
@@ -37,12 +37,13 @@ export const filmScenes = [
       "Animated themes, applications and Calendar in an original interface concept. Not a running Android OS.",
   },
   {
-    title: "Final hero",
+    title: "Final hero reveal",
     label: "Your phone. Your Android. Your rules.",
     detail:
-      "Your ideas, expressed as a configuration draft. Compilation and device compatibility remain unverified.",
+      "Your ideas, expressed as a configuration draft in a pure front product showcase.",
   },
 ] as const;
+
 type Vector = [number, number, number];
 type Key = {
   t: number;
@@ -53,161 +54,178 @@ type Key = {
   display: number;
   screen: number;
 };
+
+/**
+ * Strict Front & Side Camera Paths:
+ * Rear hemisphere is completely forbidden. All camera positions remain strictly in front (Z >= 4.2).
+ * Dot product with device front normal is >= 0.91 across all 43 seconds.
+ */
 const keys: Key[] = [
+  // Scene 0: Device reveal (Front three-quarter hero angle)
   {
     t: 0,
-    camera: [-12, 4, -35],
-    target: [0, 0, 0],
+    camera: [8, 3.5, 32],
+    target: [0, 0.2, 0],
     open: 0,
-    light: 0.18,
+    light: 0.85,
     display: 0,
     screen: 0,
   },
   {
     t: 3,
-    camera: [-8, 2, -33],
+    camera: [5, 2.0, 31],
     target: [0, 0.3, 0],
     open: 0,
-    light: 1,
+    light: 1.0,
     display: 0,
     screen: 0,
   },
+  // Scene 1: Side-frame & Front glass macro shot (t = 6 to 9)
+  // Distance at t=8s is ~4.03 (< 5 required for macro scale)
   {
     t: 6,
-    camera: [2.1, 6.15, -7],
-    target: [2.1, 6.15, -1.05],
+    camera: [3.2, 2.85, 4.8],
+    target: [2.5, 2.85, 0.4],
     open: 0,
-    light: 1,
+    light: 1.0,
     display: 0,
     screen: 0,
   },
   {
     t: 8,
-    camera: [2.2, 6.2, -4.8],
-    target: [2.1, 6.15, -1.05],
+    camera: [3.1, 2.85, 4.4],
+    target: [2.6, 2.85, 0.4],
     open: 0,
-    light: 0.9,
+    light: 0.95,
     display: 0,
     screen: 0,
   },
+  // Scene 2: Front Layered Architecture & Technical Cutaway (t = 10 to 17)
+  // Open reaches 1.0 at t=14s
   {
     t: 10,
-    camera: [3.5, 4, -11],
-    target: [0.2, 1, -0.3],
+    camera: [-2.8, 3.8, 8.5],
+    target: [-0.3, 1.2, 0.4],
     open: 1,
-    light: 1,
+    light: 1.0,
     display: 0,
     screen: 0,
   },
   {
     t: 14,
-    camera: [-3.2, 3, -8],
-    target: [0.5, 1, -0.3],
+    camera: [-2.2, 2.5, 7.8],
+    target: [-0.2, 1.0, 0.4],
     open: 1,
-    light: 1,
+    light: 1.0,
     display: 0,
     screen: 0,
   },
   {
     t: 17,
-    camera: [2.8, 2.8, -5.6],
-    target: [0.2, 2.1, -0.4],
+    camera: [2.5, 2.2, 8.2],
+    target: [0.2, 1.8, 0.4],
     open: 1,
     light: 1.15,
     display: 0,
     screen: 0,
   },
+  // Scene 3: Configuration Intent & Front Chassis Sweep (t = 17 to 21)
   {
     t: 21,
-    camera: [-3, -0.2, -7],
-    target: [0.3, -1.2, -0.5],
+    camera: [-2.5, -0.4, 9.5],
+    target: [0.2, -1.0, 0.4],
     open: 1,
-    light: 0.9,
+    light: 0.95,
     display: 0,
     screen: 0,
   },
+  // Scene 4: Screen Illumination & Tactile Rail Focus (t = 21 to 29)
   {
     t: 25,
-    camera: [3.5, -2.3, -6.5],
-    target: [0.3, -1.5, -0.6],
+    camera: [3.2, -1.8, 9.2],
+    target: [0.3, -1.2, 0.4],
     open: 1,
     light: 1.1,
-    display: 0,
+    display: 0.1,
     screen: 0,
   },
   {
     t: 28,
-    camera: [1, -1, -12],
-    target: [0, -0.4, 0],
+    camera: [1.2, -0.8, 14.0],
+    target: [0, -0.3, 0.2],
     open: 0.8,
-    light: 1,
-    display: 0,
+    light: 1.0,
+    display: 0.3,
     screen: 0,
   },
+  // Scene 5: NEXOS Android UI & Screen Takeover (t = 29 to 36)
+  // Display reaches 1.0 at t=34s
   {
     t: 30,
-    camera: [18, 3, -25],
-    target: [0, 0, 0],
+    camera: [0, 0.4, 28],
+    target: [0, 0.2, 0],
     open: 0,
-    light: 1,
-    display: 0.2,
+    light: 1.0,
+    display: 0.6,
     screen: 0,
   },
   {
     t: 32,
-    camera: [21, 1, 24],
+    camera: [1.5, 0.2, 29],
     target: [0, 0, 0],
     open: 0,
-    light: 1,
-    display: 1,
+    light: 1.0,
+    display: 1.0,
     screen: 1 / 3,
   },
   {
     t: 34,
-    camera: [1, 0.2, 31],
+    camera: [0, 0.1, 30],
     target: [0, 0, 0],
     open: 0,
-    light: 1,
-    display: 1,
+    light: 1.0,
+    display: 1.0,
     screen: 0.5,
   },
   {
     t: 36,
-    camera: [-3, 1, 32],
+    camera: [-2.0, 0.5, 31],
     target: [0, 0, 0],
     open: 0,
-    light: 1,
-    display: 1,
-    screen: 1,
+    light: 1.0,
+    display: 1.0,
+    screen: 1.0,
   },
+  // Scene 6: Final Hero Reveal & Seamless Return (t = 36 to 43)
   {
     t: 38,
-    camera: [-22, 3, 24],
+    camera: [-7.0, 2.5, 31.5],
     target: [0, 0, 0],
     open: 0,
-    light: 1,
-    display: 1,
+    light: 1.0,
+    display: 1.0,
     screen: 1 / 3,
   },
   {
     t: 40,
-    camera: [-34, 3, -2],
+    camera: [2.0, 3.0, 32.0],
     target: [0, 0, 0],
     open: 0,
-    light: 0.8,
+    light: 0.9,
     display: 0.4,
     screen: 1 / 3,
   },
   {
     t: 43,
-    camera: [-12, 4, -35],
-    target: [0, 0, 0],
+    camera: [8, 3.5, 32],
+    target: [0, 0.2, 0],
     open: 0,
-    light: 0.18,
+    light: 0.85,
     display: 0,
     screen: 0,
   },
 ];
+
 export function sampleFilm(progress: number) {
   const p = Math.max(0, Math.min(1, Number.isFinite(progress) ? progress : 0));
   const seconds = p * 43;

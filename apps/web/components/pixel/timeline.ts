@@ -1,17 +1,22 @@
+/**
+ * NEXOS Cinematic Presentation Timeline
+ * Strict Front & Side Camera Lock: Rear hemisphere is completely forbidden.
+ * Rotations stay strictly within front-facing tilts and front three-quarter angles.
+ */
 const keys = [
   {
-    rotation: [-0.12, -2.7, -0.09],
-    camera: [0, 1.5, 33],
+    rotation: [-0.04, -0.42, 0.03],
+    camera: [0, 1.2, 33],
     target: [0, 0.2, 0],
-    light: 0.65,
+    light: 0.85,
   },
   {
-    rotation: [0.04, -0.65, 0.06],
-    camera: [1, 0.6, 34],
+    rotation: [0.04, -0.35, 0.04],
+    camera: [1, 0.6, 33],
     target: [0, 0.2, 0],
     light: 1.15,
   },
-  { rotation: [0, 0.02, 0], camera: [0, 0, 34], target: [0, 0, 0], light: 1.1 },
+  { rotation: [0, 0.02, 0], camera: [0, 0, 33], target: [0, 0, 0], light: 1.1 },
   {
     rotation: [0.03, -0.17, -0.02],
     camera: [0.5, 0, 33],
@@ -19,24 +24,25 @@ const keys = [
     light: 1.1,
   },
   {
-    rotation: [-0.08, 0.65, 0.02],
+    rotation: [-0.05, 0.38, 0.02],
     camera: [0.5, 0.4, 33],
     target: [0, 0, 0],
-    light: 0.85,
+    light: 0.95,
   },
   {
     rotation: [0, -0.18, 0],
-    camera: [-0.5, 0, 34],
+    camera: [-0.5, 0, 33],
     target: [0, 0, 0],
     light: 1.05,
   },
   {
     rotation: [0, 0.12, 0],
-    camera: [0, 0, 35],
+    camera: [0, 0, 33],
     target: [0, 0, 0],
     light: 1.15,
   },
 ];
+
 export function sampleTimeline(progress: number) {
   const p =
     Math.max(0, Math.min(1, Number.isFinite(progress) ? progress : 0)) * 6;

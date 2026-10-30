@@ -175,3 +175,65 @@ test("product film has finite camera paths, real macro scale, separated layers a
   assert.equal(sampleFilm(34 / 43).display, 1);
   assert.deepEqual(sampleFilm(NaN), first);
 });
+test("film trajectory strictly locks to front and side profiles: back panel is NEVER visible across dense timeline sampling", async () => {
+  const { sampleFilm } = await import("../apps/web/components/pixel/film");
+  const { computeFrontDot, MIN_FRONT_DOT } = await import(
+    "../apps/web/components/pixel/engine"
+  );
+
+  let minDot = 1.0;
+  // Dense sampling: 1000 intermediate points across the entire film timeline
+  for (let step = 0; step <= 1000; step++) {
+    const progress = step / 1000;
+    const shot = sampleFilm(progress);
+
+    // Front-facing dot product between device front normal (0, 0, 1) and camera view vector
+    const dot = computeFrontDot([0, 0, 0], shot.camera, shot.target);
+    if (dot < minDot) minDot = dot;
+
+    assert.ok(
+      dot >= MIN_FRONT_DOT,
+      `Film at progress ${progress.toFixed(3)} has dot product ${dot.toFixed(3)} < MIN_FRONT_DOT (${MIN_FRONT_DOT})`,
+    );
+    assert.ok(
+      shot.camera[2] > 0,
+      `Film camera Z must be strictly positive (in front of device), got ${shot.camera[2]}`,
+    );
+  }
+
+  assert.ok(
+    minDot >= 0.85,
+    `Film maintains strong front visibility, minimum dot was ${minDot.toFixed(3)}`,
+  );
+});
+
+test("interactive timeline trajectory strictly locks to front hemisphere: back panel is NEVER visible across all transitions", async () => {
+  const { sampleTimeline } = await import("../apps/web/components/pixel/timeline");
+  const { computeFrontDot, MIN_FRONT_DOT, MAX_YAW } = await import(
+    "../apps/web/components/pixel/engine"
+  );
+
+  let minDot = 1.0;
+  // Dense sampling across all scenes and transitions
+  for (let step = 0; step <= 1000; step++) {
+    const progress = step / 1000;
+    const shot = sampleTimeline(progress);
+
+    const dot = computeFrontDot(shot.rotation, shot.camera, shot.target);
+    if (dot < minDot) minDot = dot;
+
+    assert.ok(
+      dot >= MIN_FRONT_DOT,
+      `Timeline at progress ${progress.toFixed(3)} has dot product ${dot.toFixed(3)} < MIN_FRONT_DOT (${MIN_FRONT_DOT})`,
+    );
+    assert.ok(
+      Math.abs(shot.rotation[1]) <= MAX_YAW,
+      `Device yaw ${shot.rotation[1]} exceeded MAX_YAW ${MAX_YAW}`,
+    );
+  }
+
+  assert.ok(
+    minDot >= 0.85,
+    `Timeline maintains strong front visibility, minimum dot was ${minDot.toFixed(3)}`,
+  );
+});
