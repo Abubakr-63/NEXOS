@@ -79,8 +79,10 @@ Recreating the fluid motion language of the reference videos (`6565eb6e34d4f7093
 | ESLint Check | `pnpm --filter @rom-hub/web lint` | Passed (0 errors, 0 warnings) |
 | Frontend Unit Tests | `npx tsx --test tests/frontend-session.test.ts tests/pixel-timeline.test.ts` | Passed (7/7 passed) |
 | Next.js Production Build | `pnpm --filter @rom-hub/web build` | Passed (16/16 routes compiled) |
+| Playwright 3D E2E Suite | `npx playwright test tests/e2e/pixel-experience.spec.ts` | Passed (5/5 passed, 57.0s) |
 | Live Dev Server | `http://localhost:3000` | HTTP 200 OK across all routes |
-| Backend Integration | Codex API `http://127.0.0.1:4000` | Registration, session, and project creation verified |
+| Real Browser E2E Suite | `node scripts/verify-real-browser.mjs` | Passed (9/9 views verified, 0 errors) |
+| Backend Integration | Codex API `http://127.0.0.1:4000` | Registration, session, and project creation verified (HTTP 201) |
 
 ---
 
