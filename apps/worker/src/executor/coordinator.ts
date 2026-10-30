@@ -152,15 +152,16 @@ export async function runPreflight(
       };
     }
     try {
+      const successful = checked && !controller.signal.aborted;
       const final = await store.finish(
         grant,
-        checked && !controller.signal.aborted
+        successful
           ? "CHECKED"
           : outcome.failure === "CANCELLED"
             ? "CANCELLED"
             : "FAILED",
         true,
-        checked ? null : outcome.failure,
+        successful ? null : outcome.failure,
       );
       return {
         kind: "ISOLATION_PREFLIGHT" as const,

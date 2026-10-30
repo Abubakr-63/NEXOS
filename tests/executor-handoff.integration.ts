@@ -321,6 +321,16 @@ test(
       const timed = await runPreflight(f.store, timeout, hung);
       assert.equal(timed.state, "FAILED");
       assert.equal((await f.store.read(owner, timeout)).failure, "TIMEOUT");
+      const lateCleanup = await f.store.admit(owner, request(), authorize);
+      const late = await runPreflight(f.store, lateCleanup, {
+        ...checkedTransport(),
+        terminate: async () => {
+          await delay(700);
+          return true;
+        },
+      });
+      assert.equal(late.state, "FAILED");
+      assert.equal((await f.store.read(owner, lateCleanup)).failure, "TIMEOUT");
       const cancel = await f.store.admit(owner, request(), authorize);
       let entered!: () => void;
       const started = new Promise<void>((yes) => {
