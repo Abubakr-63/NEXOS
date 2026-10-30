@@ -4,6 +4,8 @@ Date: 2026-10-31, Asia/Tashkent. Branch: `ai/codex-backend`.
 
 Status: implementation demonstrated against disposable PostgreSQL/Redis; **existing-database migration and activation await explicit approval**. This is a safe migration-gate delivery, not a claim that production D5 or Android compilation is complete. PR #1 stays draft and unmerged.
 
+Follow-up: [existing-data backup/restore rehearsal and risk assessment](phase-d5-backup-migration-rehearsal.md) validates the exact proposal on a copy of the real database. It records a corrected raw-SQL serialization retry gap, 86 passing unit tests/eight E2E tests and the remaining existing Windows startup-deadline failure in the broader integration suite (35/36). The live migration remains pending; original rows and `.env` remain intact.
+
 ## Inventory and scope
 
 D2 provides reviewed target/source declarations, with compilation and flashing eligibility false. D3's `foundation.ts` and Redis handoff tests cover connectivity probes, deduplication, retries, cancellation, stalled delivery and worker supervision. D4's executor modules provide a fixed Cuttlefish identity, bounded preflight protocol, attempt workspaces, fencing, cleanup confirmation and a gated Linux/rootless-Docker transport. Their test Redis attempt store was not durable production admission.

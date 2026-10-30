@@ -6,7 +6,12 @@ import {
   createDurableWorker,
 } from "../apps/worker/src/durable/queue";
 import { backoffMs, deliveryId } from "../apps/worker/src/durable/outbox";
-import { DurableJobs } from "../apps/worker/src/durable/jobs";
+import { DurableJobs, transaction } from "../apps/worker/src/durable/jobs";
+import { createRequire } from "node:module";
+import { resolve } from "node:path";
+const { Prisma } = createRequire(resolve("apps/worker/package.json"))(
+  "@prisma/client",
+);
 
 test("durable delivery admits identity only and cannot carry commands, secrets or forged compilation", () => {
   const input = {
@@ -58,4 +63,55 @@ test("outbox backoff increases with a finite ceiling and test fault injection ca
     if (old === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = old;
   }
+});
+
+test("raw PostgreSQL serialization/deadlock failures retry the whole transaction with a finite budget", async () => {
+  const failure = (code: string) =>
+    new Prisma.PrismaClientKnownRequestError("private database diagnostic", {
+      code: "P2010",
+      clientVersion: "6.19.0",
+      meta: { code },
+    });
+  for (const sqlState of ["40001", "40P01"]) {
+    let calls = 0;
+    const db = {
+      $transaction: async () => {
+        if (++calls === 1) throw failure(sqlState);
+        return "committed";
+      },
+    };
+    assert.equal(
+      await transaction(db as never, async () => "unused"),
+      "committed",
+    );
+    assert.equal(calls, 2);
+  }
+  let calls = 0;
+  await assert.rejects(
+    transaction(
+      {
+        $transaction: async () => {
+          calls++;
+          throw failure("40001");
+        },
+      } as never,
+      async () => undefined,
+    ),
+    { code: "DATABASE_UNAVAILABLE" },
+  );
+  assert.equal(calls, 4);
+  calls = 0;
+  await assert.rejects(
+    transaction(
+      {
+        $transaction: async () => {
+          calls++;
+          throw failure("XX000");
+        },
+      } as never,
+      async () => undefined,
+    ),
+    { code: "DATABASE_UNAVAILABLE" },
+  );
+  assert.equal(calls, 1);
 });

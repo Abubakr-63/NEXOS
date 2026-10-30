@@ -96,7 +96,9 @@ export async function transaction<T>(
       if (
         n < 3 &&
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        ["P2034", "P2002"].includes(error.code)
+        (["P2034", "P2002"].includes(error.code) ||
+          (error.code === "P2010" &&
+            ["40001", "40P01"].includes(String(error.meta?.code))))
       ) {
         await new Promise((yes) => setTimeout(yes, 20 * (n + 1)));
         continue;
