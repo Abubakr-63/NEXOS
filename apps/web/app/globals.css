@@ -1,29 +1,31 @@
 @import "tailwindcss";
 @source "../../../packages/ui/src";
 :root {
-  --bg: #0d1015;
-  --surface: #12161d;
-  --raised: #171c24;
-  --line: #242b35;
-  --text: #edf1f6;
-  --muted: #8a95a7;
-  --dim: #8b97aa;
-  --accent: #62ddce;
-  --sidebar: #101319;
-  --shadow: rgba(0, 0, 0, 0.2);
+  --bg: #090514;
+  --surface: #120c24;
+  --raised: #1a1233;
+  --line: rgba(216, 180, 254, 0.12);
+  --text: #fbfaff;
+  --muted: #a79bbe;
+  --dim: #7e7099;
+  --accent: #c084fc;
+  --accent-secondary: #e879f9;
+  --sidebar: #080410;
+  --shadow: rgba(5, 2, 14, 0.45);
   color-scheme: dark;
 }
 :root[data-theme="light"] {
-  --bg: #f4f6f8;
-  --surface: #fff;
-  --raised: #eef1f5;
-  --line: #dce2e9;
-  --text: #192637;
-  --muted: #5e6d80;
-  --dim: #576579;
-  --accent: #127d73;
-  --sidebar: #fafbfd;
-  --shadow: rgba(30, 50, 70, 0.06);
+  --bg: #faf7fd;
+  --surface: #ffffff;
+  --raised: #f3eefb;
+  --line: rgba(168, 85, 247, 0.16);
+  --text: #1d1233;
+  --muted: #695780;
+  --dim: #8b78a3;
+  --accent: #8b5cf6;
+  --accent-secondary: #d946ef;
+  --sidebar: #f8f4fc;
+  --shadow: rgba(76, 29, 149, 0.08);
   color-scheme: light;
 }
 @theme inline {

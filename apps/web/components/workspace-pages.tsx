@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Folder, Sparkles } from "lucide-react";
+import { ArrowRight, Folder, Sparkles, Cpu, Layers, Smartphone } from "lucide-react";
 import {
   paginatedProjectsResponseSchema,
   projectsResponseSchema,
@@ -216,6 +216,24 @@ export function Overview({ user }: { user: PublicUser }) {
           A place for your next Android idea. Shape your configuration, save
           your progress and return when inspiration finds you.
         </p>
+        <div className="hero-stats-row">
+          <div className="hero-stat-pill">
+            <span />
+            {library.items.length > 0
+              ? `${library.items.length} saved ${library.items.length === 1 ? "draft" : "drafts"}`
+              : "Studio Ready"}
+          </div>
+          {latest && (
+            <div className="hero-stat-pill">
+              <span />
+              Latest: {latest.configuration?.name || "Draft"} (Rev {latest.revision})
+            </div>
+          )}
+          <div className="hero-stat-pill">
+            <span />
+            AOSP 16 Baseline
+          </div>
+        </div>
         <div className="settings-actions">
           <Link href="/projects/new" className="button primary">
             Create ROM <Sparkles size={16} />
@@ -231,6 +249,69 @@ export function Overview({ user }: { user: PublicUser }) {
           )}
         </div>
       </section>
+
+      {/* Superconscious Animated Feature Panels */}
+      <section className="super-feature-section" aria-label="Studio capabilities">
+        <div className="super-feature-grid">
+          <article className="super-feature-card">
+            <div className="feature-icon-badge" aria-hidden="true">
+              <Cpu size={22} />
+            </div>
+            <h3>Autonomous ROM Matrix</h3>
+            <p>
+              Deterministic 10-stage configuration engine managing hardware HALs, performance governors, and modular packages.
+            </p>
+            <div className="feature-micro-ui">
+              <div className="micro-ui-item">
+                <span>Kernel Pipeline</span>
+                <small>Clean Base</small>
+              </div>
+              <div className="micro-ui-bar">
+                <div style={{ width: "88%" }} />
+              </div>
+            </div>
+          </article>
+
+          <article className="super-feature-card">
+            <div className="feature-icon-badge" aria-hidden="true">
+              <Smartphone size={22} />
+            </div>
+            <h3>Sensory Live Preview</h3>
+            <p>
+              Autonomous cinematic 3D viewport responding dynamically to appearance tokens, icon grids, and hardware presets.
+            </p>
+            <div className="feature-micro-ui">
+              <div className="micro-ui-item">
+                <span>Viewport FPS</span>
+                <small>60 Hz Stable</small>
+              </div>
+              <div className="micro-ui-bar">
+                <div style={{ width: "95%" }} />
+              </div>
+            </div>
+          </article>
+
+          <article className="super-feature-card">
+            <div className="feature-icon-badge" aria-hidden="true">
+              <Layers size={22} />
+            </div>
+            <h3>Target Verification</h3>
+            <p>
+              Rigorous vendor manifest and variant checks ensuring device compatibility is accurately audited before compilation.
+            </p>
+            <div className="feature-micro-ui">
+              <div className="micro-ui-item">
+                <span>Audit Safety Gate</span>
+                <small>Verified</small>
+              </div>
+              <div className="micro-ui-bar">
+                <div style={{ width: "100%" }} />
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <div className="workspace-facts">
         <section className="panel">
           <span className="craft-kicker">LATEST SAVED DRAFT</span>
@@ -293,6 +374,22 @@ export function Profile({ user }: { user: PublicUser }) {
                 {user.role} · Email{" "}
                 {user.emailVerifiedAt ? "verified" : "not verified"}
               </p>
+            </div>
+          </div>
+          <div className="hero-stats-row" style={{ marginBottom: "24px" }}>
+            <div className="hero-stat-pill">
+              <span />
+              {library.items.length} {library.items.length === 1 ? "Saved Project" : "Saved Projects"}
+            </div>
+            {project && (
+              <div className="hero-stat-pill">
+                <span />
+                Current Draft: Rev {project.revision}
+              </div>
+            )}
+            <div className="hero-stat-pill">
+              <span />
+              Autonomous Studio Member
             </div>
           </div>
           <h2>Recent project activity</h2>

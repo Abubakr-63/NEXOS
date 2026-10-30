@@ -1,43 +1,47 @@
-/* ROMCRAFT presentation tokens. Business logic and Tailwind compilation are separate. */
+/* NEXOS Superconscious-inspired presentation tokens & motion choreography */
 :root {
-  --bg: #0b0e14;
-  --surface: #131823;
-  --raised: #1b2230;
-  --line: #ffffff10;
-  --text: #edf2fa;
-  --muted: #a1acbf;
-  --dim: #8794aa;
-  --accent: #8cd5ff;
-  --glass-bg: #171e2bd6;
-  --glass-border: #b8d8ff16;
-  --glass-highlight: #e0efff0a;
-  --glass-shadow: 0 18px 60px #00000026, inset 0 1px 0 var(--glass-highlight);
-  --active-bg: #239cf21a;
-  --active-border: #7cc9ff2e;
-  --button-bg: #9cddff;
-  --button-text: #102635;
+  --bg: #090514;
+  --surface: #120c24;
+  --raised: #1a1233;
+  --line: rgba(216, 180, 254, 0.12);
+  --text: #fbfaff;
+  --muted: #a79bbe;
+  --dim: #7e7099;
+  --accent: #c084fc;
+  --accent-secondary: #e879f9;
+  --accent-glow: rgba(168, 85, 247, 0.35);
+  --glass-bg: rgba(20, 13, 38, 0.72);
+  --glass-border: rgba(216, 180, 254, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 24px 64px rgba(5, 2, 14, 0.65), 0 0 36px rgba(168, 85, 247, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --active-bg: rgba(168, 85, 247, 0.18);
+  --active-border: rgba(216, 180, 254, 0.38);
+  --button-bg: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+  --button-text: #ffffff;
   --radius-panel: 28px;
   --radius-card: 22px;
-  --ease-studio: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-studio: cubic-bezier(0.16, 1, 0.3, 1);
   --rail-width: 76px;
 }
 :root[data-theme="light"] {
-  --bg: #f1f4f9;
+  --bg: #faf7fd;
   --surface: #ffffff;
-  --raised: #e7edf5;
-  --line: #1e395218;
-  --text: #17283c;
-  --muted: #53657b;
-  --dim: #5e7187;
-  --accent: #126ba3;
-  --glass-bg: #ffffffdd;
-  --glass-border: #324d6b20;
-  --glass-highlight: #ffffffaa;
-  --glass-shadow: 0 18px 60px #24486d09, inset 0 1px 0 #ffffff;
-  --active-bg: #168be817;
-  --active-border: #168be82b;
-  --button-bg: #176b9e;
-  --button-text: #fff;
+  --raised: #f3eefb;
+  --line: rgba(168, 85, 247, 0.16);
+  --text: #1d1233;
+  --muted: #695780;
+  --dim: #8b78a3;
+  --accent: #8b5cf6;
+  --accent-secondary: #d946ef;
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(168, 85, 247, 0.22);
+  --glass-highlight: #ffffff;
+  --glass-shadow: 0 20px 50px rgba(76, 29, 149, 0.08), inset 0 1px 0 #ffffff;
+  --active-bg: rgba(139, 92, 246, 0.12);
+  --active-border: rgba(139, 92, 246, 0.32);
+  --button-bg: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --button-text: #ffffff;
 }
 body {
   font-family:
@@ -47,6 +51,7 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+  letter-spacing: -0.011em;
 }
 button,
 input,
@@ -56,16 +61,44 @@ select {
 .craft-shell {
   background: transparent;
   isolation: isolate;
+  position: relative;
+  min-height: 100vh;
 }
 .craft-shell::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 72% 10%, #25447a15, transparent 48%),
-    radial-gradient(ellipse at 25% 80%, #21666c0a, transparent 45%), var(--bg);
+    radial-gradient(ellipse 60% 50% at 75% 12%, rgba(168, 85, 247, 0.14), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 18% 78%, rgba(139, 92, 246, 0.12), transparent 65%),
+    radial-gradient(ellipse 40% 30% at 50% 45%, rgba(216, 180, 254, 0.05), transparent 70%),
+    var(--bg);
+}
+.craft-shell::after {
+  content: "";
+  position: fixed;
+  width: 580px;
+  height: 580px;
+  right: -100px;
+  top: 15%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.09) 0%, rgba(126, 34, 206, 0.04) 45%, transparent 70%);
+  filter: blur(60px);
+  z-index: -1;
+  pointer-events: none;
+  animation: orb-drift 22s ease-in-out infinite alternate;
+}
+@keyframes orb-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, 60px) scale(1.08); }
+  100% { transform: translate(30px, -40px) scale(0.95); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .craft-shell::after {
+    animation: none;
+  }
 }
 .glass-panel,
 .glass-card,
@@ -77,7 +110,7 @@ select {
 }
 .glass-panel,
 .floating-toolbar {
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px) saturate(160%);
 }
 .glass-card {
   border-radius: var(--radius-card);
@@ -584,24 +617,32 @@ select {
 }
 .button.primary {
   background: var(--button-bg);
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--button-text);
   box-shadow:
-    0 4px 20px #70c6ff12,
-    inset 0 1px 0 #ffffff30;
+    0 8px 24px rgba(168, 85, 247, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .button.primary:hover {
   background: var(--button-bg);
   transform: translateY(-2px);
-  box-shadow: 0 7px 24px #70c6ff23;
+  box-shadow:
+    0 12px 30px rgba(168, 85, 247, 0.5),
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 .button.secondary {
-  background: var(--glass-highlight);
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--text);
+  backdrop-filter: blur(12px);
 }
 .button.secondary:hover {
   background: var(--active-bg);
+  border-color: var(--active-border);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 .button:disabled {
   transform: none;
@@ -888,6 +929,8 @@ select {
 .studio-steps button[aria-current] {
   background: var(--active-bg);
   border-color: var(--active-border);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 .craft-status {
   background: var(--glass-bg);
@@ -1484,11 +1527,13 @@ select {
 .nexos-mark {
   box-sizing: border-box;
   padding: 4px;
-  color: #38bdf8;
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.4));
   flex-shrink: 0;
 }
 .rail-brand > .nexos-mark {
-  color: #38bdf8;
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.45));
 }
 .rail-brand small {
   letter-spacing: 1px;

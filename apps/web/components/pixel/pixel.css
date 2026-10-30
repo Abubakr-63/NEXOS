@@ -1,9 +1,11 @@
 .pixel-story {
   position: relative;
   height: 290svh;
-  color: #edf2fa;
+  color: #fbfaff;
   background:
-    radial-gradient(ellipse at 40% 20%, #375e8055, transparent 55%), #0e1621;
+    radial-gradient(ellipse at 50% 25%, rgba(168, 85, 247, 0.22), transparent 60%),
+    radial-gradient(ellipse at 80% 75%, rgba(139, 92, 246, 0.16), transparent 55%),
+    #0c0718;
 }
 .pixel-stage {
   position: sticky;
@@ -54,8 +56,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse, #213950, #0e1621);
-  color: #c4dceb;
+  background: radial-gradient(ellipse, #251343, #0c0718);
+  color: #e9d5ff;
   text-align: center;
   padding: 20px;
 }
@@ -66,14 +68,15 @@
   font-size: 14px;
 }
 .pixel-fallback small {
-  color: #a1acbf;
+  color: #a79bbe;
   font-size: 11px;
 }
 .pixel-copy > span {
-  color: #8cd5ff;
+  color: #c084fc;
   text-transform: uppercase;
-  letter-spacing: 1.4px;
+  letter-spacing: 2px;
   font-size: 9px;
+  font-weight: 600;
 }
 .pixel-copy h2,
 .auth-standalone .pixel-copy h2 {
@@ -218,7 +221,7 @@
 }
 .auth-experience[data-mode="register"] .pixel-story {
   background:
-    radial-gradient(ellipse at 70% 30%, #31587855, transparent 60%), #101824;
+    radial-gradient(ellipse at 70% 30%, rgba(192, 132, 252, 0.2), transparent 60%), #0c0718;
 }
 @media (max-width: 950px) {
   .pixel-viewport {
@@ -330,6 +333,6 @@
 
 .auth-visual-side .pixel-story {
   background:
-    radial-gradient(ellipse at 45% 22%, #71809266, transparent 65%),
-    linear-gradient(150deg, #283846, #0d1622 75%);
+    radial-gradient(ellipse at 45% 22%, rgba(168, 85, 247, 0.25), transparent 65%),
+    linear-gradient(150deg, #180d33, #0b0616 75%);
 }
