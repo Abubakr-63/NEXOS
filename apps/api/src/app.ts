@@ -31,7 +31,8 @@ import {
   ThrottlerModule,
   ThrottlerException,
 } from "@nestjs/throttler";
-import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiExcludeController } from "@nestjs/swagger";
+import { PrebuiltRomStore, PREBUILT_FILENAME, localDemoRequest, supportedSelection } from "./prebuilt-rom";
 import { PrismaClient, Prisma } from "@prisma/client";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { randomBytes } from "node:crypto";
@@ -387,6 +388,38 @@ class AuthController {
     return { success: true };
   }
 }
+@ApiExcludeController()
+@Controller("prebuilt-roms")
+export class PrebuiltRomController {
+  constructor(@Inject(Accounts) private readonly accounts: Accounts,
+    @Inject(PrebuiltRomStore) private readonly artifact: PrebuiltRomStore) {}
+  private async allowed(req: FastifyRequest, id: string, query: unknown) {
+    await this.accounts.user(req);
+    localDemoRequest(req.raw.socket.remoteAddress, req.headers.origin, req.headers["sec-fetch-site"],
+      ["forwarded", "x-forwarded-for", "x-forwarded-host", "x-forwarded-proto"].some(key => req.headers[key] !== undefined));
+    supportedSelection(id, query);
+  }
+  @Get(":id")
+  async metadata(@Param("id") id: string, @Query() query: unknown, @Req() req: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply) {
+    await this.allowed(req, id, query);
+    reply.header("Cache-Control", "private, no-store");
+    return this.artifact.metadata();
+  }
+  @Get(":id/download")
+  async download(@Param("id") id: string, @Query() query: unknown, @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply) {
+    await this.allowed(req, id, query);
+    const { file, size, sha256 } = await this.artifact.download();
+    if (req.raw.aborted || reply.raw.destroyed) { await file.close(); return; }
+    reply.header("Content-Type", "application/zip").header("Content-Disposition", `attachment; filename="${PREBUILT_FILENAME}"`)
+      .header("Content-Length", size).header("Content-Encoding", "identity")
+      .header("Cache-Control", "private, no-store").header("X-Content-Type-Options", "nosniff")
+      .header("X-Artifact-SHA256", sha256).header("Accept-Ranges", "none");
+    return reply.send(file.createReadStream({ start: 0, autoClose: true }));
+  }
+}
+
 @ApiTags("Catalog")
 @Controller()
 class CatalogController {
@@ -721,11 +754,13 @@ class ROMProjectsController {
 }
 @Module({
   imports: [ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }])],
-  controllers: [AuthController, CatalogController, ROMProjectsController],
+  controllers: [AuthController, CatalogController, ROMProjectsController,
+    ...(process.env.NODE_ENV === "development" && process.env.NEXOS_LOCAL_PREBUILT_DEMO === "1" ? [PrebuiltRomController] : [])],
   providers: [
     Database,
     Accounts,
     RedisAuthLimiter,
+    { provide: PrebuiltRomStore, useFactory: () => new PrebuiltRomStore() },
     ThrottlerGuard,
     { provide: APP_GUARD, useClass: ApiRateLimitGuard },
   ],
