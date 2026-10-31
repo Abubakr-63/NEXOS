@@ -22,3 +22,4 @@ export function setClientLocale(locale: Locale): void {
     document.documentElement.lang = locale;
   } catch {}
 }
+

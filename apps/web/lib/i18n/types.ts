@@ -21,3 +21,4 @@ export const LOCALE_NAMES: Record<Locale, string> = {
 export function isSupportedLocale(value: unknown): value is Locale {
   return typeof value === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }
+

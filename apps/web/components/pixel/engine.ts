@@ -133,13 +133,14 @@ export function createPixelEngine(
         if (filmTarget !== null && !reduced) {
       filmCurrent = filmTarget;
       const film = sampleFilm(filmCurrent);
-      model.group.rotation.set(0, 0, 0);
+      model.group.rotation.set(...film.rotation);
+      model.group.position.set(...film.position);
       target.set(...film.camera);
-      target.z = Math.max(3.8, target.z);
+      target.z = Math.max(3.5, target.z);
       look.set(...film.target);
       look.z = Math.min(1.0, look.z);
       lighting.intensity(film.light);
-      model.animate(film.open, film.seconds);
+      model.animate(film.open, film.seconds, film.buttonPress);
       model.displayMaterial.color.setScalar(film.display);
       displayProgress = film.screen;
       drawDisplay = film.display > 0.02;
@@ -148,6 +149,7 @@ export function createPixelEngine(
       canvas.dataset.cutaway = film.open.toFixed(3);
       canvas.dataset.cameraDistance = target.distanceTo(look).toFixed(3);
     } else {
+      model.group.position.set(0, 0, 0);
       const targetY = THREE.MathUtils.clamp(
         pose ?? shot.rotation[1],
         -MAX_YAW,
@@ -174,7 +176,7 @@ export function createPixelEngine(
       }
       target.multiplyScalar(1 / smoothZoom);
       lighting.intensity(1);
-      model.animate(0, 0);
+      model.animate(0, 0, 0);
       model.displayMaterial.color.setScalar(1);
       canvas.dataset.cutaway = "0";
     }

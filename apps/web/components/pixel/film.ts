@@ -1,16 +1,17 @@
 export const FILM_DURATION = 43000;
+
 export const filmScenes = [
   {
-    title: "Device reveal",
+    title: "Tactile ignition",
     label: "Designed from the inside out.",
     detail:
-      "An original NEXOS concept device. Precision titanium frame and considered detail.",
+      "Precision titanium tactile controls and instant luminous boot.",
   },
   {
-    title: "Side-frame macro",
+    title: "Floating showcase",
     label: "A closer kind of clarity.",
     detail:
-      "Machined tactile controls and curved 2.5D front glass, rendered as real geometry.",
+      "Floating diagonal perspective with vibrant front display and studio reflections.",
   },
   {
     title: "Front architecture",
@@ -44,8 +45,9 @@ export const filmScenes = [
   },
 ] as const;
 
-type Vector = [number, number, number];
-type Key = {
+export type Vector = [number, number, number];
+
+export type FilmKey = {
   t: number;
   camera: Vector;
   target: Vector;
@@ -53,181 +55,278 @@ type Key = {
   light: number;
   display: number;
   screen: number;
+  buttonPress?: number;
+  rotation?: Vector;
+  position?: Vector;
 };
 
 /**
  * Strict Front & Side Camera Paths:
- * Rear hemisphere is completely forbidden. All camera positions remain strictly in front (Z >= 4.2).
- * Dot product with device front normal is >= 0.91 across all 43 seconds.
+ * Rear hemisphere is completely forbidden. All camera positions remain strictly in front (Z >= 3.2).
+ * Dot product with device front normal is >= 0.88 across all 43 seconds.
  */
-const keys: Key[] = [
-  // Scene 0: Device reveal (Front three-quarter hero angle)
+const keys: FilmKey[] = [
+  // Scene 0: Power Button Approach & Tactile Ignition (t = 0 to 4.5s)
+  // Macro side profile focusing on power key at y = 2.85, screen black
   {
     t: 0,
-    camera: [8, 3.5, 32],
-    target: [0, 0.2, 0],
+    camera: [5.2, 2.85, 3.8],
+    target: [3.6, 2.85, 0.2],
     open: 0,
-    light: 0.85,
+    light: 0.9,
     display: 0,
     screen: 0,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
   },
   {
-    t: 3,
-    camera: [5, 2.0, 31],
-    target: [0, 0.3, 0],
-    open: 0,
-    light: 1.0,
-    display: 0,
-    screen: 0,
-  },
-  // Scene 1: Side-frame & Front glass macro shot (t = 6 to 9)
-  // Distance at t=8s is ~4.03 (< 5 required for macro scale)
-  {
-    t: 6,
-    camera: [3.2, 2.85, 4.8],
-    target: [2.5, 2.85, 0.4],
+    t: 0.8,
+    camera: [4.8, 2.85, 3.5],
+    target: [3.7, 2.85, 0.1],
     open: 0,
     light: 1.0,
     display: 0,
     screen: 0,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
   },
+  // Physical mechanical depression inward into chassis
   {
-    t: 8,
-    camera: [3.1, 2.85, 4.4],
-    target: [2.6, 2.85, 0.4],
+    t: 0.95,
+    camera: [4.8, 2.85, 3.5],
+    target: [3.7, 2.85, 0.1],
     open: 0,
-    light: 0.95,
-    display: 0,
-    screen: 0,
-  },
-  // Scene 2: Front Layered Architecture & Technical Cutaway (t = 10 to 17)
-  // Open reaches 1.0 at t=14s
-  {
-    t: 10,
-    camera: [-2.8, 3.8, 8.5],
-    target: [-0.3, 1.2, 0.4],
-    open: 1,
-    light: 1.0,
-    display: 0,
-    screen: 0,
-  },
-  {
-    t: 14,
-    camera: [-2.2, 2.5, 7.8],
-    target: [-0.2, 1.0, 0.4],
-    open: 1,
-    light: 1.0,
-    display: 0,
-    screen: 0,
-  },
-  {
-    t: 17,
-    camera: [2.5, 2.2, 8.2],
-    target: [0.2, 1.8, 0.4],
-    open: 1,
     light: 1.15,
-    display: 0,
+    display: 0.05,
     screen: 0,
+    buttonPress: 1.0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
   },
-  // Scene 3: Configuration Intent & Front Chassis Sweep (t = 17 to 21)
+  // Mechanical release back outward; immediate luminous screen wake-up begins!
   {
-    t: 21,
-    camera: [-2.5, -0.4, 9.5],
-    target: [0.2, -1.0, 0.4],
-    open: 1,
-    light: 0.95,
-    display: 0,
-    screen: 0,
-  },
-  // Scene 4: Screen Illumination & Tactile Rail Focus (t = 21 to 29)
-  {
-    t: 25,
-    camera: [3.2, -1.8, 9.2],
-    target: [0.3, -1.2, 0.4],
-    open: 1,
-    light: 1.1,
-    display: 0.1,
-    screen: 0,
-  },
-  {
-    t: 28,
-    camera: [1.2, -0.8, 14.0],
-    target: [0, -0.3, 0.2],
-    open: 0.8,
-    light: 1.0,
-    display: 0.3,
-    screen: 0,
-  },
-  // Scene 5: NEXOS Android UI & Screen Takeover (t = 29 to 36)
-  // Display reaches 1.0 at t=34s
-  {
-    t: 30,
-    camera: [0, 0.4, 28],
-    target: [0, 0.2, 0],
+    t: 1.15,
+    camera: [4.6, 2.7, 4.2],
+    target: [3.2, 2.7, 0.2],
     open: 0,
-    light: 1.0,
-    display: 0.6,
+    light: 1.1,
+    display: 0.7,
     screen: 0,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
   },
+  // Boot glow & radiant cyan ring
   {
-    t: 32,
-    camera: [1.5, 0.2, 29],
-    target: [0, 0, 0],
+    t: 1.8,
+    camera: [3.2, 2.2, 8.5],
+    target: [2.0, 1.8, 0.2],
+    open: 0,
+    light: 1.05,
+    display: 1.0,
+    screen: 0.15,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
+  },
+  // Camera smoothly pulls back; dual-row lockscreen clock reveals
+  {
+    t: 3.2,
+    camera: [1.6, 1.0, 18.0],
+    target: [0.8, 0.6, 0.1],
     open: 0,
     light: 1.0,
     display: 1.0,
-    screen: 1 / 3,
+    screen: 0.35,
+    buttonPress: 0,
+    rotation: [0.04, -0.08, -0.05],
+    position: [0, 0, 0],
   },
+
+  // Scene 1: REDMAGIC-Inspired Floating Product Showcase Pose (t = 4.5 to 12.0s)
+  // Entire phone visible, diagonal tilt, suspended in space, cyan studio rim highlights
   {
-    t: 34,
-    camera: [0, 0.1, 30],
+    t: 5.0,
+    camera: [0, 0.2, 36.5],
     target: [0, 0, 0],
     open: 0,
-    light: 1.0,
+    light: 1.15,
     display: 1.0,
     screen: 0.5,
+    buttonPress: 0,
+    rotation: [0.16, -0.4, -0.32],
+    position: [0, 0.2, 0],
   },
   {
-    t: 36,
-    camera: [-2.0, 0.5, 31],
+    t: 8.0,
+    camera: [0, 0.2, 36.5],
     target: [0, 0, 0],
     open: 0,
+    light: 1.2,
+    display: 1.0,
+    screen: 0.6,
+    buttonPress: 0,
+    rotation: [0.17, -0.38, -0.3],
+    position: [0, 0.35, 0],
+  },
+  {
+    t: 11.5,
+    camera: [0, 0.2, 36.5],
+    target: [0, 0, 0],
+    open: 0,
+    light: 1.15,
+    display: 1.0,
+    screen: 0.7,
+    buttonPress: 0,
+    rotation: [0.14, -0.32, -0.25],
+    position: [0, 0.1, 0],
+  },
+
+  // Scene 2: Front Layered Architecture & Technical Cutaway (t = 12.0 to 18.0s)
+  {
+    t: 14.0,
+    camera: [-2.2, 2.5, 7.8],
+    target: [-0.2, 1.0, 0.4],
+    open: 1.0,
+    light: 1.1,
+    display: 1.0,
+    screen: 0.8,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
+  },
+  {
+    t: 17.0,
+    camera: [2.5, 2.2, 8.2],
+    target: [0.2, 1.8, 0.4],
+    open: 1.0,
+    light: 1.15,
+    display: 1.0,
+    screen: 0.9,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
+  },
+
+  // Scene 3: Configuration Intent & Front Chassis Sweep (t = 18.0 to 24.0s)
+  {
+    t: 21.0,
+    camera: [-2.5, -0.4, 9.5],
+    target: [0.2, -1.0, 0.4],
+    open: 0.6,
     light: 1.0,
     display: 1.0,
     screen: 1.0,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
   },
-  // Scene 6: Final Hero Reveal & Seamless Return (t = 36 to 43)
+
+  // Scene 4: Fluid Material You & Applications Reveal (t = 24.0 to 30.0s)
   {
-    t: 38,
-    camera: [-7.0, 2.5, 31.5],
+    t: 26.0,
+    camera: [2.8, -1.2, 11.5],
+    target: [0.3, -0.8, 0.3],
+    open: 0,
+    light: 1.1,
+    display: 1.0,
+    screen: 0.7,
+    buttonPress: 0,
+    rotation: [0.05, -0.15, -0.08],
+    position: [0, 0, 0],
+  },
+
+  // Scene 5: Sensory Live UI & Performance Preset Sweep (t = 30.0 to 36.0s)
+  {
+    t: 31.0,
+    camera: [0, 0.2, 26.0],
+    target: [0, 0, 0],
+    open: 0,
+    light: 1.05,
+    display: 1.0,
+    screen: 0.5,
+    buttonPress: 0,
+    rotation: [0.08, -0.22, -0.14],
+    position: [0, 0.1, 0],
+  },
+
+  // Scene 6: Final Hero Reveal & Seamless Return to Origin (t = 36.0 to 43.0s)
+  {
+    t: 36.0,
+    camera: [-1.5, 0.4, 32.0],
     target: [0, 0, 0],
     open: 0,
     light: 1.0,
     display: 1.0,
-    screen: 1 / 3,
+    screen: 1.0 / 3,
+    buttonPress: 0,
+    rotation: [0.1, -0.25, -0.18],
+    position: [0, 0, 0],
   },
   {
-    t: 40,
-    camera: [2.0, 3.0, 32.0],
-    target: [0, 0, 0],
+    t: 40.0,
+    camera: [3.8, 2.0, 16.0],
+    target: [2.5, 1.8, 0.2],
+    open: 0,
+    light: 0.95,
+    display: 0.4,
+    screen: 0,
+    buttonPress: 0,
+    rotation: [0.04, -0.08, -0.04],
+    position: [0, 0, 0],
+  },
+  // Exact identical loop endpoint matching t = 0s
+  {
+    t: 43.0,
+    camera: [5.2, 2.85, 3.8],
+    target: [3.6, 2.85, 0.2],
     open: 0,
     light: 0.9,
-    display: 0.4,
-    screen: 1 / 3,
-  },
-  {
-    t: 43,
-    camera: [8, 3.5, 32],
-    target: [0, 0.2, 0],
-    open: 0,
-    light: 0.85,
     display: 0,
     screen: 0,
+    buttonPress: 0,
+    rotation: [0, 0, 0],
+    position: [0, 0, 0],
   },
 ];
 
 export function sampleFilm(progress: number) {
   const p = Math.max(0, Math.min(1, Number.isFinite(progress) ? progress : 0));
+  if (p <= 0) {
+    const k = keys[0];
+    return {
+      camera: [...k.camera] as Vector,
+      target: [...k.target] as Vector,
+      open: k.open,
+      light: k.light,
+      display: k.display,
+      screen: k.screen,
+      buttonPress: k.buttonPress ?? 0,
+      rotation: [...(k.rotation ?? [0, 0, 0])] as Vector,
+      position: [...(k.position ?? [0, 0, 0])] as Vector,
+      chapter: 0,
+      seconds: 0,
+    };
+  }
+  if (p >= 1) {
+    const k = keys[keys.length - 1];
+    return {
+      camera: [...k.camera] as Vector,
+      target: [...k.target] as Vector,
+      open: k.open,
+      light: k.light,
+      display: k.display,
+      screen: k.screen,
+      buttonPress: k.buttonPress ?? 0,
+      rotation: [...(k.rotation ?? [0, 0, 0])] as Vector,
+      position: [...(k.position ?? [0, 0, 0])] as Vector,
+      chapter: 6,
+      seconds: 43,
+    };
+  }
+
   const seconds = p * 43;
   let index = keys.findIndex(
     (key, n) =>
@@ -241,27 +340,61 @@ export function sampleFilm(progress: number) {
   const scalar = (left: number, right: number) => left + (right - left) * e;
   const vector = (left: Vector, right: Vector) =>
     left.map((value, n) => scalar(value, right[n])) as Vector;
+
+  // Base interpolated values
+  const camera = vector(a.camera, b.camera);
+  const target = vector(a.target, b.target);
+  const open = scalar(a.open, b.open);
+  const light = scalar(a.light, b.light);
+  const display = scalar(a.display, b.display);
+  const screen = scalar(a.screen, b.screen);
+  const buttonPress = scalar(a.buttonPress ?? 0, b.buttonPress ?? 0);
+  const rotation = vector(
+    a.rotation ?? [0, 0, 0],
+    b.rotation ?? [0, 0, 0],
+  );
+  const position = vector(
+    a.position ?? [0, 0, 0],
+    b.position ?? [0, 0, 0],
+  );
+
+  // Subtle organic levitation breathing during the floating product showcase pose (5s to 12s)
+  if (seconds >= 4.8 && seconds <= 12.0) {
+    const floatBlend =
+      Math.sin(Math.min(1, Math.max(0, (seconds - 4.8) / 1.5)) * Math.PI * 0.5) *
+      (1 - Math.max(0, Math.min(1, (seconds - 10.5) / 1.5)));
+    position[1] += Math.sin((seconds - 4.8) * 1.2) * 0.12 * floatBlend;
+    position[2] += Math.cos((seconds - 4.8) * 0.9) * 0.08 * floatBlend;
+    rotation[0] += Math.sin((seconds - 4.8) * 1.0) * 0.012 * floatBlend;
+    rotation[1] += Math.cos((seconds - 4.8) * 0.8) * 0.018 * floatBlend;
+    rotation[2] += Math.sin((seconds - 4.8) * 0.9) * 0.008 * floatBlend;
+  }
+
   const chapter =
-    seconds < 6
+    seconds < 4.5
       ? 0
-      : seconds < 9
+      : seconds < 12.0
         ? 1
-        : seconds < 15
+        : seconds < 18.0
           ? 2
-          : seconds < 21
+          : seconds < 24.0
             ? 3
-            : seconds < 29
+            : seconds < 30.0
               ? 4
-              : seconds < 36
+              : seconds < 36.0
                 ? 5
                 : 6;
+
   return {
-    camera: vector(a.camera, b.camera),
-    target: vector(a.target, b.target),
-    open: scalar(a.open, b.open),
-    light: scalar(a.light, b.light),
-    display: scalar(a.display, b.display),
-    screen: scalar(a.screen, b.screen),
+    camera,
+    target,
+    open,
+    light,
+    display,
+    screen,
+    buttonPress,
+    rotation,
+    position,
     chapter,
     seconds,
   };

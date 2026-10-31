@@ -463,7 +463,7 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     return g;
   }
 
-  // Power button recess & milled tactile key
+  // Power button recess & milled tactile key assembly
   const powerRecess = add(
     new THREE.BoxGeometry(0.06, 1.12, 0.42),
     m.black,
@@ -475,13 +475,18 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   );
   void powerRecess;
 
+  const powerButtonGroup = new THREE.Group();
+  powerButtonGroup.name = "power button tactile assembly";
+  powerButtonGroup.position.set(3.75, 2.85, 0);
+  group.add(powerButtonGroup);
+
   const powerKey = add(
     makeSideButton(0.98),
     m.metal,
-    3.75,
-    2.85,
     0,
-    group,
+    0,
+    0,
+    powerButtonGroup,
     "milled power button key",
   );
   powerKey.rotation.y = Math.PI / 2;
@@ -489,10 +494,10 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   const powerChamfer = add(
     makeSideButton(0.96, 0.34, 0.02),
     m.polishedMetal,
-    3.80,
-    2.85,
+    0.05,
     0,
-    group,
+    0,
+    powerButtonGroup,
     "power button chamfer highlight",
   );
   powerChamfer.rotation.y = Math.PI / 2;
@@ -729,13 +734,18 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   return {
     group,
     displayMaterial,
-    animate(amount: number, seconds = 0) {
+    powerButtonGroup,
+    animate(amount: number, seconds = 0, buttonDepression = 0) {
       void seconds;
       // Rear panel only lifts subtly during cutaway teardown inspection
       // Phone ALWAYS remains whole and solid
       rear.position.set(0, 0, -amount * 0.35);
       finStack.position.set(0, 0, -amount * 0.15);
       inside.position.set(0, 0, -amount * 0.08);
+
+      // Physical mechanical power button depression (moves inward into frame recess)
+      const depression = Math.max(0, Math.min(1, buttonDepression));
+      powerButtonGroup.position.x = 3.75 - depression * 0.075;
     },
     dispose() {
       group.traverse((object) => {
