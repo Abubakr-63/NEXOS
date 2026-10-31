@@ -1,5 +1,7 @@
 # D5: durable preflight admission and transactional outbox
 
+**Latest local status:** the explicitly approved D5 migration was applied to local nexos_development with all original rows intact and Prisma status up to date. Post-migration runtime checks are blocked by unavailable local services following an interruption; no restart/retry was attempted under the stop-on-failure instruction. See [approved local execution and guard report](phase-d5-local-migration-applied.md). The earlier approval-gate status below is historical. Production job wiring remains disabled.
+
 Date: 2026-10-31, Asia/Tashkent. Branch: `ai/codex-backend`.
 
 Status: implementation demonstrated against disposable PostgreSQL/Redis; **existing-database migration and activation await explicit approval**. This is a safe migration-gate delivery, not a claim that production D5 or Android compilation is complete. PR #1 stays draft and unmerged.

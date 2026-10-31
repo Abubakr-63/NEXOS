@@ -1,5 +1,9 @@
 # Codex backend implementation and integration handoff
 
+## Approved local D5 migration — 2026-10-31
+
+Only `20261030190000_durable_build_jobs` was applied to local nexos_development after backup/drift/quiet-window checks and the normalized target guard fix. All 28 original application tables remained identical; Prisma status was up to date. Guard regressions bring the unit suite to 88 passing tests; TypeScript/lint pass. Local services were unreachable following a tool interruption, so post-migration API/auth/project verification is blocked and no service restart was attempted. [Execution evidence and remaining checks](../build/phase-d5-local-migration-applied.md). Earlier pending-migration statements below are historical. No production job wiring or frontend/shared contract change is included.
+
 ## D5 migration-gate update — 2026-10-31
 
 PostgreSQL-backed internal preflight admission, attempts/fencing, transactional outbox, BullMQ delivery and cleanup-gated recovery are implemented and tested on disposable services. See [D5 architecture, migration proposal and verification](../build/phase-d5-durable-jobs-outbox.md). The additive migration is **not applied to the existing development database** and needs explicit approval. Do not run `db:migrate` against that database before approval. Public builds remain 503; default readiness denies admission; no production worker wiring, Android compilation, shared contract or frontend change is included. Earlier D4 inventory below is historical and superseded for the new internal durable service only.
