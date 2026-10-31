@@ -3,12 +3,12 @@ import Link from "next/link";
 import type { PublicUser } from "@rom-hub/contracts";
 import { NEXOSLogo } from "./nexos-logo";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   LayoutDashboard,
   Folder,
   Plus,
-  Settings,
+  Settings as SettingsIcon,
   Sun,
   Moon,
   MoreHorizontal,
@@ -25,14 +25,9 @@ import {
   NavigationPill,
   StatusIndicator,
 } from "./design-system";
+import { useTranslation } from "@/lib/i18n";
+import { LanguageSwitcher } from "./language-switcher";
 
-const destinations = [
-  { href: "/dashboard", label: "Overview", Icon: LayoutDashboard },
-  { href: "/projects", label: "My projects", Icon: Folder },
-  { href: "/projects/new", label: "Create ROM", Icon: Plus },
-  { href: "/settings", label: "Settings", Icon: Settings },
-  { href: "/profile", label: "Profile", Icon: UserRound },
-];
 function currentSection(path: string) {
   if (path === "/projects/new") return "/projects/new";
   if (path.startsWith("/projects") || path.startsWith("/builder/"))
@@ -42,6 +37,7 @@ function currentSection(path: string) {
   if (path === "/help") return "/help";
   return "/dashboard";
 }
+
 export function Shell({
   children,
   user,
@@ -49,10 +45,24 @@ export function Shell({
   children: React.ReactNode;
   user: PublicUser;
 }) {
+  const { t } = useTranslation("nav");
+  const { t: tc } = useTranslation("common");
   const pathname = usePathname();
   const [hovered, setHovered] = useState(false);
   const [touchExpanded, setTouchExpanded] = useState(false);
   const sidebar = useRef<HTMLElement>(null);
+
+  const destinations = useMemo(
+    () => [
+      { href: "/dashboard", label: t("overview"), Icon: LayoutDashboard },
+      { href: "/projects", label: t("myProjects"), Icon: Folder },
+      { href: "/projects/new", label: t("createRom"), Icon: Plus },
+      { href: "/settings", label: t("settings"), Icon: SettingsIcon },
+      { href: "/profile", label: t("profile"), Icon: UserRound },
+    ],
+    [t],
+  );
+
   useEffect(() => {
     if (!touchExpanded) return;
     function dismiss(event: PointerEvent) {
@@ -62,19 +72,26 @@ export function Shell({
     document.addEventListener("pointerdown", dismiss);
     return () => document.removeEventListener("pointerdown", dismiss);
   }, [touchExpanded]);
+
   const [moreOpen, setMoreOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const active = currentSection(pathname);
-  const title =
-    pathname.startsWith("/builder/") || pathname === "/projects/new"
-      ? "Visual builder"
-      : active === "/help"
-        ? "Help & documentation"
-        : destinations.find((d) => d.href === active)?.label;
+
+  const title = useMemo(() => {
+    if (pathname.startsWith("/builder/") || pathname === "/projects/new") {
+      return t("visualBuilder");
+    }
+    if (active === "/help") {
+      return t("help");
+    }
+    return destinations.find((d) => d.href === active)?.label;
+  }, [pathname, active, destinations, t]);
+
   function closeMore() {
     dialog.current?.close();
     setMoreOpen(false);
   }
+
   function toggleTheme() {
     const next =
       document.documentElement.dataset.theme === "light" ? "dark" : "light";
@@ -83,16 +100,17 @@ export function Shell({
       localStorage.setItem("romhub-theme", next);
     } catch {}
   }
+
   return (
     <div className="craft-shell">
       <a className="skip-link" href="#workspace-main">
-        Skip to content
+        {tc("skipToContent")}
       </a>
       <aside
         id="workspace-sidebar"
         ref={sidebar}
         className="craft-sidebar"
-        aria-label="Workspace sidebar"
+        aria-label={t("sidebarLabel")}
         data-expanded={hovered || touchExpanded}
         onPointerEnter={(event) => {
           if (
@@ -112,7 +130,7 @@ export function Shell({
           <NEXOSLogo />
         </Link>
         <div className="rail-divider" />
-        <NavigationPill aria-label="Main navigation">
+        <NavigationPill aria-label={t("mainNavLabel")}>
           {destinations.map(({ href, label, Icon }) => (
             <NavigationItem
               key={href}
@@ -131,34 +149,31 @@ export function Shell({
           <div
             className="rail-status"
             role="status"
-            title="Build infrastructure offline"
-            aria-label="Build infrastructure offline"
+            title={t("infraOffline")}
+            aria-label={t("infraOffline")}
           >
             <span className="rail-status-dot" aria-hidden="true" />
-            <span className="rail-status-label">
-              Build infrastructure offline
-            </span>
+            <span className="rail-status-label">{t("infraOffline")}</span>
           </div>
           <Link
             prefetch={false}
             href="/help"
             className="profile-card"
-            title="Help & documentation"
-            aria-label="Help & documentation"
+            title={t("help")}
+            aria-label={t("help")}
           >
             <span className="profile-avatar" aria-hidden="true">
               <BookOpen size={22} />
             </span>
             <span className="profile-copy">
-              Help & documentation<small>Using NEXOS</small>
+              {t("help")}
+              <small>{t("helpDesc")}</small>
             </span>
           </Link>
           <button
             className="rail-toggle"
             onClick={() => setTouchExpanded(!touchExpanded)}
-            aria-label={
-              touchExpanded ? "Collapse navigation" : "Expand navigation"
-            }
+            aria-label={touchExpanded ? t("collapseNav") : t("expandNav")}
             aria-expanded={touchExpanded}
             aria-controls="workspace-sidebar"
           >
@@ -167,9 +182,7 @@ export function Shell({
             ) : (
               <PanelLeftClose size={19} />
             )}
-            <span>
-              {touchExpanded ? "Collapse navigation" : "Expand navigation"}
-            </span>
+            <span>{touchExpanded ? t("collapseNav") : t("expandNav")}</span>
           </button>
         </div>
       </aside>
@@ -185,16 +198,17 @@ export function Shell({
               <NEXOSLogo size={23} wordmark={false} />
             </Link>
             <span>
-              Personal workspace <span className="workspace-slash">/</span>{" "}
+              {t("personalWorkspace")} <span className="workspace-slash">/</span>{" "}
               <strong>{title}</strong>
             </span>
           </div>
           <div className="topbar-actions">
-            <StatusIndicator>Configuration studio</StatusIndicator>
-            <span className="craft-alpha">FOUNDATION</span>
+            <StatusIndicator>{t("configurationStudio")}</StatusIndicator>
+            <span className="craft-alpha">{t("foundation")}</span>
+            <LanguageSwitcher variant="compact" />
             <button
               className="theme-toggle"
-              aria-label="Toggle color theme"
+              aria-label={t("toggleTheme")}
               onClick={toggleTheme}
             >
               <Sun className="theme-sun" size={19} />
@@ -204,7 +218,7 @@ export function Shell({
               prefetch={false}
               href="/profile"
               className="header-avatar"
-              aria-label="Your profile"
+              aria-label={t("profile")}
             >
               {user.username.slice(0, 1).toUpperCase()}
             </Link>
@@ -215,16 +229,18 @@ export function Shell({
           <span className="footer-brand">
             <NEXOSLogo size={18} wordmark={false} /> NEXOS <span>© 2026</span>
           </span>
-          <span>Your Android. Your Rules.</span>
+          <span>{tc("tagline")}</span>
         </footer>
       </div>
-      <NavigationPill className="mobile-dock" aria-label="Mobile navigation">
+      <NavigationPill className="mobile-dock" aria-label={t("mobileNavLabel")}>
         {destinations.slice(0, 3).map(({ href, label, Icon }) => (
           <NavigationItem
             key={href}
             href={href}
             icon={<Icon size={24} />}
             active={active === href}
+            title={label}
+            aria-label={label}
             onClick={closeMore}
           >
             {label}
@@ -232,7 +248,8 @@ export function Shell({
         ))}
         <button
           className="navigation-item"
-          aria-label="More navigation"
+          aria-label={t("more")}
+          title={t("more")}
           aria-haspopup="dialog"
           aria-expanded={moreOpen}
           aria-controls="more-navigation"
@@ -247,7 +264,7 @@ export function Shell({
           <span className="navigation-icon">
             <MoreHorizontal size={25} />
           </span>
-          <span className="navigation-label">More</span>
+          <span className="navigation-label">{t("more")}</span>
         </button>
       </NavigationPill>
       <dialog
@@ -278,18 +295,18 @@ export function Shell({
         <GlassPanel>
           <div className="more-title">
             <div>
-              <span className="craft-kicker">YOUR WORKSPACE</span>
-              <h2 id="more-heading">A little more space.</h2>
+              <span className="craft-kicker">{t("yourWorkspace")}</span>
+              <h2 id="more-heading">{t("moreHeading")}</h2>
             </div>
             <button
               className="icon-button"
-              aria-label="Close navigation"
+              aria-label={tc("close")}
               onClick={closeMore}
             >
               <X size={22} />
             </button>
           </div>
-          <nav aria-label="Account navigation">
+          <nav aria-label={t("accountNavLabel")}>
             {destinations.slice(3).map(({ href, label, Icon }) => (
               <NavigationItem
                 key={href}
@@ -308,7 +325,7 @@ export function Shell({
               className="more-home"
               onClick={closeMore}
             >
-              Help & documentation <BookOpen size={16} />
+              {t("help")} <BookOpen size={16} />
             </Link>
             <Link
               prefetch={false}
@@ -316,11 +333,11 @@ export function Shell({
               className="more-home"
               onClick={closeMore}
             >
-              NEXOS home <ArrowUpRight size={16} />
+              {t("home")} <ArrowUpRight size={16} />
             </Link>
           </nav>
           <StatusIndicator muted>
-            Cloud builds are not configured
+            {t("cloudNotConfigured")}
           </StatusIndicator>
         </GlassPanel>
       </dialog>

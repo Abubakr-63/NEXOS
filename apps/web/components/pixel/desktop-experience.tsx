@@ -13,6 +13,7 @@ import {
   type SceneEvent,
 } from "./orchestrator";
 import type { PixelEngine } from "./engine";
+import { useTranslation } from "@/lib/i18n";
 import "./pixel.css";
 
 export function DesktopExperience({
@@ -32,6 +33,7 @@ export function DesktopExperience({
   context?: string;
   authenticated?: boolean;
 }) {
+  const { t } = useTranslation("phonePreview");
   const canvas = useRef<HTMLCanvasElement>(null),
     engine = useRef<PixelEngine | null>(null);
   const stop = useRef<(() => void) | null>(null);
@@ -46,8 +48,8 @@ export function DesktopExperience({
       configurationToScreen(
         configuration ?? {
           ...defaultConfiguration,
-          name: mode === "register" ? "Your Android journey" : "Welcome back",
-          accent: chapter === 5 ? "#c6b6e8" : "#91d5ef",
+          name: mode === "register" ? t("journey") : t("welcomeBack"),
+          accent: chapter === 5 ? "#38bdf8" : "#60a5fa",
           darkMode: chapter !== 5,
           apps:
             chapter >= 2
@@ -59,11 +61,12 @@ export function DesktopExperience({
         },
         success || authenticated,
       ),
-    [configuration, chapter, mode, success, authenticated],
+    [configuration, chapter, mode, success, authenticated, t],
   );
   const stateRef = useRef(screenState),
     previous = useRef(screenState);
   const previousReview = useRef(false);
+
   useEffect(() => {
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
     const changed = () => {
@@ -74,6 +77,7 @@ export function DesktopExperience({
     preference.addEventListener("change", changed);
     return () => preference.removeEventListener("change", changed);
   }, []);
+
   useEffect(() => {
     let active = true,
       loading = false;
@@ -136,6 +140,8 @@ export function DesktopExperience({
             matchMedia("(prefers-reduced-motion: reduce)").matches,
             compact,
           );
+          (element as unknown as { __pixelEngine: PixelEngine | null }).__pixelEngine =
+            engine.current;
           if (compact || matchMedia("(prefers-reduced-motion: reduce)").matches)
             engine.current.seek(1 / 3);
           else
@@ -160,10 +166,12 @@ export function DesktopExperience({
       engine.current = null;
     };
   }, [compact]);
+
   useEffect(() => {
     stateRef.current = screenState;
     engine.current?.update(screenState);
   }, [screenState]);
+
   useEffect(() => {
     engine.current?.motion(reduced);
   }, [reduced]);
@@ -191,6 +199,7 @@ export function DesktopExperience({
     return () => stop.current?.();
   }, [ready, compact, mode, reduced, visible]);
 
+  // Event-driven reactive camera animation for Create ROM / Studio settings
   useEffect(() => {
     const event = configurationEvent(previous.current, screenState);
     previous.current = screenState;
@@ -211,6 +220,7 @@ export function DesktopExperience({
     engine.current?.zoom(1);
     engine.current?.seek(1 / 3);
     if (reduced) return;
+
     // Replacing a running event always applies the latest screen state, then returns to rest.
     let announced = false;
     stop.current = animationClock(
@@ -220,17 +230,23 @@ export function DesktopExperience({
           announced = true;
           setNotice(
             action === "calendar-added"
-              ? "Calendar added"
+              ? t("calendarAdded")
               : action === "calendar-removed"
-                ? "Calendar removed"
-                : action === "review"
-                  ? "Reviewing your draft"
-                  : "Preview updated",
+                ? t("calendarRemoved")
+                : action === "appearance"
+                  ? t("appearanceUpdated")
+                  : action === "performance"
+                    ? t("performanceUpdated")
+                    : action === "review"
+                      ? t("reviewingDraft")
+                      : t("previewUpdated"),
           );
         }
         if (action === "review" && elapsed < 1100) {
           engine.current?.seek(1);
-          engine.current?.view("rear");
+          engine.current?.view("three-quarter");
+        } else if (action === "appearance" && elapsed < 1200) {
+          engine.current?.seek(0.36);
         } else {
           engine.current?.seek(
             action === "performance" && elapsed < 1100 ? 4 / 6 : 1 / 3,
@@ -241,7 +257,7 @@ export function DesktopExperience({
           "calendar-removed",
           "applications",
         ].includes(action);
-        engine.current?.zoom(focus && elapsed < 1500 ? 1.15 : 1);
+        engine.current?.zoom(focus && elapsed < 1600 ? 1.2 : 1);
         if (elapsed >= (action === "review" ? 3400 : 2800)) {
           engine.current?.seek(1 / 3);
           engine.current?.zoom(1);
@@ -249,7 +265,8 @@ export function DesktopExperience({
         }
       },
     );
-  }, [screenState, compact, ready, review, reduced, visible]);
+  }, [screenState, compact, ready, review, reduced, visible, t]);
+
   useEffect(() => {
     if (!visible || reduced) {
       stop.current?.();
@@ -257,6 +274,7 @@ export function DesktopExperience({
       if (compact) engine.current?.seek(1 / 3);
     }
   }, [visible, reduced, compact]);
+
   return (
     <div
       className={`pixel-story${compact ? " pixel-compact" : ""}`}
@@ -265,11 +283,11 @@ export function DesktopExperience({
     >
       <div className="pixel-stage">
         <div className="pixel-heading">
-          <span>NEXOS / ANDROID, REIMAGINED</span>
+          <span>{t("tagline")}</span>
           <span>
             {compact
-              ? "CONFIGURATION CONCEPT"
-              : "REDMAGIC-INSPIRED / NEXOS STUDY"}
+              ? t("conceptCompact")
+              : t("conceptStudy")}
           </span>
         </div>
         <div className="pixel-viewport">
@@ -277,8 +295,8 @@ export function DesktopExperience({
             ref={canvas}
             aria-label={
               compact
-                ? "Autonomous generic configuration concept"
-                : "Autonomous NEXOS concept smartphone film"
+                ? t("ariaCompact")
+                : t("ariaStudy")
             }
             role="img"
           />
@@ -287,18 +305,18 @@ export function DesktopExperience({
               <Smartphone size={80} strokeWidth={0.7} />
               <p>
                 {fallback
-                  ? "3D preview unavailable on this device."
-                  : "Preparing the product scene…"}
+                  ? t("fallbackUnavailable")
+                  : t("fallbackPreparing")}
               </p>
               <small>
-                Your account and configuration controls remain available.
+                {t("fallbackHint")}
               </small>
             </div>
           )}
           <span className="pixel-model-label">
             {compact
-              ? "Generic concept · not a model of your selected device"
-              : "Reference-inspired visualization · hardware effects are illustrative"}
+              ? t("modelLabelCompact")
+              : t("modelLabelFilm")}
           </span>
           <span className="pixel-confirmation" role="status">
             {notice}
@@ -308,18 +326,18 @@ export function DesktopExperience({
           <div className="pixel-copy">
             <span>
               {mode === "register"
-                ? "CREATE YOUR ANDROID JOURNEY"
-                : "YOUR ANDROID. YOUR RULES."}
+                ? t("kickerRegister")
+                : t("kickerLogin")}
             </span>
-            <h2>{filmScenes[chapter].label}</h2>
-            <p>{filmScenes[chapter].detail}</p>
+            <h2>{t(`scenes.${String(Math.min(Math.max(chapter, 0), 6)) as "0" | "1" | "2" | "3" | "4" | "5" | "6"}.label`) || filmScenes[chapter].label}</h2>
+            <p>{t(`scenes.${String(Math.min(Math.max(chapter, 0), 6)) as "0" | "1" | "2" | "3" | "4" | "5" | "6"}.detail`) || filmScenes[chapter].detail}</p>
           </div>
         )}
         {compact && context && <p className="pixel-context">{context}</p>}
         <p className="pixel-concept-note">
           {compact
-            ? "Draft visualization. Compilation and compatibility remain unverified."
-            : "An automatic NEXOS interface concept. No settings are saved here."}
+            ? t("noteCompact")
+            : t("noteFilm")}
         </p>
       </div>
     </div>

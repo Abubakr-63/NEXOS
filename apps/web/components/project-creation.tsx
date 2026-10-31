@@ -7,7 +7,7 @@ import type {
   DevicesResponse,
 } from "@rom-hub/contracts";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   defaultConfiguration,
@@ -24,18 +24,26 @@ import {
   type CatalogDevice,
   type AndroidBaseOption,
 } from "@/lib/project-api";
-
+import { useTranslation } from "@/lib/i18n";
 import { PixelExperience } from "./pixel/pixel-experience";
+import { PrebuiltRomCard } from "./prebuilt-rom-card";
 import "./workspace-pages.css";
 
-const steps = [
-  "Project Identity",
-  "Select Device",
-  "Android Base",
-  "Review & Create",
-];
 export function ProjectCreation() {
   const router = useRouter();
+  const { t } = useTranslation("projectCreation");
+  const { t: tc } = useTranslation("common");
+
+  const steps = useMemo(
+    () => [
+      t("steps.0"),
+      t("steps.1"),
+      t("steps.2"),
+      t("steps.3"),
+    ],
+    [t],
+  );
+
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -60,9 +68,10 @@ export function ProjectCreation() {
   const [loading, setLoading] = useState(true);
   const [baseLoading, setBaseLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
-  const [accountStatus, setAccountStatus] = useState("Checking your session…");
+  const [accountStatus, setAccountStatus] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+
   useEffect(() => {
     const controller = new AbortController();
     projectAPI<AuthenticationResponse>(
@@ -73,7 +82,7 @@ export function ProjectCreation() {
     )
       .then(() => {
         setSignedIn(true);
-        setAccountStatus("Projects will be saved to your account.");
+        setAccountStatus(null);
       })
       .catch((e) => {
         if (!controller.signal.aborted) setAccountStatus(e.message);
@@ -106,6 +115,7 @@ export function ProjectCreation() {
       });
     return () => controller.abort();
   }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => {
@@ -137,7 +147,21 @@ export function ProjectCreation() {
       controller.abort();
     };
   }, [manufacturerId, query, page]);
+
   const variant = device?.variants.find((v) => v.id === variantId);
+
+  const isSunnyDevice = Boolean(
+    device &&
+      (device.codename === "mojito" || device.slug === "xiaomi-mojito") &&
+      variant?.modelNumber === "M2101K7AG",
+  );
+
+  useEffect(() => {
+    if (!isSunnyDevice && base === "pixelexperience-plus-mojito-android11") {
+      setBase("");
+    }
+  }, [isSunnyDevice, base]);
+
   function next() {
     setError("");
     if (step === 0) {
@@ -148,17 +172,16 @@ export function ProjectCreation() {
       }
     }
     if (step === 1 && (!device || !variant)) {
-      setError("Select a manufacturer, device model and exact variant.");
+      setError(t("stepValidationError1"));
       return;
     }
     if (step === 2 && !base) {
-      setError(
-        "Select an Android base or explicitly choose an unconfigured draft.",
-      );
+      setError(t("stepValidationError2"));
       return;
     }
     setStep((s) => Math.min(3, s + 1));
   }
+
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (step < 3) {
@@ -187,21 +210,25 @@ export function ProjectCreation() {
       setPending(false);
     }
   }
+
+  const effectiveAccountStatus = accountStatus !== null
+    ? accountStatus
+    : signedIn
+      ? t("accountStatusSignedIn")
+      : t("accountStatusChecking");
+
   return (
     <div className="craft-page project-workflow">
       <div className="craft-heading">
         <div>
-          <span className="craft-kicker">YOUR NEXT ANDROID</span>
-          <h1>Create a ROM project</h1>
-          <p>
-            Choose a foundation. Save a draft. Keep every detail in your
-            workspace.
-          </p>
+          <span className="craft-kicker">{t("pageKicker")}</span>
+          <h1>{t("pageTitle")}</h1>
+          <p>{t("pageSubtitle")}</p>
         </div>
       </div>
       <div className="craft-status" role="status">
-        {accountStatus}
-        {!signedIn && <Link href="/login">Sign in →</Link>}
+        {effectiveAccountStatus}
+        {!signedIn && <Link href="/login">{tc("actions")} →</Link>}
       </div>
       <div className="studio-layout">
         <nav className="studio-steps" aria-label="Project creation steps">
@@ -222,7 +249,9 @@ export function ProjectCreation() {
           ))}
         </nav>
         <section className="studio-editor">
-          <span className="craft-kicker">STEP {step + 1} OF 4</span>
+          <span className="craft-kicker">
+            {t("stepOf", { current: step + 1, total: 4 })}
+          </span>
           <h2>{steps[step]}</h2>
           <form onSubmit={submit}>
             <fieldset
@@ -232,42 +261,39 @@ export function ProjectCreation() {
               {step === 0 && (
                 <>
                   <label className="craft-field">
-                    Project name
+                    {t("projectName")}
                     <input
                       required
                       autoComplete="off"
                       maxLength={60}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="My Android"
+                      placeholder={t("projectNamePlaceholder")}
                     />
                   </label>
                   <label className="craft-field">
-                    Description (optional)
+                    {t("description")}
                     <textarea
                       maxLength={2000}
                       rows={4}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       className="project-description-input"
-                      placeholder="What would you like to create?"
+                      placeholder={t("descriptionPlaceholder")}
                     />
                   </label>
                 </>
               )}
               {step === 1 && (
                 <>
-                  <p>
-                    Choose the exact hardware variant. Catalog presence does not
-                    mean build support.
-                  </p>
+                  <p>{t("deviceSubtitle")}</p>
                   {catalogError && (
                     <p role="alert" className="form-status">
                       {catalogError}
                     </p>
                   )}
                   <label className="craft-field">
-                    Manufacturer
+                    {t("manufacturerFilter")}
                     <select
                       required
                       value={manufacturerId}
@@ -281,7 +307,7 @@ export function ProjectCreation() {
                         setLoading(true);
                       }}
                     >
-                      <option value="">Choose manufacturer</option>
+                      <option value="">{t("allManufacturers")}</option>
                       {manufacturers.map((m) => (
                         <option key={m.id} value={m.id}>
                           {m.name}
@@ -290,22 +316,14 @@ export function ProjectCreation() {
                     </select>
                   </label>
                   {manufacturersLoading && (
-                    <p role="status">Loading manufacturers…</p>
+                    <p role="status">{t("loadingManufacturers")}</p>
                   )}
-                  {!manufacturersLoading &&
-                    !catalogError &&
-                    manufacturers.length === 0 && (
-                      <p>
-                        No manufacturers are registered yet. Ask the
-                        administrator to populate the device catalog.
-                      </p>
-                    )}
                   <label className="craft-field">
-                    Search devices
+                    {t("searchDevice")}
                     <input
                       type="search"
                       value={query}
-                      placeholder="Name, codename or model number"
+                      placeholder={t("searchDevicePlaceholder")}
                       onChange={(e) => {
                         setQuery(e.target.value);
                         setPage(1);
@@ -318,11 +336,11 @@ export function ProjectCreation() {
                       {deviceError}
                     </p>
                   ) : loading ? (
-                    <p role="status">Loading devices…</p>
+                    <p role="status">{t("loadingDevices")}</p>
                   ) : (
                     <>
                       <label className="craft-field">
-                        Device model
+                        {t("deviceTitle")}
                         <select
                           value={device?.id ?? ""}
                           required
@@ -336,7 +354,7 @@ export function ProjectCreation() {
                             setVariantId("");
                           }}
                         >
-                          <option value="">Choose device model</option>
+                          <option value="">{t("selectDevicePrompt")}</option>
                           {device &&
                             !catalog.items.some((d) => d.id === device.id) && (
                               <option value={device.id}>
@@ -346,17 +364,14 @@ export function ProjectCreation() {
                           {catalog.items.map((d) => (
                             <option key={d.id} value={d.id}>
                               {d.name} · {d.codename} ·{" "}
-                              {d.catalogStatus ?? "UNVERIFIED"} · Build not
-                              verified
-                              {d.isDemo ? " · Fictional demo" : ""}
+                              {d.catalogStatus ?? "UNVERIFIED"}
                             </option>
                           ))}
                         </select>
                       </label>
                       {catalog.items.length === 0 && (
                         <p role="status">
-                          No devices match this search. Try another manufacturer
-                          or search term.
+                          {t("noDevicesFound")}
                         </p>
                       )}
                       <div className="settings-actions">
@@ -368,9 +383,9 @@ export function ProjectCreation() {
                             setLoading(true);
                           }}
                         >
-                          Previous devices
+                          {t("previousDevices")}
                         </SecondaryButton>
-                        <span>Page {page}</span>
+                        <span>{t("pageNumber", { page })}</span>
                         <SecondaryButton
                           type="button"
                           disabled={page * 12 >= catalog.total}
@@ -379,7 +394,7 @@ export function ProjectCreation() {
                             setLoading(true);
                           }}
                         >
-                          More devices
+                          {t("moreDevices")}
                         </SecondaryButton>
                       </div>
                     </>
@@ -391,13 +406,13 @@ export function ProjectCreation() {
                         {device.codename}
                       </p>
                       <label className="craft-field">
-                        Exact variant
+                        {t("selectVariant")}
                         <select
                           required
                           value={variantId}
                           onChange={(e) => setVariantId(e.target.value)}
                         >
-                          <option value="">Choose exact variant</option>
+                          <option value="">{t("selectVariant")}</option>
                           {device.variants.map((v) => (
                             <option key={v.id} value={v.id}>
                               {v.modelNumber} · {v.hardwareVariant || v.region}{" "}
@@ -411,44 +426,33 @@ export function ProjectCreation() {
                         . Source: {variant?.sourceStatus ?? "UNREVIEWED"}.<br />
                         Support: UNKNOWN. NEXOS build: NOT_VERIFIED. You can
                         save a draft; ROM compilation is unavailable.
-                        {variant?.notes && (
-                          <p>{variant.notes.replaceAll("ROMCRAFT", "NEXOS")}</p>
-                        )}
-                        {variant?.officialSourceUrl && (
-                          <p>
-                            <a
-                              href={variant.officialSourceUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Identification source ↗
-                            </a>
-                          </p>
-                        )}
-                        {variant?.sourceCodeUrl && (
-                          <p>
-                            <a
-                              href={variant.sourceCodeUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Source repository ↗
-                            </a>
-                          </p>
-                        )}
                       </div>
+                      {isSunnyDevice && (
+                        <div className="prebuilt-available-banner">
+                          <div>
+                            <span className="banner-badge">ROM Available</span>
+                            <p>{t("prebuiltAvailablePrompt")}</p>
+                          </div>
+                          <SecondaryButton
+                            type="button"
+                            onClick={() => {
+                              setBase("pixelexperience-plus-mojito-android11");
+                              setStep(2);
+                            }}
+                          >
+                            {t("selectPrebuiltRom")}
+                          </SecondaryButton>
+                        </div>
+                      )}
                     </>
                   )}
                 </>
               )}
               {step === 2 && (
                 <>
-                  <p>
-                    Available entries come from the database catalog. None has
-                    verified device-specific build support.
-                  </p>
+                  <p>{t("androidBaseSubtitle")}</p>
                   {baseLoading ? (
-                    <p role="status">Loading Android bases…</p>
+                    <p role="status">{t("loadingBases")}</p>
                   ) : baseError ? (
                     <p className="form-status" role="alert">
                       {baseError}
@@ -456,13 +460,18 @@ export function ProjectCreation() {
                   ) : (
                     <>
                       <label className="craft-field">
-                        Android base
+                        {t("androidBaseTitle")}
                         <select
                           value={base}
                           required
                           onChange={(e) => setBase(e.target.value)}
                         >
-                          <option value="">Choose a base or draft</option>
+                          <option value="">{t("selectBase")}</option>
+                          {isSunnyDevice && (
+                            <option value="pixelexperience-plus-mojito-android11">
+                              {t("pixelExperienceBaseOption")}
+                            </option>
+                          )}
                           {bases.map((b) => (
                             <option key={b.id} value={b.id}>
                               {b.name} · Android {b.androidVersion} ·{" "}
@@ -470,35 +479,12 @@ export function ProjectCreation() {
                             </option>
                           ))}
                           <option value="unconfigured">
-                            Unconfigured draft — compilation unavailable
+                            {t("unconfiguredDraftOption")}
                           </option>
                         </select>
                       </label>
-                      {bases.find((item) => item.id === base) && (
-                        <div className="craft-notice">
-                          Source availability is not device compatibility. NEXOS
-                          build: NOT_VERIFIED.
-                          <p>
-                            <a
-                              href={
-                                bases.find((item) => item.id === base)!
-                                  .documentationUrl
-                              }
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Official base documentation ↗
-                            </a>
-                          </p>
-                        </div>
-                      )}
-                      {bases.length === 0 && (
-                        <div className="craft-notice">
-                          No Android bases are registered. AOSP and LineageOS
-                          cannot be offered as compatible choices without
-                          catalog data. Choose an unconfigured draft to
-                          continue.
-                        </div>
+                      {isSunnyDevice && base === "pixelexperience-plus-mojito-android11" && (
+                        <PrebuiltRomCard />
                       )}
                     </>
                   )}
@@ -507,36 +493,33 @@ export function ProjectCreation() {
               {step === 3 && (
                 <>
                   <dl className="detail-list">
-                    <dt>Project</dt>
+                    <dt>{t("reviewIdentity")}</dt>
                     <dd>{name.trim()}</dd>
-                    <dt>Description</dt>
-                    <dd>{description.trim() || "Not provided"}</dd>
-                    <dt>Manufacturer</dt>
-                    <dd>{device?.manufacturer.name}</dd>
-                    <dt>Device</dt>
-                    <dd>
-                      {device?.name} ({device?.codename})
-                    </dd>
-                    <dt>Variant</dt>
+                    <dt>{t("description")}</dt>
+                    <dd>{description.trim() || "—"}</dd>
+                    <dt>{t("reviewTarget")}</dt>
+                    <dd>{device?.name} ({device?.codename})</dd>
+                    <dt>{t("reviewVariant")}</dt>
                     <dd>
                       {variant?.modelNumber} · {variant?.region}
                     </dd>
-                    <dt>Android base</dt>
+                    <dt>{t("reviewBase")}</dt>
                     <dd>
-                      {base === "unconfigured"
-                        ? "Unconfigured draft"
-                        : `${bases.find((item) => item.id === base)?.name ?? base} · Android ${bases.find((item) => item.id === base)?.androidVersion ?? "Unknown"}`}
+                      {base === "pixelexperience-plus-mojito-android11"
+                        ? "PixelExperience Plus · Android 11 (Prebuilt ROM)"
+                        : base === "unconfigured"
+                          ? t("unconfiguredDraftOption")
+                          : `${bases.find((item) => item.id === base)?.name ?? base} · Android ${bases.find((item) => item.id === base)?.androidVersion ?? ""}`}
                     </dd>
                   </dl>
+                  {isSunnyDevice && base === "pixelexperience-plus-mojito-android11" && (
+                    <PrebuiltRomCard />
+                  )}
                   <div className="craft-notice">
                     <StatusIndicator muted>
                       Compatibility UNKNOWN · Draft only
                     </StatusIndicator>
-                    <p>
-                      No NEXOS-verified device manifest or vendor, firmware and
-                      kernel integration is registered. Saving creates a project
-                      configuration. ROM compilation is unavailable.
-                    </p>
+                    <p>{t("disclaimer")}</p>
                   </div>
                 </>
               )}
@@ -554,7 +537,7 @@ export function ProjectCreation() {
                     setError("");
                   }}
                 >
-                  Back
+                  {t("back")}
                 </SecondaryButton>
                 <PrimaryButton
                   type="submit"
@@ -567,10 +550,10 @@ export function ProjectCreation() {
                   }
                 >
                   {pending
-                    ? "Saving project…"
+                    ? t("savingProject")
                     : step === 3
-                      ? "Create project"
-                      : "Continue"}
+                      ? t("createDraft")
+                      : t("continue")}
                 </PrimaryButton>
               </div>
             </fieldset>
@@ -588,10 +571,10 @@ export function ProjectCreation() {
               variantId: variantId || defaultConfiguration.variantId,
               base: base || defaultConfiguration.base,
             }}
-            context={`${device ? `${device.name} · ${variant?.modelNumber || "Choose variant"}` : "No device selected"}. Base: ${bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Not selected")}. Interface concept only.`}
+            context={`${device ? `${device.name} · ${variant?.modelNumber || "Variant"}` : "No device selected"}. Base: ${base === "pixelexperience-plus-mojito-android11" ? "PixelExperience Plus · Android 11" : bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Draft")}.`}
           />
           <div className="craft-notice">
-            Draft configuration · Cloud compilation unavailable
+            {t("draftNotice")}
           </div>
         </aside>
       </div>

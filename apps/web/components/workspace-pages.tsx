@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Folder, Sparkles } from "lucide-react";
+import { ArrowRight, Folder, Sparkles, Cpu, Layers, Smartphone } from "lucide-react";
 import {
   paginatedProjectsResponseSchema,
   projectsResponseSchema,
@@ -11,13 +11,16 @@ import {
 } from "@rom-hub/contracts";
 import { projectAPI } from "@/lib/project-api";
 import { PixelExperience } from "./pixel/pixel-experience";
+import { useTranslation } from "@/lib/i18n";
 import "./workspace-pages.css";
+
 type Project = {
   id: string;
   configuration: ROMConfiguration | null;
   updatedAt: string;
   revision: number;
 };
+
 function useProjectLibrary(limit: number, recent = false) {
   const [items, setItems] = useState<Project[]>([]),
     [cursor, setCursor] = useState<string | null>(null);
@@ -104,7 +107,10 @@ function useProjectLibrary(limit: number, recent = false) {
     },
   };
 }
+
 function ProjectCards({ items }: { items: Project[] }) {
+  const { t, format } = useTranslation("projects");
+
   return (
     <div className="craft-grid">
       {items.map((p) => (
@@ -115,18 +121,21 @@ function ProjectCards({ items }: { items: Project[] }) {
           href={`/projects/${p.id}`}
         >
           <Folder size={22} />
-          <h2>{p.configuration?.name ?? "Configuration needs review"}</h2>
+          <h2>{p.configuration?.name ?? t("needsReview")}</h2>
           <p>
-            {p.configuration?.preset ?? "Stored draft"} · Revision {p.revision}
+            {p.configuration?.preset ?? t("storedDraft")} · {t("revision", { revision: p.revision })}
           </p>
-          <small>Edited {new Date(p.updatedAt).toLocaleDateString()}</small>
-          <span>Open project →</span>
+          <small>{t("edited", { date: format.date(p.updatedAt) })}</small>
+          <span>{t("openProject")}</span>
         </Link>
       ))}
     </div>
   );
 }
+
 export function ProjectLibrary() {
+  const { t } = useTranslation("projects");
+  const { t: tc } = useTranslation("common");
   const library = useProjectLibrary(20);
   const [query, setQuery] = useState(""),
     [sort, setSort] = useState("recent");
@@ -143,48 +152,54 @@ export function ProjectLibrary() {
           )
         : b.updatedAt.localeCompare(a.updatedAt),
     );
+
+  const statusText = library.status === "Loading saved projects…"
+    ? t("loading")
+    : library.status ||
+      t("projectsLoaded", {
+        count: library.items.length,
+        more: !!library.cursor,
+      });
+
   return (
     <div className="craft-page project-library">
       <div className="craft-heading">
         <div>
-          <span className="craft-kicker">SAVED CONFIGURATIONS</span>
-          <h1>My projects</h1>
-          <p>Your project library. Every draft, in one place.</p>
+          <span className="craft-kicker">{t("kicker")}</span>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         <Link className="button primary" href="/projects/new">
-          New ROM <ArrowRight size={16} />
+          {t("newRom")} <ArrowRight size={16} />
         </Link>
       </div>
       <div className="library-tools">
         <label className="craft-field">
-          Search loaded projects
+          {t("searchLabel")}
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Project name"
+            placeholder={t("searchPlaceholder")}
           />
         </label>
         <label className="craft-field">
-          Sort loaded projects
+          {t("sortLabel")}
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="recent">Recently edited</option>
-            <option value="name">Name</option>
+            <option value="recent">{t("sortRecent")}</option>
+            <option value="name">{t("sortName")}</option>
           </select>
         </label>
       </div>
-      <p role="status">
-        {library.status ||
-          `${library.items.length} projects loaded${library.cursor ? "; more available" : ""}`}
-      </p>
+      <p role="status">{statusText}</p>
       <ProjectCards items={shown} />
       {!library.busy && !library.status && !shown.length && (
         <section className="panel">
-          <h2>{query ? "No loaded projects match" : "A fresh canvas"}</h2>
+          <h2>{query ? t("emptySearchTitle") : t("emptyLibraryTitle")}</h2>
           <p>
             {query
-              ? "Try another name, or load more projects below."
-              : "Create your first saved Android configuration."}
+              ? t("emptySearchDesc")
+              : t("emptyLibraryDesc")}
           </p>
         </section>
       )}
@@ -195,30 +210,51 @@ export function ProjectLibrary() {
           onClick={library.more}
         >
           {library.busy
-            ? "Loading…"
+            ? tc("loading")
             : library.cursor
-              ? "Load more projects"
-              : "Retry projects"}
+              ? t("loadMore")
+              : t("retryProjects")}
         </button>
       )}
     </div>
   );
 }
+
 export function Overview({ user }: { user: PublicUser }) {
+  const { t, format } = useTranslation("overview");
   const library = useProjectLibrary(6, true),
     latest = library.items[0];
+
   return (
     <div className="craft-page overview-page">
       <section className="workspace-hero">
-        <span className="craft-kicker">YOUR ANDROID. YOUR RULES.</span>
-        <h1>Welcome back, {user.username}.</h1>
-        <p>
-          A place for your next Android idea. Shape your configuration, save
-          your progress and return when inspiration finds you.
-        </p>
+        <span className="craft-kicker">{t("kicker")}</span>
+        <h1>{t("welcome", { username: user.username })}</h1>
+        <p>{t("description")}</p>
+        <div className="hero-stats-row">
+          <div className="hero-stat-pill">
+            <span />
+            {library.items.length > 0
+              ? t("savedDrafts", { count: library.items.length })
+              : t("studioReady")}
+          </div>
+          {latest && (
+            <div className="hero-stat-pill">
+              <span />
+              {t("latest", {
+                name: latest.configuration?.name || "Draft",
+                revision: latest.revision,
+              })}
+            </div>
+          )}
+          <div className="hero-stat-pill">
+            <span />
+            {t("aospBaseline")}
+          </div>
+        </div>
         <div className="settings-actions">
           <Link href="/projects/new" className="button primary">
-            Create ROM <Sparkles size={16} />
+            {t("createRom")} <Sparkles size={16} />
           </Link>
           {latest && (
             <Link
@@ -226,59 +262,121 @@ export function Overview({ user }: { user: PublicUser }) {
               href={`/builder/${latest.id}`}
               className="button secondary"
             >
-              Continue last project <ArrowRight size={16} />
+              {t("continueProject")} <ArrowRight size={16} />
             </Link>
           )}
         </div>
       </section>
+
+      {/* Superconscious Animated Feature Panels */}
+      <section className="super-feature-section" aria-label="Studio capabilities">
+        <div className="super-feature-grid">
+          <article className="super-feature-card">
+            <div className="feature-icon-badge" aria-hidden="true">
+              <Cpu size={22} />
+            </div>
+            <h3>{t("featureMatrixTitle")}</h3>
+            <p>{t("featureMatrixDesc")}</p>
+            <div className="feature-micro-ui">
+              <div className="micro-ui-item">
+                <span>{t("featureMatrixItem")}</span>
+                <small>{t("featureMatrixSub")}</small>
+              </div>
+              <div className="micro-ui-bar">
+                <div style={{ width: "88%" }} />
+              </div>
+            </div>
+          </article>
+
+          <article className="super-feature-card">
+            <div className="feature-icon-badge" aria-hidden="true">
+              <Smartphone size={22} />
+            </div>
+            <h3>{t("featurePreviewTitle")}</h3>
+            <p>{t("featurePreviewDesc")}</p>
+            <div className="feature-micro-ui">
+              <div className="micro-ui-item">
+                <span>{t("featurePreviewItem")}</span>
+                <small>{t("featurePreviewSub")}</small>
+              </div>
+              <div className="micro-ui-bar">
+                <div style={{ width: "95%" }} />
+              </div>
+            </div>
+          </article>
+
+          <article className="super-feature-card">
+            <div className="feature-icon-badge" aria-hidden="true">
+              <Layers size={22} />
+            </div>
+            <h3>{t("featureVerifyTitle")}</h3>
+            <p>{t("featureVerifyDesc")}</p>
+            <div className="feature-micro-ui">
+              <div className="micro-ui-item">
+                <span>{t("featureVerifyItem")}</span>
+                <small>{t("featureVerifySub")}</small>
+              </div>
+              <div className="micro-ui-bar">
+                <div style={{ width: "100%" }} />
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <div className="workspace-facts">
         <section className="panel">
-          <span className="craft-kicker">LATEST SAVED DRAFT</span>
+          <span className="craft-kicker">{t("latestDraftKicker")}</span>
           <h2>
-            {latest?.configuration?.name ?? "Your first idea starts here"}
+            {latest?.configuration?.name ?? t("firstIdeaStarts")}
           </h2>
           <p>
             {latest
-              ? `Revision ${latest.revision} · Edited ${new Date(latest.updatedAt).toLocaleDateString()}`
-              : "Saved project activity will appear here."}
+              ? t("draftInfo", {
+                  revision: latest.revision,
+                  date: format.date(latest.updatedAt),
+                })
+              : t("noSavedDrafts")}
           </p>
         </section>
         <section className="panel">
-          <span className="craft-kicker">BUILD READINESS</span>
-          <h2>Configuration comes first.</h2>
-          <p>
-            Drafts can be saved and edited. Device compatibility and cloud
-            compilation remain unverified.
-          </p>
+          <span className="craft-kicker">{t("buildReadinessKicker")}</span>
+          <h2>{t("buildReadinessTitle")}</h2>
+          <p>{t("buildReadinessDesc")}</p>
         </section>
       </div>
       <div className="craft-section-title">
-        <h2>Recently edited</h2>
-        <Link href="/projects">View project library →</Link>
+        <h2>{t("recentlyEdited")}</h2>
+        <Link href="/projects">{t("viewLibrary")}</Link>
       </div>
-      <p role="status">{library.status}</p>
+      <p role="status">
+        {library.status === "Loading saved projects…" ? t("loading") : library.status}
+      </p>
       <ProjectCards items={library.items.slice(0, 3)} />
       {!library.busy && !library.status && !library.items.length && (
-        <p>No project activity yet. Start with Create ROM.</p>
+        <p>{t("noActivity")}</p>
       )}
     </div>
   );
 }
+
 export function Profile({ user }: { user: PublicUser }) {
+  const { t } = useTranslation("profile");
   const library = useProjectLibrary(6, true),
     [selected, setSelected] = useState("");
   const project =
     library.items.find((p) => p.id === selected) ?? library.items[0];
+
   return (
     <div className="craft-page">
       <div className="craft-heading">
         <div>
-          <span className="craft-kicker">YOUR NEXOS IDENTITY</span>
-          <h1>Your profile</h1>
-          <p>Your ideas and the drafts you are shaping.</p>
+          <span className="craft-kicker">{t("kicker")}</span>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         <Link className="button secondary" href="/settings">
-          Manage settings
+          {t("manageSettings")}
         </Link>
       </div>
       <div className="profile-layout">
@@ -290,32 +388,51 @@ export function Profile({ user }: { user: PublicUser }) {
             <div>
               <h2>{user.username}</h2>
               <p>
-                {user.role} · Email{" "}
-                {user.emailVerifiedAt ? "verified" : "not verified"}
+                {user.role} · {t("emailStatus", {
+                  status: user.emailVerifiedAt ? t("verified") : t("notVerified"),
+                })}
               </p>
             </div>
           </div>
-          <h2>Recent project activity</h2>
-          <p role="status">{library.status}</p>
+          <div className="hero-stats-row" style={{ marginBottom: "24px" }}>
+            <div className="hero-stat-pill">
+              <span />
+              {t("savedProjectsCount", { count: library.items.length })}
+            </div>
+            {project && (
+              <div className="hero-stat-pill">
+                <span />
+                {t("currentDraft", { revision: project.revision })}
+              </div>
+            )}
+            <div className="hero-stat-pill">
+              <span />
+              {t("memberBadge")}
+            </div>
+          </div>
+          <h2>{t("recentActivity")}</h2>
+          <p role="status">
+            {library.status === "Loading saved projects…" ? t("loading") : library.status}
+          </p>
           <ProjectCards items={library.items.slice(0, 3)} />
           {!library.busy && !library.status && !project && (
-            <p>No saved projects yet. Your recent drafts will appear here.</p>
+            <p>{t("noProjects")}</p>
           )}
         </section>
         <aside>
           <label className="craft-field">
-            Preview a recent project
+            {t("previewProject")}
             <select
               value={project?.id ?? ""}
               disabled={!library.items.length}
               onChange={(e) => setSelected(e.target.value)}
             >
               {!library.items.length && (
-                <option value="">No saved project</option>
+                <option value="">{t("noSavedProjectOption")}</option>
               )}
               {library.items.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.configuration?.name ?? "Configuration needs review"}
+                  {p.configuration?.name ?? t("needsReview")}
                 </option>
               ))}
             </select>
@@ -326,8 +443,8 @@ export function Profile({ user }: { user: PublicUser }) {
             configuration={project?.configuration ?? undefined}
             context={
               project
-                ? `${project.configuration?.name ?? "Draft"} · Revision ${project.revision}`
-                : "Concept preview · no saved configuration selected"
+                ? `${project.configuration?.name ?? "Draft"} · ${t("currentDraft", { revision: project.revision })}`
+                : t("conceptPreviewNoConfig")
             }
           />
         </aside>

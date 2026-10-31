@@ -13,8 +13,11 @@ import {
   StatusIndicator,
 } from "./design-system";
 import { projectAPI } from "@/lib/project-api";
+import { useTranslation } from "@/lib/i18n";
 
 export function ProjectDetails({ id }: { id: string }) {
+  const { t, format } = useTranslation("projects");
+  const { t: tc } = useTranslation("common");
   const [project, setProject] = useState<ProjectDetailResponse>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,6 +26,7 @@ export function ProjectDetails({ id }: { id: string }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState("");
+
   useEffect(() => {
     const controller = new AbortController();
     projectAPI<ProjectDetailResponse>(
@@ -36,7 +40,7 @@ export function ProjectDetails({ id }: { id: string }) {
         setName(data.configuration.name);
         setDescription(data.configuration.description ?? "");
         if (new URLSearchParams(window.location.search).get("created") === "1")
-          setMessage("Project created and saved to your account.");
+          setMessage(t("projectCreatedSuccess"));
       })
       .catch((e) => {
         if (!controller.signal.aborted) setError(e.message);
@@ -45,7 +49,8 @@ export function ProjectDetails({ id }: { id: string }) {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [id]);
+  }, [id, t]);
+
   async function save(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!project || pending) return;
@@ -64,48 +69,50 @@ export function ProjectDetails({ id }: { id: string }) {
       );
       setProject({ ...project, ...saved });
       setEditing(false);
-      setMessage("Project updated and saved.");
+      setMessage(t("projectUpdatedSuccess"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update project.");
     } finally {
       setPending(false);
     }
   }
+
   if (loading)
     return (
       <div className="craft-page project-overview">
-        <p role="status">Loading project…</p>
+        <p role="status">{t("loadingProject")}</p>
       </div>
     );
   if (!project)
     return (
       <div className="craft-page project-overview">
-        <h1>Project unavailable</h1>
+        <h1>{t("projectUnavailable")}</h1>
         <p role="alert" className="form-status">
           {error}
         </p>
         <div className="settings-actions">
           <Link className="button secondary" href="/projects">
-            My projects
+            {t("title")}
           </Link>
           <Link className="button primary" href="/login">
-            Sign in
+            {tc("actions")}
           </Link>
         </div>
       </div>
     );
   const config = project.configuration;
   const variant = project.deviceVariant;
+
   return (
     <div className="craft-page project-overview">
       <Link className="back-link" href="/projects">
-        ← My projects
+        {t("backToProjects")}
       </Link>
       <div className="craft-heading">
         <div>
-          <span className="craft-kicker">PROJECT OVERVIEW</span>
+          <span className="craft-kicker">{t("projectOverview")}</span>
           <h1>{config.name}</h1>
-          <p>Saved configuration · Revision {project.revision}</p>
+          <p>{t("draftSaved", { revision: project.revision })}</p>
         </div>
         <SecondaryButton
           onClick={() => {
@@ -116,7 +123,7 @@ export function ProjectDetails({ id }: { id: string }) {
           }}
           disabled={pending}
         >
-          {editing ? "Cancel editing" : "Edit project"}
+          {editing ? t("cancelEditing") : t("editProject")}
         </SecondaryButton>
       </div>
       {message && (
@@ -131,7 +138,7 @@ export function ProjectDetails({ id }: { id: string }) {
       )}
       <div className="detail-grid">
         <GlassPanel className="panel">
-          <h2>Project details</h2>
+          <h2>{t("projectDetails")}</h2>
           {editing ? (
             <form onSubmit={save}>
               <fieldset
@@ -139,7 +146,7 @@ export function ProjectDetails({ id }: { id: string }) {
                 style={{ border: 0, padding: 0, minWidth: 0 }}
               >
                 <label className="craft-field">
-                  Project name
+                  {t("searchPlaceholder")}
                   <input
                     required
                     maxLength={60}
@@ -148,7 +155,7 @@ export function ProjectDetails({ id }: { id: string }) {
                   />
                 </label>
                 <label className="craft-field">
-                  Description (optional)
+                  {t("searchPlaceholder")} (optional)
                   <textarea
                     className="project-description-input"
                     rows={4}
@@ -158,49 +165,49 @@ export function ProjectDetails({ id }: { id: string }) {
                   />
                 </label>
                 <PrimaryButton type="submit" disabled={pending}>
-                  {pending ? "Saving…" : "Save changes"}
+                  {pending ? t("saving") : t("saveChanges")}
                 </PrimaryButton>
               </fieldset>
             </form>
           ) : (
             <>
               <p className="project-description-text">
-                {config.description || "No description provided."}
+                {config.description || t("noDescription")}
               </p>
               <dl className="detail-list project-facts">
-                <dt>Manufacturer</dt>
+                <dt>{t("manufacturer")}</dt>
                 <dd>
                   {variant?.device.manufacturer.name ??
                     "Not selected / no longer available"}
                 </dd>
-                <dt>Device</dt>
+                <dt>{t("device")}</dt>
                 <dd>
                   {variant
                     ? `${variant.device.name} (${variant.device.codename})`
                     : config.variantId}
                 </dd>
-                <dt>Exact variant</dt>
+                <dt>{t("exactVariant")}</dt>
                 <dd>
                   {variant
                     ? `${variant.modelNumber} · ${variant.region}`
                     : "Unavailable"}
                 </dd>
-                <dt>Android base</dt>
+                <dt>{t("androidBase")}</dt>
                 <dd>
                   {config.base === "unconfigured"
                     ? "Unconfigured"
                     : project.androidBase
                       ? `${project.androidBase.name} · Android ${project.androidBase.androidVersion}`
-                      : `${config.base} (legacy catalog selection)`}
+                      : `${config.base}`}
                 </dd>
-                <dt>Configuration status</dt>
+                <dt>{t("configStatus")}</dt>
                 <dd>DRAFT</dd>
-                <dt>Compatibility</dt>
+                <dt>{t("compatibility")}</dt>
                 <dd>{project.compatibility?.status ?? "UNKNOWN"}</dd>
-                <dt>Last updated</dt>
+                <dt>{t("lastUpdated")}</dt>
                 <dd>
                   <time dateTime={project.updatedAt}>
-                    {new Date(project.updatedAt).toLocaleString()}
+                    {format.dateTime(project.updatedAt)}
                   </time>
                 </dd>
               </dl>
@@ -208,14 +215,13 @@ export function ProjectDetails({ id }: { id: string }) {
           )}
         </GlassPanel>
         <GlassPanel className="panel">
-          <h2>Compatibility</h2>
+          <h2>{t("compatibility")}</h2>
           <StatusIndicator muted>
-            Draft only · Compilation unavailable
+            {t("draftOnlyCompilationUnavailable")}
           </StatusIndicator>
           {variant?.device.deprecatedAt && (
             <div className="craft-notice">
-              Deprecated catalog entry. Your saved device selection has been
-              preserved and has not been mapped to another device.
+              {t("deprecatedNotice")}
             </div>
           )}
           {variant && (
@@ -237,16 +243,15 @@ export function ProjectDetails({ id }: { id: string }) {
           )}
           {variant?.device.isDemo && (
             <div className="craft-notice">
-              Fictional demonstration device. Not suitable for installation.
+              {t("demoNotice")}
             </div>
           )}
           <p>{project.compatibility?.explanation}</p>
           <div className="craft-notice">
-            A catalog device or base is not evidence of build support. No ROM is
-            compiled when you save a project.
+            {t("catalogNotEvidence")}
           </div>
           <Link className="button secondary" href={`/builder/${project.id}`}>
-            Open existing editor →
+            {t("openEditor")}
           </Link>
         </GlassPanel>
       </div>

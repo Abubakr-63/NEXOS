@@ -5,11 +5,41 @@ import { createScreen } from "./screen";
 import { sampleFilm } from "./film";
 import { sampleTimeline } from "./timeline";
 import type { PixelScreenState } from "./adapter";
+
+/**
+ * Strict Front & Side Orientation Constraint
+ * The smartphone's back panel must NEVER become visible during any animation.
+ * Enforces MIN_FRONT_DOT >= 0.14 (~82 deg max viewing angle).
+ */
+export const MIN_FRONT_DOT = 0.14;
+export const MAX_YAW = 1.30; // ~74.5 deg maximum yaw, well within front/side profile
+export const MAX_PITCH = 0.22; // ~12.5 deg maximum pitch tilt
+export const MAX_ROLL = 0.15;
+
+export function computeFrontDot(
+  deviceRotation: THREE.Euler | [number, number, number],
+  cameraPos: THREE.Vector3 | [number, number, number],
+  targetPos: THREE.Vector3 | [number, number, number] = [0, 0, 0],
+): number {
+  const euler = Array.isArray(deviceRotation)
+    ? new THREE.Euler(...deviceRotation)
+    : deviceRotation;
+  const cPos = Array.isArray(cameraPos)
+    ? new THREE.Vector3(...cameraPos)
+    : cameraPos.clone();
+  const tPos = Array.isArray(targetPos)
+    ? new THREE.Vector3(...targetPos)
+    : targetPos.clone();
+
+  const frontNormal = new THREE.Vector3(0, 0, 1).applyEuler(euler).normalize();
+  const viewDir = cPos.sub(tPos).normalize();
+  return frontNormal.dot(viewDir);
+}
 export type PixelEngine = {
   seek: (progress: number) => void;
   film: (progress: number) => void;
   update: (state: PixelScreenState) => void;
-  view: (view: "front" | "rear" | "three-quarter") => void;
+  view: (view: "front" | "rear" | "three-quarter" | "perspective" | "rear-angle" | "side") => void;
   zoom: (value: number) => void;
   active: (value: boolean) => void;
   motion: (value: boolean) => void;
@@ -73,6 +103,7 @@ export function createPixelEngine(
   let filmTarget: number | null = null,
     filmCurrent = 0;
   let pose: number | null = null,
+    viewLockUntil = 0,
     zoom = 1,
     smoothZoom = 1,
     smoothY = sampleTimeline(currentProgress).rotation[1],
@@ -99,14 +130,17 @@ export function createPixelEngine(
     smoothZoom = reduced ? zoom : THREE.MathUtils.damp(smoothZoom, zoom, 8, dt);
     let displayProgress = currentProgress;
     let drawDisplay = true;
-    if (filmTarget !== null && !reduced) {
+        if (filmTarget !== null && !reduced) {
       filmCurrent = filmTarget;
       const film = sampleFilm(filmCurrent);
-      model.group.rotation.set(0, 0, 0);
+      model.group.rotation.set(...film.rotation);
+      model.group.position.set(...film.position);
       target.set(...film.camera);
+      target.z = Math.max(3.5, target.z);
       look.set(...film.target);
+      look.z = Math.min(1.0, look.z);
       lighting.intensity(film.light);
-      model.animate(film.open, film.seconds);
+      model.animate(film.open, film.seconds, film.buttonPress);
       model.displayMaterial.color.setScalar(film.display);
       displayProgress = film.screen;
       drawDisplay = film.display > 0.02;
@@ -115,21 +149,34 @@ export function createPixelEngine(
       canvas.dataset.cutaway = film.open.toFixed(3);
       canvas.dataset.cameraDistance = target.distanceTo(look).toFixed(3);
     } else {
-      const desiredY = pose ?? shot.rotation[1];
-      const deltaY =
-        THREE.MathUtils.euclideanModulo(
-          desiredY - smoothY + Math.PI,
-          Math.PI * 2,
-        ) - Math.PI;
-      smoothY = reduced ? desiredY : smoothY + deltaY * (1 - Math.exp(-8 * dt));
-      model.group.rotation.set(shot.rotation[0], smoothY, shot.rotation[2]);
-      if (pose !== null) target.set(0, 0, 35);
-      else target.set(...shot.camera);
+      model.group.position.set(0, 0, 0);
+      const targetY = THREE.MathUtils.clamp(
+        pose ?? shot.rotation[1],
+        -MAX_YAW,
+        MAX_YAW,
+      );
+      smoothY = reduced ? targetY : THREE.MathUtils.damp(smoothY, targetY, 8, dt);
+      const pitch = THREE.MathUtils.clamp(
+        shot.rotation[0],
+        -MAX_PITCH,
+        MAX_PITCH,
+      );
+      const roll = THREE.MathUtils.clamp(shot.rotation[2], -MAX_ROLL, MAX_ROLL);
+
+      if (pose !== null) {
+        model.group.rotation.set(0, smoothY, 0);
+        target.set(0, 0, 32);
+        look.set(0, 0, 0);
+      } else {
+        model.group.rotation.set(pitch, smoothY, roll);
+        target.set(...shot.camera);
+        target.z = Math.max(3.8, target.z);
+        look.set(...shot.target);
+        look.z = Math.min(1.0, look.z);
+      }
       target.multiplyScalar(1 / smoothZoom);
-      if (pose !== null) look.set(0, 0, 0);
-      else look.set(...shot.target);
       lighting.intensity(1);
-      model.animate(0, 0);
+      model.animate(0, 0, 0);
       model.displayMaterial.color.setScalar(1);
       canvas.dataset.cutaway = "0";
     }
@@ -141,8 +188,27 @@ export function createPixelEngine(
       smoothCamera.lerp(target, 1 - Math.exp(-12 * dt));
       smoothLook.lerp(look, 1 - Math.exp(-12 * dt));
     }
+    if (smoothCamera.z < smoothLook.z + 3.5) {
+      smoothCamera.z = smoothLook.z + 3.5;
+    }
     camera.position.copy(smoothCamera);
     camera.lookAt(smoothLook);
+
+    // Orientation constraint enforcement: front display & side profile only
+    const frontNormal = new THREE.Vector3(0, 0, 1)
+      .applyEuler(model.group.rotation)
+      .normalize();
+    const viewDir = camera.position.clone().sub(smoothLook).normalize();
+    let frontDot = frontNormal.dot(viewDir);
+    if (frontDot < MIN_FRONT_DOT) {
+      const sign = model.group.rotation.y > 0 ? 1 : -1;
+      model.group.rotation.y = sign * Math.min(Math.abs(model.group.rotation.y), MAX_YAW * 0.85);
+      const correctedNormal = new THREE.Vector3(0, 0, 1)
+        .applyEuler(model.group.rotation)
+        .normalize();
+      frontDot = correctedNormal.dot(viewDir);
+    }
+    canvas.dataset.frontDot = frontDot.toFixed(4);
     if (
       drawDisplay &&
       screen.draw(currentState, displayProgress, reduced ? 0 : time / 1000)
@@ -208,7 +274,7 @@ export function createPixelEngine(
   canvas.dataset.instancedDetails = String(instances);
   return {
     film(progress) {
-      if (reduced || compact) return;
+      if (reduced || compact || performance.now() < viewLockUntil) return;
       const value = Math.max(0, Math.min(1, progress));
       // The identical endpoints make wrapping continuous; never interpolate backwards through the film.
       if (filmTarget !== null && filmTarget > 0.98 && value < 0.02)
@@ -231,9 +297,17 @@ export function createPixelEngine(
       until = performance.now() + 450;
       invalidate();
     },
-    view(view) {
-      pose = view === "rear" ? Math.PI : view === "front" ? 0 : -0.6;
-      until = performance.now() + 1500;
+        view(view) {
+      viewLockUntil = performance.now() + 15000;
+      filmTarget = null;
+      if (view === "front") pose = 0;
+      else if (view === "three-quarter" || view === "perspective") pose = -0.55;
+      else if (view === "side") pose = -1.25;
+      else {
+        // Rear view is strictly forbidden; remap to safe front three-quarter
+        pose = 0.55;
+      }
+      until = performance.now() + 15000;
       invalidate();
     },
     zoom(value) {

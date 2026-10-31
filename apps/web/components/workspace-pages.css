@@ -1,63 +1,320 @@
+/* NEXOS Superconscious-inspired Workspace Presentation */
 .workspace-hero {
-  padding: clamp(28px, 5vw, 64px);
-  border: 1px solid var(--border);
-  border-radius: 28px;
+  position: relative;
+  padding: clamp(32px, 5.5vw, 68px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-panel);
   background:
-    radial-gradient(ellipse at top right, #38bdf81c, transparent 70%),
-    var(--surface);
-  margin-bottom: 24px;
+    radial-gradient(ellipse 70% 60% at 85% 15%, rgba(56, 189, 248, 0.16), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 85%, rgba(37, 99, 235, 0.12), transparent 55%),
+    var(--glass-bg);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(28px) saturate(160%);
+  margin-bottom: 32px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.workspace-hero::after {
+  content: "";
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  right: -60px;
+  top: -60px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.14) 0%, transparent 70%);
+  filter: blur(40px);
+  z-index: -1;
+  pointer-events: none;
+  animation: hero-glow 14s ease-in-out infinite alternate;
+}
+@keyframes hero-glow {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.7; }
+  100% { transform: scale(1.15) translate(-20px, 20px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-hero::after {
+    animation: none;
+  }
 }
 .workspace-hero h1 {
-  font-size: clamp(30px, 4vw, 54px);
-  line-height: 1.12;
-  letter-spacing: -1.7px;
+  font-size: clamp(34px, 4.4vw, 58px);
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
   margin: 18px 0;
   overflow-wrap: anywhere;
+  background: linear-gradient(135deg, #ffffff 40%, #bae6fd 75%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .workspace-hero p {
-  max-width: 610px;
+  max-width: 620px;
   color: var(--muted);
+  font-size: 14px;
   line-height: 1.8;
+  margin-bottom: 24px;
 }
+.hero-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.hero-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 550;
+  color: #bae6fd;
+}
+.hero-stat-pill span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+
+/* Superconscious Animated Feature Panels */
+.super-feature-section {
+  margin-bottom: 34px;
+}
+.super-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.super-feature-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-studio), border-color 0.3s, box-shadow 0.3s;
+}
+.super-feature-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--active-border);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.75), 0 0 28px rgba(56, 189, 248, 0.14);
+}
+.super-feature-card .feature-icon-badge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #7dd3fc;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+.super-feature-card h3 {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+.super-feature-card p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 18px;
+  flex-grow: 1;
+}
+.feature-micro-ui {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(8, 16, 36, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+}
+.micro-ui-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #7dd3fc;
+}
+.micro-ui-item small {
+  color: var(--dim);
+}
+.micro-ui-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(56, 189, 248, 0.12);
+  overflow: hidden;
+}
+.micro-ui-bar > div {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #38bdf8, #60a5fa);
+}
+
+/* Workspace Facts and Library Tools */
 .workspace-facts,
 .library-tools {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+}
+.workspace-facts .panel {
+  padding: 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(20px);
+}
+.workspace-facts .panel h2 {
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 10px 0 8px;
+  color: #ffffff;
+}
+.workspace-facts .panel p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
 }
 .library-tools .craft-field {
   margin: 0;
 }
+
+/* Craft Grid & Project Cards */
+.craft-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.craft-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(20px);
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.25s var(--ease-studio), border-color 0.25s, box-shadow 0.25s;
+}
+.craft-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--active-border);
+  box-shadow: 0 24px 50px rgba(2, 6, 23, 0.7), 0 0 24px rgba(56, 189, 248, 0.12);
+}
+.craft-card > svg {
+  color: #38bdf8;
+  margin-bottom: 14px;
+}
+.craft-card h2 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  color: #ffffff;
+}
+.craft-card p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.craft-card small {
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+.craft-card span:last-child {
+  margin-top: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.2s;
+}
+.craft-card:hover span:last-child {
+  transform: translateX(4px);
+}
+
+/* Profile Layout */
 .profile-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
   gap: 28px;
 }
 .profile-identity {
   display: flex;
   align-items: center;
   gap: 20px;
+  padding: 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(20px);
+  margin-bottom: 24px;
 }
 .identity-avatar {
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 22px;
-  color: var(--accent);
-  background: #38bdf814;
+  color: #ffffff;
+  background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
   font-size: 24px;
+  font-weight: 700;
   flex-shrink: 0;
+}
+.profile-identity h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+.profile-identity p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
 }
 .profile-layout .craft-grid {
   grid-template-columns: 1fr;
 }
+
+/* Studio & Project Creation Layout */
 .project-workflow .studio-layout,
 .craft-page:has(.pixel-draft-summary) .studio-layout {
   grid-template-columns: 150px minmax(270px, 1.1fr) minmax(300px, 1fr);
 }
 @media (max-width: 1250px) {
+  .super-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .project-workflow .studio-layout,
   .craft-page:has(.pixel-draft-summary) .studio-layout {
     grid-template-columns: 130px minmax(0, 1fr);
@@ -66,7 +323,10 @@
     grid-column: 2;
   }
 }
-@media (max-width: 850px) {
+@media (max-width: 900px) {
+  .super-feature-grid {
+    grid-template-columns: 1fr;
+  }
   .profile-layout {
     grid-template-columns: minmax(0, 1fr);
   }

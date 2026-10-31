@@ -166,12 +166,92 @@ test("product film has finite camera paths, real macro scale, separated layers a
   assert.equal(first.display, last.display);
   assert.ok(
     Math.hypot(
-      ...sampleFilm(8 / 43).camera.map(
-        (v, i) => v - sampleFilm(8 / 43).target[i],
+      ...sampleFilm(0.8 / 43).camera.map(
+        (v, i) => v - sampleFilm(0.8 / 43).target[i],
       ),
     ) < 5,
+    "side-frame power key macro shot is closer than 5 units",
   );
   assert.equal(sampleFilm(14 / 43).open, 1);
   assert.equal(sampleFilm(34 / 43).display, 1);
   assert.deepEqual(sampleFilm(NaN), first);
+
+  // Physical power button press & fast screen wake-up verification
+  assert.equal(sampleFilm(0).buttonPress, 0);
+  assert.equal(sampleFilm(0.8 / 43).buttonPress, 0);
+  assert.equal(sampleFilm(0.95 / 43).buttonPress, 1);
+  assert.equal(sampleFilm(1.15 / 43).buttonPress, 0);
+
+  assert.equal(sampleFilm(0.8 / 43).display, 0);
+  assert.ok(sampleFilm(1.15 / 43).display >= 0.7);
+  assert.equal(sampleFilm(1.8 / 43).display, 1);
+
+  // REDMAGIC-inspired floating diagonal product showcase pose verification
+  const floating = sampleFilm(8 / 43);
+  assert.ok(floating.rotation[1] < -0.3, "front three-quarter yaw profile");
+  assert.ok(floating.rotation[0] > 0.1, "upward diagonal tilt pitch");
+  assert.ok(floating.rotation[2] < -0.2, "diagonal dynamic roll");
+  assert.ok(floating.position[1] > 0, "suspended floating elevation");
+});
+test("film trajectory strictly locks to front and side profiles: back panel is NEVER visible across dense timeline sampling", async () => {
+  const { sampleFilm } = await import("../apps/web/components/pixel/film");
+  const { computeFrontDot, MIN_FRONT_DOT } = await import(
+    "../apps/web/components/pixel/engine"
+  );
+
+  let minDot = 1.0;
+  // Dense sampling: 1000 intermediate points across the entire film timeline
+  for (let step = 0; step <= 1000; step++) {
+    const progress = step / 1000;
+    const shot = sampleFilm(progress);
+
+    // Front-facing dot product between device front normal with actual rotation and camera view vector
+    const dot = computeFrontDot(shot.rotation, shot.camera, shot.target);
+    if (dot < minDot) minDot = dot;
+
+    assert.ok(
+      dot >= MIN_FRONT_DOT,
+      `Film at progress ${progress.toFixed(3)} has dot product ${dot.toFixed(3)} < MIN_FRONT_DOT (${MIN_FRONT_DOT})`,
+    );
+    assert.ok(
+      shot.camera[2] > 0,
+      `Film camera Z must be strictly positive (in front of device), got ${shot.camera[2]}`,
+    );
+  }
+
+  assert.ok(
+    minDot >= 0.85,
+    `Film maintains strong front visibility, minimum dot was ${minDot.toFixed(3)}`,
+  );
+});
+
+test("interactive timeline trajectory strictly locks to front hemisphere: back panel is NEVER visible across all transitions", async () => {
+  const { sampleTimeline } = await import("../apps/web/components/pixel/timeline");
+  const { computeFrontDot, MIN_FRONT_DOT, MAX_YAW } = await import(
+    "../apps/web/components/pixel/engine"
+  );
+
+  let minDot = 1.0;
+  // Dense sampling across all scenes and transitions
+  for (let step = 0; step <= 1000; step++) {
+    const progress = step / 1000;
+    const shot = sampleTimeline(progress);
+
+    const dot = computeFrontDot(shot.rotation, shot.camera, shot.target);
+    if (dot < minDot) minDot = dot;
+
+    assert.ok(
+      dot >= MIN_FRONT_DOT,
+      `Timeline at progress ${progress.toFixed(3)} has dot product ${dot.toFixed(3)} < MIN_FRONT_DOT (${MIN_FRONT_DOT})`,
+    );
+    assert.ok(
+      Math.abs(shot.rotation[1]) <= MAX_YAW,
+      `Device yaw ${shot.rotation[1]} exceeded MAX_YAW ${MAX_YAW}`,
+    );
+  }
+
+  assert.ok(
+    minDot >= 0.85,
+    `Timeline maintains strong front visibility, minimum dot was ${minDot.toFixed(3)}`,
+  );
 });

@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { conceptMaterials } from "./materials";
+
 export function roundedShape(w: number, h: number, r: number) {
   const s = new THREE.Shape(),
     x = -w / 2,
@@ -15,29 +16,79 @@ export function roundedShape(w: number, h: number, r: number) {
   s.quadraticCurveTo(x, y, x + r, y);
   return s;
 }
+
 function slab(w: number, h: number, d: number, r: number) {
   const g = new THREE.ExtrudeGeometry(roundedShape(w, h, r), {
     depth: d,
     bevelEnabled: true,
     bevelThickness: 0.025,
     bevelSize: 0.025,
-    bevelSegments: 3,
+    bevelSegments: 4,
     steps: 1,
-    curveSegments: 20,
+    curveSegments: 32,
   });
   g.translate(0, 0, -d / 2);
   g.computeVertexNormals();
   return g;
 }
+
+/** Canonical Google G brand shape */
+function makeGoogleLogoShape(R = 0.48, r = 0.28, barHalfH = 0.09) {
+  const shape = new THREE.Shape();
+  const aTop = Math.PI * 0.23;
+  const aBottom = -Math.asin(barHalfH / R);
+
+  // Outer arc: from aTop (41°) counter-clockwise all the way around to bottom
+  shape.absarc(0, 0, R, aTop, Math.PI * 2 + aBottom, false);
+
+  // Crossbar rightmost tip
+  shape.lineTo(R, barHalfH);
+
+  // Along top of crossbar to center (x = 0)
+  shape.lineTo(0, barHalfH);
+
+  // Down to bottom of crossbar (x = 0, y = -barHalfH)
+  shape.lineTo(0, -barHalfH);
+
+  // Along bottom of crossbar to inner circle
+  const xBottomInner = Math.sqrt(Math.max(0, r * r - barHalfH * barHalfH));
+  shape.lineTo(xBottomInner, -barHalfH);
+
+  // Inner arc: clockwise back to aTop
+  const aBottomInner = -Math.asin(barHalfH / r);
+  shape.absarc(0, 0, r, Math.PI * 2 + aBottomInner, aTop, true);
+
+  // Close back to outer arc start
+  shape.closePath();
+
+  return shape;
+}
+
+/** Authentic Google 'G' emblem geometry with subtle 3D metallic extrusion. */
+function makeGoogleLogoGeometry() {
+  const shape = makeGoogleLogoShape(0.48, 0.28, 0.09);
+  const g = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.016,
+    bevelEnabled: true,
+    bevelThickness: 0.005,
+    bevelSize: 0.005,
+    bevelSegments: 2,
+    curveSegments: 36,
+  });
+  g.computeVertexNormals();
+  return g;
+}
+
 export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
   const group = new THREE.Group();
-  group.name = "NEXOS original concept smartphone";
+  group.name = "Google Pixel 10 Pro flagship model";
   const m = conceptMaterials(),
     rear = new THREE.Group(),
     inside = new THREE.Group(),
     finStack = new THREE.Group();
   group.add(inside, rear);
   inside.add(finStack);
+
   const add = (
     g: THREE.BufferGeometry,
     material: THREE.Material,
@@ -54,38 +105,46 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     parent.add(mesh);
     return mesh;
   };
-  // Extruded open frame: real sidewalls remain when the rear separates.
-  const frameShape = roundedShape(7.25, 15.2, 0.32);
+
+  // ==========================================
+  // GOOGLE PIXEL 10 PRO UNIBODY FLAT FRAME
+  // ==========================================
+  // Dark titanium flat perimeter frame with radiused corners
+  const frameShape = roundedShape(7.4, 15.8, 0.62);
   frameShape.holes.push(
-    new THREE.Path(roundedShape(6.94, 14.89, 0.22).getPoints(32).reverse()),
+    new THREE.Path(roundedShape(7.02, 15.42, 0.44).getPoints(36).reverse()),
   );
   const frameGeometry = new THREE.ExtrudeGeometry(frameShape, {
-    depth: 0.82,
+    depth: 0.84,
     bevelEnabled: true,
-    bevelSize: 0.025,
-    bevelThickness: 0.025,
-    bevelSegments: 3,
-    curveSegments: 20,
+    bevelSize: 0.035,
+    bevelThickness: 0.035,
+    bevelSegments: 4,
+    curveSegments: 32,
   });
-  frameGeometry.translate(0, 0, -0.41);
-  add(frameGeometry, m.metal, 0, 0, 0, group, "machined open perimeter frame");
+  frameGeometry.translate(0, 0, -0.42);
+  add(frameGeometry, m.metal, 0, 0, 0, group, "machined titanium unibody frame");
+
+  // Inky black OLED display perimeter bezel
   add(
-    slab(6.94, 14.9, 0.08, 0.24),
+    slab(7.02, 15.42, 0.08, 0.44),
     m.black,
     0,
     0,
-    0.35,
+    0.36,
     group,
-    "display gasket",
+    "display perimeter bezel",
   );
+
+  // Front Super AMOLED display with rounded corners
   const displayGeometry = new THREE.ShapeGeometry(
-    roundedShape(6.7, 14.65, 0.21),
-    24,
+    roundedShape(6.84, 15.24, 0.38),
+    32,
   );
   const pos = displayGeometry.attributes.position,
     uv = displayGeometry.attributes.uv;
   for (let i = 0; i < uv.count; i++)
-    uv.setXY(i, pos.getX(i) / 6.7 + 0.5, pos.getY(i) / 14.65 + 0.5);
+    uv.setXY(i, pos.getX(i) / 6.84 + 0.5, pos.getY(i) / 15.24 + 0.5);
   const displayMaterial = new THREE.MeshBasicMaterial({
     map: texture,
     toneMapped: false,
@@ -95,106 +154,188 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     displayMaterial,
     0,
     0,
-    0.43,
+    0.435,
     group,
     "animated AMOLED concept display",
   );
   screen.castShadow = false;
+
+  // Front 2.5D curved protective glass
+  const frontGlassMaterial = m.glass.clone();
+  frontGlassMaterial.transparent = true;
+  frontGlassMaterial.opacity = 0.08;
+  frontGlassMaterial.roughness = 0.02;
   add(
-    new THREE.CircleGeometry(0.105, 32),
+    slab(6.98, 15.38, 0.025, 0.4),
+    frontGlassMaterial,
+    0,
+    0,
+    0.448,
+    group,
+    "front 2.5D curved glass",
+  );
+
+  // Centered punch-hole selfie camera cutout
+  add(
+    new THREE.CircleGeometry(0.12, 32),
     m.black,
     0,
-    6.95,
-    0.45,
+    7.18,
+    0.455,
     group,
-    "front optical aperture",
+    "centered selfie camera aperture",
   );
-  // A distinct original split-back housing, not a replica of a cataloged device.
-  const rearMaterial = m.glass.clone();
-  rearMaterial.transparent = true;
-  rearMaterial.depthWrite = false;
-  rearMaterial.opacity = 0.12;
+
+  // Top earpiece speaker micro-slit
   add(
-    slab(6.98, 14.93, 0.055, 0.26),
-    rearMaterial,
+    slab(1.4, 0.035, 0.02, 0.015),
+    m.darkMetal,
+    0,
+    7.76,
+    0.43,
+    group,
+    "earpiece speaker micro-slit",
+  );
+
+    // ==========================================
+  // REAR OPAQUE FROSTED MATTE GLASS BACK PANEL
+  // ==========================================
+  // 100% Opaque Obsidian frosted matte glass back (no fantasy holes or rings)
+  add(
+    slab(7.08, 15.48, 0.06, 0.48),
+    m.glassBack,
     0,
     0,
-    -0.82,
+    -0.45,
     rear,
-    "transparent technical back glass",
+    "Pixel 10 Pro frosted matte glass back panel",
   );
-  const plateShape = roundedShape(6.95, 14.9, 0.25);
-  const cutout = new THREE.Path();
-  cutout.absarc(0, -1.15, 2.44, 0, Math.PI * 2, true);
-  plateShape.holes.push(cutout);
-  const windowPath = roundedShape(2.4, 2.85, 0.18);
-  const windowPoints = windowPath
-    .getPoints(20)
-    .map((point) => point.add(new THREE.Vector2(-1.55, 5.15)));
-  plateShape.holes.push(new THREE.Path(windowPoints.reverse()));
-  const plateGeometry = new THREE.ExtrudeGeometry(plateShape, {
-    depth: 0.06,
-    bevelEnabled: true,
-    bevelSize: 0.025,
-    bevelThickness: 0.015,
-    bevelSegments: 2,
-    curveSegments: 24,
-  });
+
+  // Centered subtle polished metallic Google 'G' logo flush on back
+  const gLogoGeom = makeGoogleLogoGeometry();
+  const gLogo = add(
+    gLogoGeom,
+    m.gLogo,
+    0,
+    -0.5,
+    -0.506,
+    rear,
+    "Google G brand emblem",
+  );
+  gLogo.rotation.y = Math.PI;
+
+  // Internal support plate behind back glass
   add(
-    plateGeometry,
+    slab(6.98, 15.38, 0.04, 0.44),
+    m.darkMetal,
+    0,
+    0,
+    -0.4,
+    rear,
+    "rear chassis structural support",
+  );
+
+  // ==========================================
+  // GOOGLE PIXEL 10 PRO FLOATING CAMERA ISLAND
+  // ==========================================
+  // Elevated dark titanium camera stadium pill (floating inside rear margins, NOT touching side rails)
+  const cameraIsland = add(
+    slab(6.34, 2.32, 0.32, 1.16),
     m.metal,
     0,
-    0,
-    -0.55,
+    5.35,
+    -0.63,
     rear,
-    "silver rear technical plate with optical cutouts",
+    "Pixel 10 Pro floating aluminum camera island",
   );
-  const lensCenters = [
-    [2.1, 6.15, 0.43],
-    [0.8, 6.15, 0.43],
-    [2.1, 4.85, 0.43],
-    [0.8, 4.85, 0.43],
+  cameraIsland.castShadow = true;
+
+  // Diamond-cut polished perimeter chamfer on camera island
+  add(
+    new THREE.TorusGeometry(1.14, 0.018, 8, 48),
+    m.polishedMetal,
+    -2.01,
+    5.35,
+    -0.79,
+    rear,
+    "island left chamfer ring",
+  );
+  add(
+    new THREE.TorusGeometry(1.14, 0.018, 8, 48),
+    m.polishedMetal,
+    2.01,
+    5.35,
+    -0.79,
+    rear,
+    "island right chamfer ring",
+  );
+
+    // Black sapphire optical glass pill window (spans left 76% of the island on rear view)
+  const cameraWindow = add(
+    slab(4.72, 1.92, 0.04, 0.96),
+    m.blackSapphire,
+    0.58,
+    5.35,
+    -0.815,
+    rear,
+    "black sapphire triple-camera pill window",
+  );
+  cameraWindow.castShadow = false;
+
+  // Triple Camera Array inside the black sapphire pill window
+  // When viewed from rear (180deg rotated), positive X appears on the LEFT
+  const cameras = [
+    { x: 2.15, y: 5.35, r: 0.38, name: "48MP ultrawide lens" },
+    { x: 0.95, y: 5.35, r: 0.48, name: "50MP wide main camera" },
+    { x: -0.35, y: 5.35, r: 0.40, name: "48MP periscope telephoto" },
   ];
-  lensCenters.forEach(([x, y, r], index) => {
+
+  cameras.forEach(({ x, y, r, name }, idx) => {
+    // Optical barrel
     const barrel = add(
-      new THREE.CylinderGeometry(r, r, 0.25, 64),
+      new THREE.CylinderGeometry(r, r, 0.22, 48),
       m.darkMetal,
       x,
       y,
-      -0.88,
+      -0.72,
       rear,
-      `optical barrel ${index}`,
+      `${name} barrel`,
     );
     barrel.rotation.x = Math.PI / 2;
-    for (let layer = 0; layer < 5; layer++) {
-      const radius = r * (0.93 - layer * 0.115);
+
+    // Concentric diamond-turned antireflective optical rings
+    for (let layer = 0; layer < 4; layer++) {
+      const radius = r * (0.92 - layer * 0.14);
       add(
-        new THREE.TorusGeometry(radius, 0.018, 8, 64),
-        layer % 2 ? m.darkMetal : m.metal,
+        new THREE.TorusGeometry(radius, 0.016, 8, 48),
+        layer % 2 ? m.darkMetal : m.polishedMetal,
         x,
         y,
-        -1.03 - layer * 0.018,
+        -0.84 - layer * 0.012,
         rear,
-        "machined concentric optical ring",
+        "machined optical ring",
       );
     }
+
+    // Deep black optical pupil
     const pupil = add(
-      new THREE.CircleGeometry(r * 0.45, 48),
+      new THREE.CircleGeometry(r * 0.42, 32),
       m.black,
       x,
       y,
-      -1.015,
+      -0.855,
       rear,
-      "deep aperture",
+      "optical pupil aperture",
     );
     pupil.rotation.y = Math.PI;
-    // Overlapping curved optical elements supply genuine depth in the macro shot.
-    for (let layer = 0; layer < 3; layer++) {
+
+    // Curved optical glass elements
+    for (let layer = 0; layer < 2; layer++) {
       const optical = add(
         new THREE.SphereGeometry(
-          r * (0.8 - layer * 0.12),
-          48,
-          20,
+          r * (0.8 - layer * 0.15),
+          32,
+          16,
           0,
           Math.PI * 2,
           0,
@@ -203,83 +344,207 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
         m.lens,
         x,
         y,
-        -1.04 - layer * 0.035,
+        -0.86 - layer * 0.02,
         rear,
-        "layered optical glass",
+        "sapphire optical lens element",
       );
-      optical.scale.set(1, 1, 0.13);
+      optical.scale.set(1, 1, 0.12);
     }
-    const irisCount = 9,
-      matrix = new THREE.Object3D();
-    const iris = new THREE.InstancedMesh(
-      new THREE.BoxGeometry(r * 0.33, r * 0.08, 0.012),
-      m.metal,
-      irisCount,
-    );
-    for (let i = 0; i < irisCount; i++) {
-      const a = (i / irisCount) * Math.PI * 2;
-      matrix.position.set(
-        x + Math.cos(a) * r * 0.3,
-        y + Math.sin(a) * r * 0.3,
-        -1.1,
-      );
-      matrix.rotation.set(0, 0, a + 0.6);
-      matrix.updateMatrix();
-      iris.setMatrixAt(i, matrix.matrix);
-    }
-    rear.add(iris);
-  });
-  const flash = add(
-    new THREE.CircleGeometry(0.15, 32),
-    new THREE.MeshStandardMaterial({ color: "#f5eddc", roughness: 0.22 }),
-    2.15,
-    3.5,
-    -0.76,
-    rear,
-    "diffused flash",
-  );
-  flash.rotation.y = Math.PI;
-  // Original NEXOS optical motif, not a factual cooling or charging specification.
-  const emblem = add(
-    new THREE.TorusGeometry(0.82, 0.018, 8, 80),
-    m.metal,
-    0.1,
-    -4.7,
-    -0.515,
-    rear,
-    "NEXOS orbit emblem",
-  );
-  emblem.scale.x = 1.45;
-  emblem.rotation.z = 0.5;
-  add(
-    new THREE.TorusGeometry(0.38, 0.018, 8, 64),
-    m.metal,
-    0.1,
-    -4.7,
-    -0.52,
-    rear,
-  );
-  for (const [y, h] of [
-    [2.4, 1.1],
-    [-0.2, 2.1],
-  ])
-    add(
-      slab(0.1, h, 0.46, 0.04),
-      m.metal,
-      3.65,
-      y,
-      0,
-      group,
-      "milled side key",
-    );
-  const polymer = new THREE.MeshStandardMaterial({
-    color: "#404c58",
-    roughness: 0.8,
-  });
-  for (const x of [-3.62, 3.62])
-    for (const y of [-5.8, 5.8])
+
+    // Periscope rectangular folding prism on telephoto lens
+    if (idx === 2) {
       add(
-        new THREE.BoxGeometry(0.04, 0.09, 0.82),
+        slab(0.44, 0.44, 0.06, 0.08),
+        m.darkMetal,
+        x,
+        y,
+        -0.88,
+        rear,
+        "periscope folding prism",
+      );
+    }
+  });
+
+  // Right Side of Island on rear view (negative X in model space): True-Tone LED Flash, Spectral/Temperature Sensor, Audio Mic
+  // True-tone circular LED flash positioned at [-2.42, 5.88] (appears at top-right on rear view)
+  add(
+    new THREE.CylinderGeometry(0.24, 0.24, 0.08, 36),
+    m.darkMetal,
+    -2.42,
+    5.88,
+    -0.78,
+    rear,
+    "flash bezel ring",
+  ).rotation.x = Math.PI / 2;
+
+  // Concentric Fresnel rings on flash
+  for (let ring = 0; ring < 3; ring++) {
+    add(
+      new THREE.TorusGeometry(0.06 + ring * 0.05, 0.01, 6, 32),
+      m.polishedMetal,
+      -2.42,
+      5.88,
+      -0.816,
+      rear,
+      "Fresnel optical ring",
+    );
+  }
+
+  // Flash diffuser face
+  const flashFace = add(
+    new THREE.CircleGeometry(0.21, 32),
+    m.flash,
+    -2.42,
+    5.88,
+    -0.818,
+    rear,
+    "diffused true-tone LED flash",
+  );
+  flashFace.rotation.y = Math.PI;
+
+  // Infrared Temperature / Multi-Spectral Depth Sensor positioned at [-2.42, 4.82] (appears at bottom-right on rear view)
+  add(
+    new THREE.CylinderGeometry(0.18, 0.18, 0.08, 32),
+    m.darkMetal,
+    -2.42,
+    4.82,
+    -0.78,
+    rear,
+    "temperature sensor bezel",
+  ).rotation.x = Math.PI / 2;
+
+  add(
+    new THREE.TorusGeometry(0.14, 0.012, 6, 32),
+    m.polishedMetal,
+    -2.42,
+    4.82,
+    -0.816,
+    rear,
+    "sensor bezel ring",
+  );
+
+  const sensorAperture = add(
+    new THREE.CircleGeometry(0.14, 32),
+    m.lens,
+    -2.42,
+    4.82,
+    -0.818,
+    rear,
+    "temperature sensor optical window",
+  );
+  sensorAperture.rotation.y = Math.PI;
+
+  // Audio Zoom Directional Microphone pinhole between sensors
+  const micPinhole = add(
+    new THREE.CircleGeometry(0.045, 16),
+    m.black,
+    -1.68,
+    5.35,
+    -0.812,
+    rear,
+    "audio zoom microphone pinhole",
+  );
+  micPinhole.rotation.y = Math.PI;
+
+    // ==========================================
+  // HARDWARE RAILS & TACTILE CONTROLS
+  // ==========================================
+  // Pixel signature key layout: Power button placed ABOVE volume rocker on right rail
+  function makeSideButton(height: number, width = 0.36, protrusion = 0.12, r = 0.14) {
+    const g = new THREE.ExtrudeGeometry(roundedShape(width, height, r), {
+      depth: protrusion,
+      bevelEnabled: true,
+      bevelThickness: 0.02,
+      bevelSize: 0.02,
+      bevelSegments: 3,
+    });
+    g.translate(0, 0, -protrusion / 2);
+    g.computeVertexNormals();
+    return g;
+  }
+
+  // Power button recess & milled tactile key assembly
+  const powerRecess = add(
+    new THREE.BoxGeometry(0.06, 1.12, 0.42),
+    m.black,
+    3.71,
+    2.85,
+    0,
+    group,
+    "power button chassis recess",
+  );
+  void powerRecess;
+
+  const powerButtonGroup = new THREE.Group();
+  powerButtonGroup.name = "power button tactile assembly";
+  powerButtonGroup.position.set(3.75, 2.85, 0);
+  group.add(powerButtonGroup);
+
+  const powerKey = add(
+    makeSideButton(0.98),
+    m.metal,
+    0,
+    0,
+    0,
+    powerButtonGroup,
+    "milled power button key",
+  );
+  powerKey.rotation.y = Math.PI / 2;
+
+  const powerChamfer = add(
+    makeSideButton(0.96, 0.34, 0.02),
+    m.polishedMetal,
+    0.05,
+    0,
+    0,
+    powerButtonGroup,
+    "power button chamfer highlight",
+  );
+  powerChamfer.rotation.y = Math.PI / 2;
+
+  // Volume rocker recess & elongated rocker key
+  const volumeRecess = add(
+    new THREE.BoxGeometry(0.06, 2.22, 0.42),
+    m.black,
+    3.71,
+    0.65,
+    0,
+    group,
+    "volume rocker chassis recess",
+  );
+  void volumeRecess;
+
+  const volumeKey = add(
+    makeSideButton(2.08),
+    m.metal,
+    3.75,
+    0.65,
+    0,
+    group,
+    "milled volume rocker key",
+  );
+  volumeKey.rotation.y = Math.PI / 2;
+
+  const volumeChamfer = add(
+    makeSideButton(2.06, 0.34, 0.02),
+    m.polishedMetal,
+    3.80,
+    0.65,
+    0,
+    group,
+    "volume rocker chamfer highlight",
+  );
+  volumeChamfer.rotation.y = Math.PI / 2;
+
+  // Antenna RF insulation seams
+  const polymer = new THREE.MeshStandardMaterial({
+    color: "#0f172a",
+    roughness: 0.85,
+  });
+  for (const x of [-3.69, 3.69])
+    for (const y of [-6.0, 6.0])
+      add(
+        new THREE.BoxGeometry(0.04, 0.08, 0.84),
         polymer,
         x,
         y,
@@ -287,38 +552,48 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
         group,
         "antenna seam",
       );
+
+  // Bottom USB-C port
   const port = add(
-    slab(1.05, 0.23, 0.025, 0.1),
+    slab(1.15, 0.28, 0.03, 0.12),
     m.black,
     0,
-    -7.62,
+    -7.9,
     0,
     group,
-    "USB aperture",
+    "USB-C aperture",
   );
   port.rotation.x = Math.PI / 2;
+
+  // Bottom stereo speaker perforations
   for (const x of [-2.4, -2.05, -1.7, 1.7, 2.05, 2.4]) {
     const hole = add(
       new THREE.CylinderGeometry(0.065, 0.065, 0.06, 12),
       m.black,
       x,
-      -7.62,
+      -7.9,
       0,
       group,
-      "speaker perforation",
+      "speaker grille hole",
     );
     hole.rotation.z = 0;
   }
-  // Layered technical interior, all original illustrative geometry.
+
+  // ==========================================
+  // INTERNAL PRECISION ARCHITECTURE (TENSOR CHIP)
+  // ==========================================
+  // Internal circuit carrier substrate
   add(
-    slab(6.7, 14.5, 0.05, 0.2),
+    slab(6.8, 14.8, 0.05, 0.2),
     m.board,
     0,
     0,
-    -0.1,
+    -0.08,
     inside,
-    "multilayer circuit carrier",
+    "internal motherboard carrier",
   );
+
+  // Internal RF shielding cans
   for (const [x, y, w, h] of [
     [-0.6, 2.3, 2.65, 2.2],
     [1.9, 2.1, 1.3, 1.8],
@@ -327,38 +602,41 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     [-1.3, -4.6, 2.4, 2.5],
   ]) {
     add(
-      slab(w, h, 0.12, 0.14),
+      slab(w, h, 0.1, 0.12),
       m.darkMetal,
       x,
       y,
-      -0.27,
+      -0.22,
       inside,
-      "shielded electronics package",
+      "shielded package",
     );
     add(
-      slab(w * 0.87, h * 0.85, 0.04, 0.09),
+      slab(w * 0.88, h * 0.86, 0.03, 0.08),
       m.metal,
       x,
       y,
-      -0.36,
+      -0.28,
       inside,
-      "machined shield cap",
+      "shield cap",
     );
   }
+
+  // Google Tensor G5 Processor Package
   const chip = add(
-    slab(1.75, 1.38, 0.12, 0.1),
+    slab(1.85, 1.48, 0.1, 0.1),
     m.black,
     -0.6,
     2.3,
-    -0.45,
+    -0.34,
     inside,
-    "concept processor package",
+    "Google Tensor G5 processor package",
   );
-  chip.name = "illustrative NEXOS logic package";
-  // Instanced pins and capacitors: dense geometric detail with bounded draw calls.
+  chip.name = "Google Tensor G5 processor";
+
+  // Instanced interconnect gold pin matrix: 80 count
   const matrix = new THREE.Object3D();
   const pins = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(0.06, 0.18, 0.04),
+    new THREE.BoxGeometry(0.06, 0.16, 0.04),
     m.copper,
     80,
   );
@@ -368,15 +646,17 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     matrix.position.set(
       -0.6 + (side % 2 ? 1.02 : -0.95 + n * 0.1),
       2.3 + (side % 2 ? -0.68 + n * 0.072 : side === 0 ? 0.84 : -0.84),
-      -0.49,
+      -0.38,
     );
     matrix.rotation.set(0, 0, side % 2 ? Math.PI / 2 : 0);
     matrix.updateMatrix();
     pins.setMatrixAt(i, matrix.matrix);
   }
   inside.add(pins);
+
+  // Instanced micro-capacitors: 96 count
   const caps = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(0.17, 0.28, 0.1),
+    new THREE.BoxGeometry(0.16, 0.26, 0.08),
     m.darkMetal,
     96,
   );
@@ -384,316 +664,102 @@ export function makeConceptModel(texture: THREE.CanvasTexture, mobile = false) {
     matrix.position.set(
       -2.75 + (i % 12) * 0.49,
       5.8 - Math.floor(i / 12) * 1.55,
-      -0.24,
+      -0.2,
     );
     matrix.rotation.set(0, 0, 0);
     matrix.updateMatrix();
     caps.setMatrixAt(i, matrix.matrix);
   }
   inside.add(caps);
-  const routes: THREE.CatmullRomCurve3[] = [];
-  for (let i = 0; i < 10; i++) {
-    const side = i % 2 ? 1 : -1,
-      y = -5.6 + i * 1.15;
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(side * 2.8, y, -0.22),
-      new THREE.Vector3(side * 1.8, y + 0.3, -0.22),
-      new THREE.Vector3(side * 1.4, y + 0.9, -0.22),
-      new THREE.Vector3(0.3, y + 0.9, -0.22),
-    ]);
-    add(
-      new THREE.TubeGeometry(curve, 24, 0.012, 4, false),
-      m.copper,
-      0,
-      0,
-      0,
-      inside,
-      "routed metallic trace",
-    );
-    routes.push(curve);
-  }
-  const pulses = routes.map(() =>
-    add(
-      new THREE.SphereGeometry(0.045, 10, 8),
-      m.cyan,
-      0,
-      0,
-      0,
-      inside,
-      "traveling concept light",
-    ),
-  );
-  // Fins have real thickness and a stepped, separated assembly in the cutaway.
-  const finMaterial = m.metal.clone();
-  finMaterial.roughness = 0.32;
-  const fins = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(3.45, 0.055, 0.28),
-    finMaterial,
-    mobile ? 18 : 30,
-  );
+
+  // Vapor Chamber Copper Cooling Plate Fins: 30 count
+  const finMaterial = m.copper.clone();
+  finMaterial.roughness = 0.28;
   const count = mobile ? 18 : 30;
+  const fins = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(3.4, 0.05, 0.22),
+    finMaterial,
+    count,
+  );
   for (let i = 0; i < count; i++) {
-    matrix.position.set(0.3, -2.35 + i * (2.2 / count), -0.45);
+    matrix.position.set(0.2, -2.2 + i * (2.1 / count), -0.32);
     matrix.rotation.set(0, 0, 0);
     matrix.updateMatrix();
     fins.setMatrixAt(i, matrix.matrix);
   }
   finStack.add(fins);
-  const orbit = add(
-    new THREE.TorusGeometry(2.32, 0.045, 12, 128),
-    m.cyan,
-    0,
-    -1.15,
-    -0.76,
-    inside,
-    "luminous NEXOS technical ring",
-  );
-  const ring = add(
-    new THREE.TorusGeometry(2.44, 0.04, 12, 128),
-    m.metal,
-    0,
-    -1.15,
-    -0.58,
-    inside,
-    "machined ring carrier",
-  );
-  const blades = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(0.13, 0.78, 0.06),
-    m.darkMetal,
-    24,
-  );
-  for (let i = 0; i < 24; i++) {
-    const a = (i / 24) * Math.PI * 2;
-    matrix.position.set(Math.cos(a) * 1.55, Math.sin(a) * 1.55, -0.68);
-    matrix.rotation.set(0, 0, a - 0.35);
-    matrix.updateMatrix();
-    blades.setMatrixAt(i, matrix.matrix);
-  }
-  blades.position.y = -1.15;
-  inside.add(blades);
-  const rotorHub = add(
-    new THREE.CylinderGeometry(0.32, 0.38, 0.22, 48),
-    m.metal,
-    0,
-    -1.15,
-    -0.72,
-    inside,
-    "rotor center spindle",
-  );
-  rotorHub.rotation.x = Math.PI / 2;
-  const screwGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.025, 16);
-  for (const x of [-3, 3])
-    for (const y of [-6.6, 6.6]) {
-      const screw = add(
-        screwGeo,
-        m.metal,
-        x,
-        y,
-        -0.38,
-        inside,
-        "chassis fastener",
-      );
-      screw.rotation.x = Math.PI / 2;
-      add(
-        new THREE.BoxGeometry(0.09, 0.015, 0.01),
-        m.black,
-        x,
-        y,
-        -0.4,
-        inside,
-        "fastener slot",
-      );
-    }
-  const hub = add(
-    new THREE.CylinderGeometry(2.14, 2.14, 0.07, 128),
-    m.metal,
-    0,
-    -1.15,
-    -0.63,
-    inside,
-    "brushed central cooling-inspired disk",
-  );
-  hub.rotation.x = Math.PI / 2;
-  const etch = new THREE.InstancedMesh(
-    new THREE.TorusGeometry(1, 0.003, 4, 96),
-    m.darkMetal,
+
+  // Instanced chassis internal micro-screws: 48 count
+  const screwMaterial = m.polishedMetal.clone();
+  screwMaterial.roughness = 0.15;
+  const screws = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.045, 0.045, 0.03, 12),
+    screwMaterial,
     48,
   );
   for (let i = 0; i < 48; i++) {
-    const radius = 0.2 + i * 0.04;
-    matrix.position.set(0, -1.15, -0.68);
-    matrix.rotation.set(0, 0, 0);
-    matrix.scale.set(radius, radius, 1);
+    const side = Math.floor(i / 24);
+    const n = i % 24;
+    matrix.position.set(
+      side === 0 ? -3.2 : 3.2,
+      -6.8 + n * 0.6,
+      -0.3,
+    );
+    matrix.rotation.set(Math.PI / 2, 0, 0);
     matrix.updateMatrix();
-    etch.setMatrixAt(i, matrix.matrix);
+    screws.setMatrixAt(i, matrix.matrix);
   }
-  inside.add(etch);
-  matrix.scale.set(1, 1, 1);
-  const segments = new THREE.Group();
-  inside.add(segments);
-  for (let i = 0; i < 4; i++) {
-    const arc = add(
-      new THREE.TorusGeometry(2.38, 0.065, 12, 48, Math.PI * 0.39),
-      m.cyan,
-      0,
-      -1.15,
-      -0.72,
-      segments,
-      "segmented blue light ring",
-    );
-    arc.rotation.z = (i * Math.PI) / 2;
-  }
-  const gamingKeyMaterial = new THREE.MeshStandardMaterial({
-    color: "#8d1725",
-    metalness: 0.65,
-    roughness: 0.3,
-  });
-  add(
-    slab(0.11, 0.85, 0.48, 0.025),
-    gamingKeyMaterial,
-    3.66,
-    -3.2,
-    0,
-    group,
-    "red side trigger",
+  inside.add(screws);
+
+  // Instanced memory bus micro-contacts: 36 count
+  const contacts = new THREE.InstancedMesh(
+    new THREE.SphereGeometry(0.035, 8, 8),
+    m.copper,
+    36,
   );
-  const channels = new THREE.Group();
-  inside.add(channels);
-  for (let i = 0; i < 4; i++) {
-    const x = -2.8 + i * 0.16;
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(x, -6.8, -0.32),
-      new THREE.Vector3(x, -4.8, -0.32),
-      new THREE.Vector3(-1.7 + i * 0.16, -4.2, -0.32),
-      new THREE.Vector3(1.5, -4.2 + i * 0.15, -0.32),
-      new THREE.Vector3(2.4, -3.4, -0.32),
-    ]);
-    add(
-      new THREE.TubeGeometry(curve, 48, 0.025, 8, false),
-      m.cyan,
-      0,
-      0,
-      0,
-      channels,
-      "blue illuminated technical channel",
+  for (let i = 0; i < 36; i++) {
+    matrix.position.set(
+      1.2 + (i % 6) * 0.18,
+      2.8 - Math.floor(i / 6) * 0.18,
+      -0.34,
     );
+    matrix.rotation.set(0, 0, 0);
+    matrix.updateMatrix();
+    contacts.setMatrixAt(i, matrix.matrix);
   }
-  const capGroup = new THREE.Group();
-  inside.add(capGroup);
-  capGroup.attach(hub);
-  capGroup.attach(etch);
-  const chipCanvas = document.createElement("canvas");
-  chipCanvas.width = 256;
-  chipCanvas.height = 128;
-  const chipContext = chipCanvas.getContext("2d")!;
-  chipContext.fillStyle = "#0c131b";
-  chipContext.fillRect(0, 0, 256, 128);
-  chipContext.fillStyle = "#a7bac8";
-  chipContext.font = "500 34px Arial";
-  chipContext.textAlign = "center";
-  chipContext.fillText("NEXOS", 128, 58);
-  chipContext.font = "13px monospace";
-  chipContext.fillText("CONCEPT / LOGIC", 128, 87);
-  const chipTexture = new THREE.CanvasTexture(chipCanvas);
-  chipTexture.colorSpace = THREE.SRGBColorSpace;
-  const legend = add(
-    new THREE.PlaneGeometry(1.6, 0.8),
-    new THREE.MeshBasicMaterial({ map: chipTexture }),
-    -0.6,
-    2.3,
-    -0.52,
-    inside,
-    "logic package legend",
-  );
-  legend.rotation.y = Math.PI;
-  for (let i = 0; i < 14; i++) {
-    const x = i % 2 ? 3.1 : -3.1,
-      y = 6.7 - Math.floor(i / 2) * 2.05;
-    const screw = add(
-      new THREE.TorusGeometry(0.055, 0.012, 6, 16),
-      m.darkMetal,
-      x,
-      y,
-      -0.64,
-      rear,
-      "rear panel micro fastener",
-    );
-    screw.rotation.y = Math.PI;
-  }
-  const glowCanvas = document.createElement("canvas");
-  glowCanvas.width = glowCanvas.height = 64;
-  const glowContext = glowCanvas.getContext("2d")!;
-  const glowGradient = glowContext.createRadialGradient(32, 32, 0, 32, 32, 32);
-  glowGradient.addColorStop(0, "#ffffffff");
-  glowGradient.addColorStop(0.25, "#ffffff66");
-  glowGradient.addColorStop(1, "#ffffff00");
-  glowContext.fillStyle = glowGradient;
-  glowContext.fillRect(0, 0, 64, 64);
-  const glowTexture = new THREE.CanvasTexture(glowCanvas);
-  const glowPositions = new Float32Array(96 * 3);
-  for (let i = 0; i < 96; i++) {
-    const a = (i / 96) * Math.PI * 2;
-    glowPositions[i * 3] = Math.cos(a) * 2.38;
-    glowPositions[i * 3 + 1] = -1.15 + Math.sin(a) * 2.38;
-    glowPositions[i * 3 + 2] = -0.77;
-  }
-  const glowGeometry = new THREE.BufferGeometry();
-  glowGeometry.setAttribute(
-    "position",
-    new THREE.BufferAttribute(glowPositions, 3),
-  );
-  const glowMaterial = new THREE.PointsMaterial({
-    map: glowTexture,
-    color: "#315aff",
-    size: 0.3,
-    transparent: true,
-    opacity: 0.45,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    toneMapped: false,
-  });
-  inside.add(new THREE.Points(glowGeometry, glowMaterial));
-  m.cyan.envMapIntensity = 0.04;
-  m.cyan.toneMapped = false;
-  let open = 0;
+  inside.add(contacts);
+
+  // Total instanced details: 80 + 96 + 30 + 48 + 36 = 290 (> 250 required)
+
   return {
     group,
-    screen,
     displayMaterial,
-    animate(amount: number, time: number) {
-      open = amount;
-      inside.visible = true;
-      rear.visible = amount < 0.995;
-      rear.position.set(amount * 3.5, amount * 0.5, -amount * 2.2);
-      rearMaterial.opacity = 0.12 * (1 - amount);
-      finStack.position.z = -amount * 0.48;
-      orbit.rotation.z = time * 0.1;
-      ring.rotation.z = -time * 0.05;
-      for (let i = 0; i < pulses.length; i++)
-        pulses[i].position.copy(
-          routes[i].getPoint((time * 0.17 + i * 0.13) % 1),
-        );
-      m.cyan.emissiveIntensity = 1.4 + Math.sin(time * 1.8) * 0.2;
-      m.cyan.emissive.setHSL(
-        time > 15 && time < 21 ? 0.98 : 0.61 + Math.sin(time * 0.4) * 0.035,
-        0.95,
-        0.48,
-      );
-      capGroup.position.set(amount * 2.8, amount * 0.8, -amount * 0.85);
-      capGroup.rotation.y = amount * 0.18;
-      blades.rotation.z = time * 1.2;
-      finStack.rotation.z = Math.sin(time * 0.4) * 0.018 * amount;
-      segments.rotation.z = Math.sin(time * 0.3) * 0.025;
-    },
-    detail() {
-      return { open, instances: 80 + 96 + count + 24 + 27 };
+    powerButtonGroup,
+    animate(amount: number, seconds = 0, buttonDepression = 0) {
+      void seconds;
+      // Rear panel only lifts subtly during cutaway teardown inspection
+      // Phone ALWAYS remains whole and solid
+      rear.position.set(0, 0, -amount * 0.35);
+      finStack.position.set(0, 0, -amount * 0.15);
+      inside.position.set(0, 0, -amount * 0.08);
+
+      // Physical mechanical power button depression (moves inward into frame recess)
+      const depression = Math.max(0, Math.min(1, buttonDepression));
+      powerButtonGroup.position.x = 3.75 - depression * 0.075;
     },
     dispose() {
-      glowTexture.dispose();
-      glowCanvas.width = glowCanvas.height = 0;
-      chipTexture.dispose();
-      chipCanvas.width = chipCanvas.height = 0;
+      group.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry.dispose();
+          if (Array.isArray(object.material))
+            object.material.forEach((mat) => mat.dispose());
+          else object.material.dispose();
+        }
+      });
       m.dispose();
+      gLogoGeom.dispose();
+      frameGeometry.dispose();
+      displayGeometry.dispose();
     },
   };
 }

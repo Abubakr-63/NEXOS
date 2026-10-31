@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@rom-hub/ui";
 import { accountRequest as request } from "@/lib/account-api";
+import { useTranslation } from "@/lib/i18n";
+import { LanguageSwitcher } from "./language-switcher";
 import type {
   PublicUser as User,
   Session,
@@ -11,13 +13,16 @@ import type {
   SessionsResponse,
   SuccessResponse,
 } from "@rom-hub/contracts";
+
 export function Settings() {
   const router = useRouter();
+  const { t, format } = useTranslation("settings");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [pending, setPending] = useState(false);
+
   async function load() {
     try {
       const data = await request<AuthenticationResponse>("auth/me");
@@ -32,6 +37,7 @@ export function Settings() {
       setLoading(false);
     }
   }
+
   useEffect(() => {
     let active = true;
     request<AuthenticationResponse>("auth/me")
@@ -52,6 +58,7 @@ export function Settings() {
       active = false;
     };
   }, []);
+
   async function logout() {
     setPending(true);
     try {
@@ -67,6 +74,7 @@ export function Settings() {
       setPending(false);
     }
   }
+
   async function revoke(id: string) {
     setPending(true);
     try {
@@ -78,54 +86,57 @@ export function Settings() {
       setPending(false);
     }
   }
+
   return (
     <div className="page-content">
       <div className="page-heading">
         <div>
           <div className="eyebrow">
-            <span /> ACCOUNT & PREFERENCES
+            <span /> {t("eyebrow")}
           </div>
-          <h1>Your space. Your settings.</h1>
-          <p>Manage your account session and appearance.</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
       </div>
+
       <section className="panel">
-        <h2>Appearance</h2>
-        <p>
-          Switch themes using the sun icon in the sidebar. Your preference is
-          saved on this device.
-        </p>
+        <h2>{t("languageTitle")}</h2>
+        <p>{t("languageDesc")}</p>
+        <LanguageSwitcher variant="full" />
       </section>
+
       <section className="panel">
-        <h2>Account</h2>
+        <h2>{t("appearanceTitle")}</h2>
+        <p>{t("appearanceDesc")}</p>
+      </section>
+
+      <section className="panel">
+        <h2>{t("accountTitle")}</h2>
         {loading ? (
-          <p role="status">Loading your account…</p>
+          <p role="status">{t("loadingAccount")}</p>
         ) : user ? (
           <>
             <dl className="detail-list">
-              <dt>Username (read-only)</dt>
+              <dt>{t("usernameReadOnly")}</dt>
               <dd>{user.username}</dd>
-              <dt>Role</dt>
+              <dt>{t("roleLabel")}</dt>
               <dd>{user.role}</dd>
-              <dt>Email verification</dt>
-              <dd>{user.emailVerifiedAt ? "Verified" : "Not verified"}</dd>
+              <dt>{t("emailVerificationLabel")}</dt>
+              <dd>{user.emailVerifiedAt ? t("verified") : t("notVerified")}</dd>
             </dl>
-            <p>
-              Account editing, password changes and email verification are not
-              available in this version.
-            </p>
+            <p>{t("editingUnavailable")}</p>
             <div className="settings-actions">
               <Button onClick={logout} disabled={pending}>
-                Sign out
+                {pending ? t("signingOut") : t("signOut")}
               </Button>
             </div>
           </>
         ) : (
           <>
-            <p>Sign in to view and manage your sessions.</p>
+            <p>{t("signInPrompt")}</p>
             <div className="settings-actions">
               <Link className="button primary" href="/login">
-                Sign in or create an account
+                {t("signInOrCreate")}
               </Link>
             </div>
           </>
@@ -136,25 +147,25 @@ export function Settings() {
           </p>
         )}
       </section>
+
       {user && (
         <section className="panel">
-          <h2>Active sessions</h2>
-          <p>
-            Revoke a session to end its access, including this browser’s
-            session.
-          </p>
+          <h2>{t("activeSessionsTitle")}</h2>
+          <p>{t("activeSessionsDesc")}</p>
           <ol className="roadmap">
             {sessions.map((s) => (
               <li key={s.id}>
                 <div>
-                  Session {s.id.slice(-6)}
+                  {t("sessionLabel", { id: s.id.slice(-6) })}
                   <small>
-                    Created {new Date(s.createdAt).toLocaleString()} · Expires{" "}
-                    {new Date(s.expiresAt).toLocaleDateString()}
+                    {t("createdOn", {
+                      created: format.dateTime(s.createdAt),
+                      expires: format.date(s.expiresAt),
+                    })}
                   </small>
                 </div>
                 <Button disabled={pending} onClick={() => revoke(s.id)}>
-                  Revoke
+                  {pending ? t("revoking") : t("revoke")}
                 </Button>
               </li>
             ))}

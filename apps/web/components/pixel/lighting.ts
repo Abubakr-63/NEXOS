@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
 export function studioLighting(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
@@ -10,11 +11,13 @@ export function studioLighting(
   const pmrem = new THREE.PMREMGenerator(renderer);
   const environment = pmrem.fromScene(room, 0.03, 0.1, 100);
   scene.environment = environment.texture;
-  scene.environmentIntensity = 0.55;
+  scene.environmentIntensity = 0.36;
   room.dispose();
   pmrem.dispose();
-  const key = new THREE.DirectionalLight("#ffffff", 2);
-  key.position.set(-8, 13, 14);
+
+  // Studio Key Light: Crisp directional sunlight / main key
+  const key = new THREE.DirectionalLight("#ffffff", 2.2);
+  key.position.set(-8, 14, 15);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.camera.left = -12;
@@ -24,42 +27,59 @@ export function studioLighting(
   key.shadow.bias = -0.001;
   key.shadow.radius = 4;
   scene.add(key);
-  const rim = new THREE.DirectionalLight("#dae5f0", 3.2);
-  rim.position.set(8, 5, -9);
+
+  // Commercial Rim Light: Brilliant cyan-blue edge reflection
+  const rim = new THREE.DirectionalLight("#38bdf8", 3.2);
+  rim.position.set(8.5, 5.5, -9);
   scene.add(rim);
-  const fill = new THREE.DirectionalLight("#c6d5e6", 1.35);
-  fill.position.set(6, -2, 10);
+
+  // Secondary Fill Light: Deep sapphire blue ambience
+  const fill = new THREE.DirectionalLight("#60a5fa", 1.4);
+  fill.position.set(6, -2, 11);
   scene.add(fill);
-  const rear = new THREE.DirectionalLight("#e6edf5", 2.2);
-  rear.position.set(-7, 9, -14);
+
+  // Rear Specular Light: Highlights camera island, chamfers & Google G emblem
+  const rear = new THREE.DirectionalLight("#e2e8f0", 1.5);
+  rear.position.set(-6, 8, -16);
   scene.add(rear);
-  const strip = new THREE.RectAreaLight("#e7efff", 5, 2, 18);
+
+  // Commercial Studio Light Strip (long highlight down the metal rails)
+  const strip = new THREE.RectAreaLight("#0ea5e9", 4.2, 2.5, 20);
   strip.position.set(-9, 3, -8);
   strip.lookAt(0, 0, 0);
   scene.add(strip);
-  const softbox = new THREE.RectAreaLight("#bde7f4", 3, 9, 12);
-  softbox.position.set(7, 7, -10);
+
+  // Overhead Softbox (smooth reflection across front & back glass)
+  const softbox = new THREE.RectAreaLight("#38bdf8", 1.5, 10, 14);
+  softbox.position.set(7, 8, -10);
   softbox.lookAt(0, 0, 0);
   scene.add(softbox);
+
+  // Ground Plane
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(140, 140),
-    new THREE.ShadowMaterial({ opacity: 0.1 }),
+    new THREE.ShadowMaterial({ opacity: 0.12 }),
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -7.85;
   floor.receiveShadow = true;
   scene.add(floor);
+
+  // Soft Ambient Occlusion Contact Shadow underneath the phone
   const contact = document.createElement("canvas");
-  contact.width = contact.height = 64;
+  contact.width = contact.height = 128;
   const ctx = contact.getContext("2d")!;
-  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  gradient.addColorStop(0, "#00000088");
-  gradient.addColorStop(1, "#00000000");
+  const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gradient.addColorStop(0, "rgba(2, 6, 23, 0.75)");
+  gradient.addColorStop(0.35, "rgba(2, 6, 23, 0.35)");
+  gradient.addColorStop(0.7, "rgba(2, 6, 23, 0.1)");
+  gradient.addColorStop(1, "rgba(2, 6, 23, 0)");
   ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillRect(0, 0, 128, 128);
+
   const texture = new THREE.CanvasTexture(contact);
   const shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(11, 6),
+    new THREE.PlaneGeometry(12, 6.5),
     new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
@@ -69,15 +89,16 @@ export function studioLighting(
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = -7.8;
   scene.add(shadow);
+
   return {
     key,
     intensity(amount: number) {
-      key.intensity = 2 * amount;
-      rear.intensity = 2.2 * amount;
-      fill.intensity = 1.1 * amount;
-      rim.intensity = 1.8 * Math.max(0.25, amount);
-      strip.intensity = 4 * amount;
-      softbox.intensity = 2.5 * amount;
+      key.intensity = 2.4 * amount;
+      rear.intensity = 0.9 * amount;
+      fill.intensity = 1.4 * amount;
+      rim.intensity = 2.2 * Math.max(0.3, amount);
+      strip.intensity = 4.6 * amount;
+      softbox.intensity = 3.2 * amount;
     },
     dispose() {
       key.shadow.dispose();
