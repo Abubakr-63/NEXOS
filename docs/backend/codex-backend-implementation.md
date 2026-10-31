@@ -1,5 +1,9 @@
 # Codex backend implementation and integration handoff
 
+## D5 runtime recovery verified — 2026-10-31
+
+Native helper PostgreSQL5433/Redis6380 and API4000 are healthy; active Gemini3000 proxies health/readiness and authenticated requests correctly. All original data/session hashes and .env are intact; D5 is applied once and status is up to date. Registration/login/draft/reload/logout/security regressions pass, as do 88 unit/36 integration/eight E2E tests, TypeScript/lint and production build. Current audits report three moderate full-graph/two production findings (no high/critical); these remain unresolved. [Recovery evidence, commands and limitations](../build/phase-d5-runtime-recovery.md). No frontend, migrations, contracts, dependencies or production job wiring changed. Earlier outage notices below are historical.
+
 ## Approved local D5 migration — 2026-10-31
 
 Only `20261030190000_durable_build_jobs` was applied to local nexos_development after backup/drift/quiet-window checks and the normalized target guard fix. All 28 original application tables remained identical; Prisma status was up to date. Guard regressions bring the unit suite to 88 passing tests; TypeScript/lint pass. Local services were unreachable following a tool interruption, so post-migration API/auth/project verification is blocked and no service restart was attempted. [Execution evidence and remaining checks](../build/phase-d5-local-migration-applied.md). Earlier pending-migration statements below are historical. No production job wiring or frontend/shared contract change is included.

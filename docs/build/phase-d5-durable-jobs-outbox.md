@@ -1,5 +1,7 @@
 # D5: durable preflight admission and transactional outbox
 
+**Current runtime:** [post-migration recovery and verification](phase-d5-runtime-recovery.md) confirms healthy PostgreSQL/Redis/API/Gemini proxy, exact record preservation and passing functional suites. Dependency audits report moderate findings and require follow-up. The interruption and earlier migration-gate notices below are historical; production build-job wiring remains disabled.
+
 **Latest local status:** the explicitly approved D5 migration was applied to local nexos_development with all original rows intact and Prisma status up to date. Post-migration runtime checks are blocked by unavailable local services following an interruption; no restart/retry was attempted under the stop-on-failure instruction. See [approved local execution and guard report](phase-d5-local-migration-applied.md). The earlier approval-gate status below is historical. Production job wiring remains disabled.
 
 Date: 2026-10-31, Asia/Tashkent. Branch: `ai/codex-backend`.

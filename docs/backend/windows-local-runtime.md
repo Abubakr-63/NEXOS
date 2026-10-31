@@ -1,5 +1,9 @@
 # Windows local runtime and frontend integration
 
+## Latest D5 recovery — 2026-10-31
+
+See [post-migration runtime recovery](../build/phase-d5-runtime-recovery.md) for the current four-migration state, exact preserved records, native-process interruption diagnosis, current Gemini proxy verification and fresh test/audit results. PostgreSQL5433/Redis6380/API4000/frontend3000 are healthy. The original provisioning/three-migration and earlier zero-advisory statements below are historical. Do not rerun setup, seeds or migrations to recover this existing runtime; use start/status and avoid duplicate API processes.
+
 Verified 2026-10-30, Asia/Tashkent. This supersedes the infrastructure blockers in the earlier Codex worker report.
 
 ## Running system

@@ -1,5 +1,9 @@
 # Backend handoff to Gemini and integration coordinator
 
+## D5 runtime recovery — 2026-10-31
+
+The existing native backend is healthy at port4000 with PostgreSQL5433/Redis6380. The independently started Gemini frontend on localhost3000 successfully proxies health/readiness (200) and a synthetic authenticated auth/me request (200); anonymous protected requests remain401. Register/login/draft/reload/revisions/logout and owner/Origin checks pass, with all synthetic fixtures cleaned and original records unchanged. Backend .env/origin/cookies and shared contracts remain unchanged. Continue relative `/api/v1` requests with credentials; no frontend implementation change is requested. D5 is applied once locally, but public builds remain503 and production job wiring is disabled. [Current results and moderate dependency audit follow-up](../../build/phase-d5-runtime-recovery.md). PR#1 remains draft/unmerged; no D6 work started.
+
 ## D5 contract proposal — coordination required, not implemented HTTP endpoints
 
 The backend now has internal PostgreSQL admission/outbox/attempt services, verified on disposable PostgreSQL/Redis. Existing development migration/activation awaits explicit approval. No `apps/web`, shared Zod or OpenAPI files changed. The public build POST remains authenticated 503; continue displaying compilation as unavailable. Existing cookies/origin/session requirements below still apply.

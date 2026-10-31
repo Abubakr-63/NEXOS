@@ -1,5 +1,7 @@
 # D5 approved local migration and target guard
 
+**Recovery follow-up:** [D5 runtime recovery](phase-d5-runtime-recovery.md) restores the native local services, verifies current Gemini proxy/auth/project behavior and confirms all original data intact. It records 88 unit/36 integration/eight E2E passing, production build/type/lint passing, and current moderate dependency audit findings. The interruption blocker below is historical and resolved.
+
 Date: 2026-10-31 (Asia/Tashkent). Scope: the user's explicit approval for **only** `20261030190000_durable_build_jobs` on local **nexos_development**, with production job wiring disabled. Earlier [rehearsal](phase-d5-backup-migration-rehearsal.md) remains historical evidence; the local migration is now applied.
 
 ## Guard correction and tests
