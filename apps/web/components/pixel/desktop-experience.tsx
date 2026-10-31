@@ -13,6 +13,7 @@ import {
   type SceneEvent,
 } from "./orchestrator";
 import type { PixelEngine } from "./engine";
+import { useTranslation } from "@/lib/i18n";
 import "./pixel.css";
 
 export function DesktopExperience({
@@ -32,6 +33,7 @@ export function DesktopExperience({
   context?: string;
   authenticated?: boolean;
 }) {
+  const { t } = useTranslation("phonePreview");
   const canvas = useRef<HTMLCanvasElement>(null),
     engine = useRef<PixelEngine | null>(null);
   const stop = useRef<(() => void) | null>(null);
@@ -46,7 +48,7 @@ export function DesktopExperience({
       configurationToScreen(
         configuration ?? {
           ...defaultConfiguration,
-          name: mode === "register" ? "Your Android journey" : "Welcome back",
+          name: mode === "register" ? t("journey") : t("welcomeBack"),
           accent: chapter === 5 ? "#38bdf8" : "#60a5fa",
           darkMode: chapter !== 5,
           apps:
@@ -59,7 +61,7 @@ export function DesktopExperience({
         },
         success || authenticated,
       ),
-    [configuration, chapter, mode, success, authenticated],
+    [configuration, chapter, mode, success, authenticated, t],
   );
   const stateRef = useRef(screenState),
     previous = useRef(screenState);
@@ -228,16 +230,16 @@ export function DesktopExperience({
           announced = true;
           setNotice(
             action === "calendar-added"
-              ? "Calendar added"
+              ? t("calendarAdded")
               : action === "calendar-removed"
-                ? "Calendar removed"
+                ? t("calendarRemoved")
                 : action === "appearance"
-                  ? "Appearance updated"
+                  ? t("appearanceUpdated")
                   : action === "performance"
-                    ? "Performance preset updated"
+                    ? t("performanceUpdated")
                     : action === "review"
-                      ? "Reviewing your draft"
-                      : "Preview updated",
+                      ? t("reviewingDraft")
+                      : t("previewUpdated"),
           );
         }
         if (action === "review" && elapsed < 1100) {
@@ -263,7 +265,7 @@ export function DesktopExperience({
         }
       },
     );
-  }, [screenState, compact, ready, review, reduced, visible]);
+  }, [screenState, compact, ready, review, reduced, visible, t]);
 
   useEffect(() => {
     if (!visible || reduced) {
@@ -281,11 +283,11 @@ export function DesktopExperience({
     >
       <div className="pixel-stage">
         <div className="pixel-heading">
-          <span>NEXOS / ANDROID, REIMAGINED</span>
+          <span>{t("tagline")}</span>
           <span>
             {compact
-              ? "CONFIGURATION CONCEPT"
-              : "PIXEL-INSPIRED / NEXOS STUDY"}
+              ? t("conceptCompact")
+              : t("conceptStudy")}
           </span>
         </div>
         <div className="pixel-viewport">
@@ -293,8 +295,8 @@ export function DesktopExperience({
             ref={canvas}
             aria-label={
               compact
-                ? "Autonomous generic configuration concept"
-                : "Autonomous NEXOS concept smartphone film"
+                ? t("ariaCompact")
+                : t("ariaStudy")
             }
             role="img"
           />
@@ -303,18 +305,18 @@ export function DesktopExperience({
               <Smartphone size={80} strokeWidth={0.7} />
               <p>
                 {fallback
-                  ? "3D preview unavailable on this device."
-                  : "Preparing the product scene…"}
+                  ? t("fallbackUnavailable")
+                  : t("fallbackPreparing")}
               </p>
               <small>
-                Your account and configuration controls remain available.
+                {t("fallbackHint")}
               </small>
             </div>
           )}
           <span className="pixel-model-label">
             {compact
-              ? "Generic concept · not a model of your selected device"
-              : "Reference-inspired visualization · hardware effects are illustrative"}
+              ? t("modelLabelCompact")
+              : t("modelLabelFilm")}
           </span>
           <span className="pixel-confirmation" role="status">
             {notice}
@@ -324,18 +326,18 @@ export function DesktopExperience({
           <div className="pixel-copy">
             <span>
               {mode === "register"
-                ? "CREATE YOUR ANDROID JOURNEY"
-                : "YOUR ANDROID. YOUR RULES."}
+                ? t("kickerRegister")
+                : t("kickerLogin")}
             </span>
-            <h2>{filmScenes[chapter].label}</h2>
-            <p>{filmScenes[chapter].detail}</p>
+            <h2>{t(`scenes.${String(Math.min(Math.max(chapter, 0), 6)) as "0" | "1" | "2" | "3" | "4" | "5" | "6"}.label`) || filmScenes[chapter].label}</h2>
+            <p>{t(`scenes.${String(Math.min(Math.max(chapter, 0), 6)) as "0" | "1" | "2" | "3" | "4" | "5" | "6"}.detail`) || filmScenes[chapter].detail}</p>
           </div>
         )}
         {compact && context && <p className="pixel-context">{context}</p>}
         <p className="pixel-concept-note">
           {compact
-            ? "Draft visualization. Compilation and compatibility remain unverified."
-            : "An automatic NEXOS interface concept. No settings are saved here."}
+            ? t("noteCompact")
+            : t("noteFilm")}
         </p>
       </div>
     </div>

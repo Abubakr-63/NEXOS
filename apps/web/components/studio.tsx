@@ -9,7 +9,7 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from "./design-system";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   formatAPIErrorMessage,
@@ -34,6 +34,7 @@ import {
   Download,
   Save,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 async function api<T>(
   path: string,
@@ -52,31 +53,38 @@ async function api<T>(
     );
   return data as T;
 }
-const steps = [
-  "Device",
-  "Android Base",
-  "ROM Identity",
-  "Appearance",
-  "Applications",
-  "Performance",
-  "Kernel",
-  "Advanced Options",
-  "Installation",
-  "Review & Build",
-];
+
 export function Studio({ id }: { id?: string }) {
   const router = useRouter();
+  const { t } = useTranslation("romStudio");
+  const { t: tc } = useTranslation("common");
+
+  const steps = useMemo(
+    () => [
+      t("steps.0"),
+      t("steps.1"),
+      t("steps.2"),
+      t("steps.3"),
+      t("steps.4"),
+      t("steps.5"),
+      t("steps.6"),
+      t("steps.7"),
+      t("steps.8"),
+      t("steps.9"),
+    ],
+    [t],
+  );
+
   const [config, setConfig] = useState<ROMConfiguration>(defaultConfiguration);
   const [project, setProject] = useState<Project>();
   const [devices, setDevices] = useState<Device[]>([]);
   const [step, setStep] = useState(0);
-  const [message, setMessage] = useState(
-    "Draft changes are unsaved. Sign in to save to your account.",
-  );
+  const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(!id);
   const [result, setResult] = useState<CompatibilityResponse>();
   const [history, setHistory] = useState<ROMConfiguration[]>([]);
+
   useEffect(() => {
     let active = true;
     api<DevicesResponse>("devices")
@@ -85,9 +93,7 @@ export function Studio({ id }: { id?: string }) {
       })
       .catch(() => {
         if (active)
-          setMessage(
-            "Device catalog unavailable. Start the API and database to select a variant.",
-          );
+          setMessage(t("catalogUnavailable"));
       });
     if (id)
       api<ProjectDetailResponse>(`projects/${id}`)
@@ -96,7 +102,7 @@ export function Studio({ id }: { id?: string }) {
             setProject(p);
             setConfig(p.configuration);
             setLoaded(true);
-            setMessage(`Saved revision ${p.revision}`);
+            setMessage(t("savedRevision", { revision: p.revision }));
           }
         })
         .catch((e) => {
@@ -105,13 +111,15 @@ export function Studio({ id }: { id?: string }) {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, t]);
+
   function change(patch: Partial<ROMConfiguration>) {
     setHistory((h) => [...h.slice(-19), config]);
     setConfig((c) => ({ ...c, ...patch }));
     setResult(undefined);
-    setMessage("Unsaved changes");
+    setMessage(t("unsavedChangesShort"));
   }
+
   async function save(validate = false) {
     setBusy(true);
     try {
@@ -124,7 +132,7 @@ export function Studio({ id }: { id?: string }) {
           : parsed,
       );
       setProject(saved);
-      setMessage(`Saved revision ${saved.revision}`);
+      setMessage(t("savedRevision", { revision: saved.revision }));
       if (validate)
         setResult(
           await api<CompatibilityResponse>(
@@ -140,6 +148,7 @@ export function Studio({ id }: { id?: string }) {
       setBusy(false);
     }
   }
+
   function download() {
     const blob = new Blob([JSON.stringify(config, null, 2)], {
       type: "application/json",
@@ -151,22 +160,25 @@ export function Studio({ id }: { id?: string }) {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  const effectiveStatus = message ?? t("unsavedChanges");
+
   return (
     <div className="craft-page">
       <div className="craft-heading">
         <div>
-          <span className="craft-kicker">YOUR ANDROID, REIMAGINED</span>
-          <h1>Make it yours.</h1>
-          <p>One workspace. An Android experience designed by you.</p>
+          <span className="craft-kicker">{t("kicker")}</span>
+          <h1>{t("heading")}</h1>
+          <p>{t("subheading")}</p>
         </div>
         <PrimaryButton disabled={busy || !loaded} onClick={() => save()}>
-          <Save size={16} /> Save draft
+          <Save size={16} /> {t("saveDraft")}
         </PrimaryButton>
       </div>
       <div className="craft-status" role="status">
-        {message}{" "}
+        {effectiveStatus}{" "}
         <Link prefetch={false} href="/login">
-          Account →
+          {tc("actions")} →
         </Link>
       </div>
       <div className="studio-layout">
@@ -189,47 +201,39 @@ export function Studio({ id }: { id?: string }) {
           <h2>{steps[step]}</h2>
           {step === 0 && (
             <>
-              <p>
-                Select the exact hardware variant. Catalog entries are
-                unverified and are not build-ready.
-              </p>
+              <p>{t("deviceHeader")}</p>
               <label className="craft-field">
-                Device variant
+                {t("deviceHeader")}
                 <select
                   value={config.variantId}
                   onChange={(e) => change({ variantId: e.target.value })}
                 >
-                  <option value="unselected">Choose your device</option>
+                  <option value="unselected">{t("chooseYourDevice")}</option>
                   {devices.flatMap((d) =>
                     d.variants.map((v) => (
                       <option key={v.id} value={v.id}>
-                        {d.name} · {d.codename} · {v.modelNumber} · {v.region} —
-                        Unknown
+                        {d.name} · {d.codename} · {v.modelNumber} · {v.region}
                       </option>
                     )),
                   )}
                 </select>
               </label>
               <div className="craft-notice">
-                <ShieldCheck /> Compatibility requires evidence for this exact
-                variant.
+                <ShieldCheck /> {t("deviceCompatibilityWarning")}
               </div>
             </>
           )}
           {step === 1 && (
             <>
-              <p>
-                No maintained Android base has been registered for this variant.
-              </p>
+              <p>{t("step1Description")}</p>
               <div className="craft-notice">
-                AOSP and LineageOS integrations require pinned manifests, device
-                trees, vendor dependencies and license review.
+                {t("step1Notice")}
               </div>
             </>
           )}
           {step === 2 && (
             <label className="craft-field">
-              ROM name
+              {t("identityHeader")}
               <input
                 maxLength={60}
                 value={config.name}
@@ -239,9 +243,9 @@ export function Studio({ id }: { id?: string }) {
           )}
           {step === 3 && (
             <>
-              <p>A little color. A completely different feeling.</p>
+              <p>{t("step3Description")}</p>
               <label className="craft-field">
-                Accent color
+                {t("accentColor")}
                 <input
                   type="color"
                   value={config.accent}
@@ -266,16 +270,13 @@ export function Studio({ id }: { id?: string }) {
                   checked={config.darkMode}
                   onChange={(e) => change({ darkMode: e.target.checked })}
                 />{" "}
-                Dark appearance
+                {t("darkAppearance")}
               </label>
             </>
           )}
           {step === 4 && (
             <>
-              <p>
-                Choose application roles for your configuration. Verified,
-                licensed packages will be required before embedding apps.
-              </p>
+              <p>{t("step4Description")}</p>
               {(["browser", "calendar", "files", "terminal"] as const).map(
                 (app) => (
                   <label className="craft-check" key={app}>
@@ -295,19 +296,15 @@ export function Studio({ id }: { id?: string }) {
                 ),
               )}
               <div className="craft-notice">
-                APK uploads unavailable until isolated package inspection and
-                threat scanning are integrated.
+                {t("apkUploadNotice")}
               </div>
             </>
           )}
           {step === 5 && (
             <>
-              <p>
-                Save a configuration intention. Presets do not apply unverified
-                performance changes.
-              </p>
+              <p>{t("step5Description")}</p>
               <label className="craft-field">
-                Preset
+                {t("performancePreset")}
                 <select
                   value={config.preset}
                   onChange={(e) =>
@@ -317,33 +314,32 @@ export function Studio({ id }: { id?: string }) {
                   }
                 >
                   {romConfigurationSchema.shape.preset.options.map((p) => (
-                    <option key={p}>{p}</option>
+                    <option key={p} value={p}>
+                      {p === "Balanced"
+                        ? t("balanced")
+                        : p === "Performance"
+                          ? t("performance")
+                          : t("battery")}
+                    </option>
                   ))}
                 </select>
               </label>
               <div className="craft-notice">
-                Thermal protection stays enabled. No overclocking, voltage
-                changes or performance claims.
+                {t("thermalProtectionNotice")}
               </div>
             </>
           )}
           {step === 6 && (
-            <p>
-              No verified compatible kernel is available. Kernel selection is
-              blocked until device and base compatibility are evidenced.
-            </p>
+            <p>{t("step6Description")}</p>
           )}
           {step === 7 && (
             <>
-              <p>
-                Portable, versioned configuration. Importing replaces this
-                draft; save to persist it.
-              </p>
+              <p>{t("step7Description")}</p>
               <button className="button secondary" onClick={download}>
-                <Download size={15} /> Export JSON
+                <Download size={15} /> {t("export")}
               </button>
               <label className="craft-field">
-                Import configuration
+                {t("importConfiguration")}
                 <input
                   type="file"
                   accept="application/json,.json"
@@ -370,29 +366,23 @@ export function Studio({ id }: { id?: string }) {
           )}
           {step === 8 && (
             <>
-              <p>
-                No verified installation procedure exists for this
-                configuration.
-              </p>
+              <p>{t("step8Description")}</p>
               <div className="craft-notice">
-                Bootloader unlocking can erase data. Device-specific firmware,
-                backup, recovery and installation guidance must be reviewed
-                before any flashing.
+                {t("bootloaderNotice")}
               </div>
             </>
           )}
           {step === 9 && (
             <>
               <p>
-                {config.name} · {config.preset} · {config.apps.length}{" "}
-                application roles
+                {config.name} · {config.preset} · {config.apps.length} roles
               </p>
               <button
                 className="button primary"
                 disabled={busy || !loaded}
                 onClick={() => save(true)}
               >
-                Save & validate
+                {t("saveAndValidate")}
               </button>
               {result && (
                 <div className="craft-notice">
@@ -405,11 +395,10 @@ export function Studio({ id }: { id?: string }) {
                 </div>
               )}
               <div className="craft-notice">
-                Cloud builds unavailable. No ROM compiler or verified build
-                manifest is configured.
+                {t("cloudBuildsUnavailable")}
               </div>
               <button className="button secondary" disabled>
-                Build unavailable
+                {t("buildUnavailable")}
               </button>
             </>
           )}
@@ -422,24 +411,24 @@ export function Studio({ id }: { id?: string }) {
                   setConfig(previous);
                   setHistory((h) => h.slice(0, -1));
                   setResult(undefined);
-                  setMessage("Unsaved changes");
+                  setMessage(t("unsavedChangesShort"));
                 }
               }}
             >
-              Undo
+              {t("undo")}
             </SecondaryButton>
             {step < 9 && (
               <button
                 className="button primary"
                 onClick={() => setStep(step + 1)}
               >
-                Continue <ArrowRight size={16} />
+                {tc("next")} <ArrowRight size={16} />
               </button>
             )}
           </FloatingToolbar>
         </section>
         <aside className="studio-preview">
-          <div className="craft-kicker">LIVE PREVIEW</div>
+          <div className="craft-kicker">{t("livePreviewKicker")}</div>
           <PixelExperience
             configuration={config}
             authenticated
@@ -449,19 +438,20 @@ export function Studio({ id }: { id?: string }) {
           />
           <p className="pixel-draft-summary">
             <strong>{config.name}</strong> ·{" "}
-            {config.darkMode ? "Dark" : "Light"} appearance
+            {config.darkMode ? "Dark" : "Light"}
             <br />
             {config.apps.join(", ")}
             <br />
-            Generic visual concept, not a model of the selected hardware.
-            Configuration draft only; device ROM and builds remain unverified.
+            {t("visualConceptNotice")}
           </p>
         </aside>
       </div>
     </div>
   );
 }
+
 export { ProjectLibrary as Projects } from "./workspace-pages";
+
 export function Welcome() {
   return (
     <div className="craft-page welcome-page">

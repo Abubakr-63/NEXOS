@@ -14,6 +14,7 @@ import {
 } from "@rom-hub/contracts";
 import { workspaceReturnPath } from "@/lib/return-path";
 import { accountRequest } from "@/lib/account-api";
+import { useTranslation } from "@/lib/i18n";
 import { type AuthVisualState } from "./auth-shell";
 import "./auth.css";
 
@@ -28,6 +29,7 @@ export function AuthScreen({
   mode: "login" | "register";
   onState: (state: AuthVisualState) => void;
 }) {
+  const { t } = useTranslation("auth");
   const register = mode === "register";
   const formId = `${mode}-${useId()}`;
   const ids = {
@@ -51,15 +53,18 @@ export function AuthScreen({
   const alert = useRef<HTMLParagraphElement>(null);
   const submitting = useRef(false);
   const mounted = useRef(true);
+
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
     };
   }, []);
+
   useEffect(() => {
     if (error) alert.current?.focus();
   }, [error]);
+
   function updateProgress(form: HTMLFormElement) {
     if (!register) return;
     const data = new FormData(form);
@@ -72,6 +77,7 @@ export function AuthScreen({
         Number(length >= 12 && length <= 128),
     );
   }
+
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting.current) return;
@@ -91,13 +97,10 @@ export function AuthScreen({
         },
       );
       if (!authenticationResponseSchema.safeParse(response).success)
-        throw new Error(
-          "The server returned an invalid account response. Please try again.",
-        );
+        throw new Error(t("invalidResponse"));
       if (!mounted.current) return;
       setState("success");
       onState("success");
-      // Confirmed backend session only. No animation timer blocks navigation.
       router.replace(workspaceReturnPath(search.get("next")));
       router.refresh();
     } catch (cause) {
@@ -105,20 +108,20 @@ export function AuthScreen({
       setState("idle");
       onState("idle");
       setError(
-        cause instanceof Error
-          ? cause.message
-          : "Unable to connect. Try again.",
+        cause instanceof Error ? cause.message : t("genericError"),
       );
     } finally {
       submitting.current = false;
     }
   }
+
   const pending = state !== "idle";
+
   return (
     <>
       <noscript>
         <p className="auth-error">
-          Enable JavaScript to sign in or create an account.
+          {t("noscript")}
         </p>
       </noscript>
       <form
@@ -130,11 +133,11 @@ export function AuthScreen({
       >
         <fieldset disabled={!hydrated || pending}>
           <legend className="auth-sr-only">
-            {register ? "Create your account" : "Sign in to your account"}
+            {register ? t("legendRegister") : t("legendSignIn")}
           </legend>
           {register && (
             <div className="auth-field">
-              <label htmlFor={ids.username}>Username</label>
+              <label htmlFor={ids.username}>{t("username")}</label>
               <input
                 id={ids.username}
                 name="username"
@@ -143,16 +146,16 @@ export function AuthScreen({
                 maxLength={30}
                 pattern="[a-zA-Z0-9_]+"
                 autoComplete="username"
-                placeholder="your_handle"
+                placeholder={t("usernamePlaceholder")}
                 aria-describedby={ids.usernameHint}
               />
               <small id={ids.usernameHint}>
-                3–30 letters, numbers or underscores.
+                {t("usernameHint")}
               </small>
             </div>
           )}
           <div className="auth-field">
-            <label htmlFor={ids.email}>Email address</label>
+            <label htmlFor={ids.email}>{t("email")}</label>
             <input
               id={ids.email}
               name="email"
@@ -162,11 +165,11 @@ export function AuthScreen({
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="you@example.com"
+              placeholder={t("emailPlaceholder")}
             />
           </div>
           <div className="auth-field">
-            <label htmlFor={ids.password}>Password</label>
+            <label htmlFor={ids.password}>{t("password")}</label>
             <div className="auth-password-field">
               <input
                 id={ids.password}
@@ -177,13 +180,15 @@ export function AuthScreen({
                 maxLength={128}
                 autoComplete={register ? "new-password" : "current-password"}
                 placeholder={
-                  register ? "Create a strong password" : "Enter your password"
+                  register
+                    ? t("passwordRegisterPlaceholder")
+                    : t("passwordPlaceholder")
                 }
                 aria-describedby={register ? ids.passwordHint : undefined}
               />
               <button
                 type="button"
-                aria-label={visible ? "Hide password" : "Show password"}
+                aria-label={visible ? t("hidePassword") : t("showPassword")}
                 aria-pressed={visible}
                 onClick={() => setVisible(!visible)}
               >
@@ -191,34 +196,34 @@ export function AuthScreen({
               </button>
             </div>
             {register && (
-              <small id={ids.passwordHint}>Use 12–128 characters.</small>
+              <small id={ids.passwordHint}>{t("passwordHint")}</small>
             )}
           </div>
           {register && (
             <div
               className="auth-progress"
-              aria-label={`${progress} of 3 fields meet their requirements`}
+              aria-label={t("progressAria", { count: progress })}
             >
               <span data-filled={progress >= 1} />
               <span data-filled={progress >= 2} />
               <span data-filled={progress >= 3} />
-              <small>Make it your own.</small>
+              <small>{t("progressMakeOwn")}</small>
             </div>
           )}
           <button className="auth-submit" type="submit">
             {state === "pending" ? (
               <>
                 <LoaderCircle className="auth-spinner" size={18} />
-                {register ? "Creating account…" : "Signing in…"}
+                {register ? t("creatingAccount") : t("signingIn")}
               </>
             ) : state === "success" ? (
               <>
                 <Check size={18} />
-                Workspace ready
+                {t("workspaceReady")}
               </>
             ) : (
               <>
-                {register ? "Create account" : "Sign in"}
+                {register ? t("createAccountBtn") : t("signInBtn")}
                 <ArrowRight size={18} />
               </>
             )}
@@ -231,9 +236,9 @@ export function AuthScreen({
         )}
         <p className="auth-status" role="status">
           {state === "pending"
-            ? "Connecting securely to your account…"
+            ? t("connecting")
             : state === "success"
-              ? "Account confirmed. Opening your workspace…"
+              ? t("confirmed")
               : ""}
         </p>
       </form>

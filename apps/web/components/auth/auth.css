@@ -41,6 +41,16 @@
   margin: auto;
   padding: 42px 0 25px;
 }
+.auth-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 39px;
+  gap: 12px;
+}
+.auth-top-header .auth-wordmark {
+  margin-bottom: 0;
+}
 .auth-wordmark {
   display: flex;
   gap: 11px;
