@@ -240,7 +240,11 @@ export function useTranslation(namespace?: string) {
 
   const scopedT = useCallback(
     (key: string, params?: Record<string, unknown>): string => {
-      const fullKey = namespace && !key.includes(".") ? `${namespace}.${key}` : key;
+      const fullKey = namespace
+        ? key.startsWith(`${namespace}.`)
+          ? key
+          : `${namespace}.${key}`
+        : key;
       return t(fullKey, params);
     },
     [namespace, t],

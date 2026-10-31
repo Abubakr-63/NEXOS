@@ -26,6 +26,7 @@ import {
 } from "@/lib/project-api";
 import { useTranslation } from "@/lib/i18n";
 import { PixelExperience } from "./pixel/pixel-experience";
+import { PrebuiltRomCard } from "./prebuilt-rom-card";
 import "./workspace-pages.css";
 
 export function ProjectCreation() {
@@ -148,6 +149,18 @@ export function ProjectCreation() {
   }, [manufacturerId, query, page]);
 
   const variant = device?.variants.find((v) => v.id === variantId);
+
+  const isSunnyDevice = Boolean(
+    device &&
+      (device.codename === "mojito" || device.slug === "xiaomi-mojito") &&
+      variant?.modelNumber === "M2101K7AG",
+  );
+
+  useEffect(() => {
+    if (!isSunnyDevice && base === "pixelexperience-plus-mojito-android11") {
+      setBase("");
+    }
+  }, [isSunnyDevice, base]);
 
   function next() {
     setError("");
@@ -414,6 +427,23 @@ export function ProjectCreation() {
                         Support: UNKNOWN. NEXOS build: NOT_VERIFIED. You can
                         save a draft; ROM compilation is unavailable.
                       </div>
+                      {isSunnyDevice && (
+                        <div className="prebuilt-available-banner">
+                          <div>
+                            <span className="banner-badge">ROM Available</span>
+                            <p>{t("prebuiltAvailablePrompt")}</p>
+                          </div>
+                          <SecondaryButton
+                            type="button"
+                            onClick={() => {
+                              setBase("pixelexperience-plus-mojito-android11");
+                              setStep(2);
+                            }}
+                          >
+                            {t("selectPrebuiltRom")}
+                          </SecondaryButton>
+                        </div>
+                      )}
                     </>
                   )}
                 </>
@@ -437,6 +467,11 @@ export function ProjectCreation() {
                           onChange={(e) => setBase(e.target.value)}
                         >
                           <option value="">{t("selectBase")}</option>
+                          {isSunnyDevice && (
+                            <option value="pixelexperience-plus-mojito-android11">
+                              {t("pixelExperienceBaseOption")}
+                            </option>
+                          )}
                           {bases.map((b) => (
                             <option key={b.id} value={b.id}>
                               {b.name} · Android {b.androidVersion} ·{" "}
@@ -448,6 +483,9 @@ export function ProjectCreation() {
                           </option>
                         </select>
                       </label>
+                      {isSunnyDevice && base === "pixelexperience-plus-mojito-android11" && (
+                        <PrebuiltRomCard />
+                      )}
                     </>
                   )}
                 </>
@@ -467,11 +505,16 @@ export function ProjectCreation() {
                     </dd>
                     <dt>{t("reviewBase")}</dt>
                     <dd>
-                      {base === "unconfigured"
-                        ? t("unconfiguredDraftOption")
-                        : `${bases.find((item) => item.id === base)?.name ?? base} · Android ${bases.find((item) => item.id === base)?.androidVersion ?? ""}`}
+                      {base === "pixelexperience-plus-mojito-android11"
+                        ? "PixelExperience Plus · Android 11 (Prebuilt ROM)"
+                        : base === "unconfigured"
+                          ? t("unconfiguredDraftOption")
+                          : `${bases.find((item) => item.id === base)?.name ?? base} · Android ${bases.find((item) => item.id === base)?.androidVersion ?? ""}`}
                     </dd>
                   </dl>
+                  {isSunnyDevice && base === "pixelexperience-plus-mojito-android11" && (
+                    <PrebuiltRomCard />
+                  )}
                   <div className="craft-notice">
                     <StatusIndicator muted>
                       Compatibility UNKNOWN · Draft only
@@ -528,7 +571,7 @@ export function ProjectCreation() {
               variantId: variantId || defaultConfiguration.variantId,
               base: base || defaultConfiguration.base,
             }}
-            context={`${device ? `${device.name} · ${variant?.modelNumber || "Variant"}` : "No device selected"}. Base: ${bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Draft")}.`}
+            context={`${device ? `${device.name} · ${variant?.modelNumber || "Variant"}` : "No device selected"}. Base: ${base === "pixelexperience-plus-mojito-android11" ? "PixelExperience Plus · Android 11" : bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Draft")}.`}
           />
           <div className="craft-notice">
             {t("draftNotice")}

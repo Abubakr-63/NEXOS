@@ -224,8 +224,7 @@
     "errorTitle": "Хатои эҷод",
     "accountStatusSignedIn": "Лоиҳаҳо дар ҳисоби шумо захира карда мешаванд.",
     "accountStatusChecking": "Санҷиши сессияи шумо…",
-    "loadingManufacturers": "Боргирии истеҳсолкунандагон…"
-    ,
+    "loadingManufacturers": "Боргирии истеҳсолкунандагон…",
     "loadingBases": "Боргирии пояҳои Android…",
     "loadingDevices": "Боргирии дастгоҳҳо…",
     "noDevicesFound": "Аз рӯи ҷустуҷӯи шумо ягон дастгоҳ ёфт нашуд.",
@@ -242,7 +241,10 @@
     "moreDevices": "Дастгоҳҳои бештар",
     "continue": "Идома додан",
     "savingProject": "Захиракунии лоиҳа…",
-    "draftNotice": "Пешнависи танзимот · Компилятсияи абрӣ дастнорас аст"
+    "draftNotice": "Пешнависи танзимот · Компилятсияи абрӣ дастнорас аст",
+    "pixelExperienceBaseOption": "PixelExperience Plus · Android 11 (ROM-и омода)",
+    "prebuiltAvailablePrompt": "Барои Xiaomi Redmi Note 10 4G (mojito/sunny) бойгонии тасдиқшудаи ROM-и омода дастрас аст.",
+    "selectPrebuiltRom": "Интихоби ROM-и омода"
   },
   "romStudio": {
     "steps": [
@@ -447,5 +449,28 @@
     "serverError": "Дар сервер хатогӣ рух дод. Лутфан дертар кӯшиш кунед.",
     "catalogUnavailable": "Хидмати феҳрист муваққатан дастнорас аст.",
     "genericFallback": "Хатои ғайричашмдошт рух дод. Лутфан бори дигар санҷед."
+  },
+  "prebuiltRom": {
+    "available": "ROM-и омода дастрас аст",
+    "downloadButton": "Боргирии ROM",
+    "title": "PixelExperience Plus",
+    "androidVersion": "Android 11",
+    "deviceLabel": "Redmi Note 10 (mojito / sunny)",
+    "romType": "ROM-и омода",
+    "fileSize": "1.38 ГБ",
+    "notice": "Ин бойгонии мавҷудаи ROM-и омода мебошад. NEXOS ин файлро компилятсия накардааст ва танзимоти интихобкардаи шумо дар он дохил намешаванд.",
+    "warning": "Бойгонии таърихии Android 11; ҳамчун муосир ва барои истифодаи ҳаррӯза бехатар арзёбӣ нашудааст. Аслияти ношири аслӣ ва бехатарии насб мустақилона тасдиқ нашудааст. Насб ва флешкунӣ пешниҳод намешавад.",
+    "filename": "Номи файл",
+    "sizeLabel": "Андоза",
+    "sha256": "SHA-256",
+    "buildDate": "Санаи сохт",
+    "securityPatch": "Часби амниятӣ",
+    "evidence": "Метадодаҳои OTA мустақиман ба mojito,sunny ишора мекунанд",
+    "unsupported": "ROM-и омода барои интихоби мазкур дастрас нест.",
+    "checking": "Санҷиши дастрасии ROM-и омода...",
+    "notSignedIn": "Барои боргирии ROM-и омода ба система ворид шавед.",
+    "operatorUnavailable": "Санҷиши якпорчагии ROM-и омода дастнорас аст ё қатъ шуд.",
+    "bannerPrompt": "ROM-и омода дастрас аст: PixelExperience Plus (Android 11)",
+    "bannerSelect": "Интихоби ROM-и омода"
   }
 }

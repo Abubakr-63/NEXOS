@@ -241,7 +241,10 @@
     "moreDevices": "More devices",
     "continue": "Continue",
     "savingProject": "Saving project…",
-    "draftNotice": "Draft configuration · Cloud compilation unavailable"
+    "draftNotice": "Draft configuration · Cloud compilation unavailable",
+    "pixelExperienceBaseOption": "PixelExperience Plus · Android 11 (Prebuilt ROM)",
+    "prebuiltAvailablePrompt": "A verified prebuilt ROM archive is available for Xiaomi Redmi Note 10 4G (mojito/sunny).",
+    "selectPrebuiltRom": "Select Prebuilt ROM"
   },
   "romStudio": {
     "steps": [
@@ -373,8 +376,7 @@
     "shapeConfigTitle": "Shape your configuration",
     "shapeConfigDesc": "Open a saved project in the ten-stage Visual Builder. Appearance and app selections update the conceptual display. Save commits a revision; Undo restores your previous local edit. Export downloads the configuration JSON.",
     "openProjectsLink": "Open your projects →",
-    "understandPreviewTitle": "Understand the preview"
-    ,
+    "understandPreviewTitle": "Understand the preview",
     "understandPreviewDesc": "The automatic 3D preview is a generic configuration concept. It is not an emulator, compiled firmware or proof of compatibility. Cloud compilation is unavailable.",
     "manageAccessTitle": "Manage access",
     "manageAccessDesc": "Settings lists active sessions and lets you revoke access or sign out. Theme and language preferences are saved on this browser.",
@@ -447,5 +449,28 @@
     "serverError": "The server encountered an error. Please try again later.",
     "catalogUnavailable": "Catalog service is currently unavailable.",
     "genericFallback": "An unexpected error occurred. Please try again."
+  },
+  "prebuiltRom": {
+    "available": "Prebuilt ROM available",
+    "downloadButton": "Download ROM",
+    "title": "PixelExperience Plus",
+    "androidVersion": "Android 11",
+    "deviceLabel": "Redmi Note 10 (mojito / sunny)",
+    "romType": "Prebuilt ROM",
+    "fileSize": "1.38 GB",
+    "notice": "This is an existing prebuilt ROM archive. NEXOS did not compile this file, and your selected customizations are not included.",
+    "warning": "Historical Android 11 archive; not assessed as current or secure for daily use. Original publisher authenticity and installation safety have not been independently verified. No installation or flashing is offered.",
+    "filename": "Filename",
+    "sizeLabel": "Size",
+    "sha256": "SHA-256",
+    "buildDate": "Build date",
+    "securityPatch": "Security patch",
+    "evidence": "OTA metadata explicitly targets mojito,sunny",
+    "unsupported": "Prebuilt ROM unavailable for this selection.",
+    "checking": "Checking prebuilt ROM availability...",
+    "notSignedIn": "Sign in to download prebuilt ROM.",
+    "operatorUnavailable": "Prebuilt ROM integrity check unavailable or failed.",
+    "bannerPrompt": "Prebuilt ROM available: PixelExperience Plus (Android 11)",
+    "bannerSelect": "Select Prebuilt ROM"
   }
 }

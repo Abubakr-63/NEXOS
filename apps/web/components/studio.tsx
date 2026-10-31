@@ -35,6 +35,7 @@ import {
   Save,
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { PrebuiltRomCard } from "./prebuilt-rom-card";
 
 async function api<T>(
   path: string,
@@ -229,6 +230,25 @@ export function Studio({ id }: { id?: string }) {
               <div className="craft-notice">
                 {t("step1Notice")}
               </div>
+              {config.variantId === "xiaomi-mojito-m2101k7ag" && (
+                <div style={{ marginTop: 16 }}>
+                  <label className="craft-field">
+                    <span>Base ROM</span>
+                    <select
+                      value={config.base}
+                      onChange={(e) => change({ base: e.target.value })}
+                    >
+                      <option value="unconfigured">AOSP / Draft (Unconfigured)</option>
+                      <option value="pixelexperience-plus-mojito-android11">
+                        PixelExperience Plus · Android 11 (Prebuilt ROM)
+                      </option>
+                    </select>
+                  </label>
+                  {config.base === "pixelexperience-plus-mojito-android11" && (
+                    <PrebuiltRomCard />
+                  )}
+                </div>
+              )}
             </>
           )}
           {step === 2 && (
@@ -397,6 +417,10 @@ export function Studio({ id }: { id?: string }) {
               <div className="craft-notice">
                 {t("cloudBuildsUnavailable")}
               </div>
+              {config.variantId === "xiaomi-mojito-m2101k7ag" &&
+                config.base === "pixelexperience-plus-mojito-android11" && (
+                  <PrebuiltRomCard />
+                )}
               <button className="button secondary" disabled>
                 {t("buildUnavailable")}
               </button>

@@ -241,7 +241,10 @@
     "moreDevices": "Следующие устройства",
     "continue": "Продолжить",
     "savingProject": "Сохранение проекта…",
-    "draftNotice": "Черновик конфигурации · Облачная компиляция недоступна"
+    "draftNotice": "Черновик конфигурации · Облачная компиляция недоступна",
+    "pixelExperienceBaseOption": "PixelExperience Plus · Android 11 (Готовый ROM)",
+    "prebuiltAvailablePrompt": "Для Xiaomi Redmi Note 10 4G (mojito/sunny) доступен проверенный архив готовой прошивки.",
+    "selectPrebuiltRom": "Выбрать готовый ROM"
   },
   "romStudio": {
     "steps": [
@@ -446,5 +449,28 @@
     "serverError": "На сервере произошла ошибка. Пожалуйста, попробуйте позже.",
     "catalogUnavailable": "Сервис каталога временно недоступен.",
     "genericFallback": "Произошла непредвиденная ошибка. Пожалуйста, повторите попытку."
+  },
+  "prebuiltRom": {
+    "available": "Доступен готовый образ ROM",
+    "downloadButton": "Скачать ROM",
+    "title": "PixelExperience Plus",
+    "androidVersion": "Android 11",
+    "deviceLabel": "Redmi Note 10 (mojito / sunny)",
+    "romType": "Готовый ROM",
+    "fileSize": "1.38 ГБ",
+    "notice": "Это архив существующей готовой прошивки. NEXOS не компилировал этот файл, и выбранные вами настройки в него не входят.",
+    "warning": "Архивная сборка Android 11; не оценивалась как актуальная или безопасная для повседневного использования. Подлинность оригинального издателя и безопасность установки независимо не проверялись. Установка и прошивка не предоставляются.",
+    "filename": "Имя файла",
+    "sizeLabel": "Размер",
+    "sha256": "SHA-256",
+    "buildDate": "Дата сборки",
+    "securityPatch": "Патч безопасности",
+    "evidence": "Метаданные OTA явно указывают на mojito,sunny",
+    "unsupported": "Готовый ROM недоступен для выбранной конфигурации.",
+    "checking": "Проверка доступности готового ROM...",
+    "notSignedIn": "Войдите в систему для скачивания готового ROM.",
+    "operatorUnavailable": "Проверка целостности готового ROM недоступна или завершилась сбоем.",
+    "bannerPrompt": "Доступен готовый ROM: PixelExperience Plus (Android 11)",
+    "bannerSelect": "Выбрать готовый ROM"
   }
 }
