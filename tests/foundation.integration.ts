@@ -42,6 +42,39 @@ async function cleanup(
 }
 
 test(
+  "real Redis: unexpected consumption loop resolution or rejection notifies the supervisor",
+  { timeout: 20000 },
+  async () => {
+    for (const rejects of [false, true]) {
+      const key = prefix();
+      const controller = createTestProbeController(redis, key);
+      let notified = 0;
+      const worker = createFoundationWorker(redis, {
+        prefix: key,
+        onFatal: () => {
+          notified++;
+        },
+      });
+      // Fault the loop boundary, leaving actual Redis readiness/cleanup intact.
+      worker.worker.run = async () => {
+        if (rejects) throw new Error("private-runtime-failure");
+      };
+      try {
+        await controller.ready();
+        await worker.ready();
+        await until(async () => notified === 1);
+        await worker.close();
+        assert.equal(notified, 1);
+        await assert.rejects(worker.ready(), ProbeUnavailableError);
+      } finally {
+        await worker.close();
+        await cleanup(controller);
+      }
+    }
+  },
+);
+
+test(
   "real Redis: atomic bounded admission, distributed dedup, ownership and two-worker concurrency",
   { timeout: 20000 },
   async () => {

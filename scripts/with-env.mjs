@@ -19,7 +19,12 @@ if (!command) throw new Error("Usage: with-env.mjs <command> [arguments]");
 const child = spawn(command, args, {
   stdio: "inherit",
   env: { ...values, ...process.env },
-  shell: process.platform === "win32",
+  // Native executables (especially node.exe under Program Files) must keep
+  // their argument boundaries. Only Windows command shims need cmd.exe.
+  shell:
+    process.platform === "win32" &&
+    !/\.(?:exe|com)$/i.test(command) &&
+    !["node", "nodejs"].includes(command),
 });
 child.on("error", () => {
   console.error(
