@@ -1,4 +1,15 @@
-import { isIP } from "node:net";
+import { BlockList, isIP } from "node:net";
+
+// On Render, the TLS-terminating proxy has a dynamic internal address.
+// Trust only the immediate private-network hop, never a client-supplied chain.
+const renderProxyAddresses = new BlockList();
+renderProxyAddresses.addSubnet("10.0.0.0", 8, "ipv4");
+renderProxyAddresses.addSubnet("172.16.0.0", 12, "ipv4");
+renderProxyAddresses.addSubnet("192.168.0.0", 16, "ipv4");
+renderProxyAddresses.addSubnet("100.64.0.0", 10, "ipv4");
+renderProxyAddresses.addSubnet("127.0.0.0", 8, "ipv4");
+renderProxyAddresses.addSubnet("fc00::", 7, "ipv6");
+renderProxyAddresses.addSubnet("::1", 128, "ipv6");
 
 export class StartupConfigurationError extends Error {}
 
@@ -106,7 +117,7 @@ export function validateEnvironment() {
     throw new StartupConfigurationError(
       "Production requires an explicit HTTPS WEB_ORIGIN.",
     );
-  if (mode === "production" && trustedProxies.length === 0)
+  if (mode === "production" && trustedProxies.length === 0 && process.env.RENDER !== "true")
     throw new StartupConfigurationError(
       "Production requires explicit TRUSTED_PROXY_IPS for the HTTPS-terminating proxy path.",
     );
@@ -120,6 +131,12 @@ export function validateEnvironment() {
   return {
     origin,
     port,
-    trustProxy: trustedProxies.length ? trustedProxies : (false as const),
+    trustProxy: trustedProxies.length
+      ? trustedProxies
+      : process.env.RENDER === "true" && mode === "production"
+        ? ((address: string, hop: number) =>
+            hop === 0 && isIP(address) !== 0 &&
+            renderProxyAddresses.check(address, isIP(address) === 4 ? "ipv4" : "ipv6"))
+        : (false as const),
   };
 }
