@@ -100,7 +100,8 @@
     "genericError": "Unable to connect. Try again.",
     "sessionChecking": "Verifying your session…",
     "sessionUnavailableTitle": "Session unavailable",
-    "sessionUnavailableDesc": "Your session could not be verified by the backend. Please sign in again."
+    "sessionUnavailableDesc": "Your session could not be verified by the backend. Please sign in again.",
+    "sessionReconnecting": "Connecting to server… Workspace preserved."
   },
   "overview": {
     "kicker": "YOUR ANDROID. YOUR RULES.",

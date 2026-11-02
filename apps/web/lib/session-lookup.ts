@@ -1,9 +1,15 @@
 import { authenticationResponseSchema } from "@rom-hub/contracts";
+
+/** Default timeout for server-side session lookup (15s bounded timeout to gracefully handle Render cold starts) */
+export const DEFAULT_SESSION_TIMEOUT_MS =
+  Number(process.env.SESSION_VERIFY_TIMEOUT_MS) || 15_000;
+
 /** Called by the server-only session boundary; no persistent/session-token cache. */
 export async function lookupSession(
   token: string | undefined,
   rawOrigin: string,
   fetcher: typeof fetch = fetch,
+  timeoutMs: number = DEFAULT_SESSION_TIMEOUT_MS,
 ) {
   if (!token || !/^[A-Za-z0-9_-]{43}$/.test(token))
     return { state: "anonymous" as const };
@@ -25,7 +31,7 @@ export async function lookupSession(
       },
       cache: "no-store",
       redirect: "error",
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     if (response.status === 401) return { state: "anonymous" as const };
     if (!response.ok) return { state: "unavailable" as const };
