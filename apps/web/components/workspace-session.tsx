@@ -1,67 +1,232 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { authenticationResponseSchema } from "@rom-hub/contracts";
-import { SessionUnavailable } from "./auth/session-unavailable";
-/** Server guards authorize initial rendering; this observer rechecks visibility/history and idle expiry. */
-export function WorkspaceSession({ children }: { children: React.ReactNode }) {
+import { useTranslation } from "@/lib/i18n";
+import {
+  DEFAULT_REVALIDATE_INTERVAL_MS,
+  DEFAULT_VERIFY_TIMEOUT_MS,
+  DEFAULT_DEBOUNCE_MS,
+  DEFAULT_MAX_RETRIES,
+  computeBackoffDelay,
+  verifySessionEndpoint,
+} from "@/lib/session-verification";
+import "./workspace-session.css";
+
+export type WorkspaceSessionProps = {
+  children: React.ReactNode;
+  revalidateIntervalMs?: number;
+  timeoutMs?: number;
+  debounceMs?: number;
+  maxRetries?: number;
+  fetcher?: typeof fetch;
+  onUnauthorized?: () => void;
+  onStatusChange?: (status: "healthy" | "rechecking" | "degraded") => void;
+};
+
+/**
+ * Production-quality session observer for the authorized workspace.
+ *
+ * Initial authorization is strictly enforced by server components (requireWorkspaceSession).
+ * This component runs quiet background revalidation without full-screen loading flashes,
+ * preserves unsaved editing state in Studio and builder forms, handles Render cold starts,
+ * debounces visibility events, and applies bounded exponential backoff for transient failures.
+ */
+export function WorkspaceSession({
+  children,
+  revalidateIntervalMs = DEFAULT_REVALIDATE_INTERVAL_MS,
+  timeoutMs = DEFAULT_VERIFY_TIMEOUT_MS,
+  debounceMs = DEFAULT_DEBOUNCE_MS,
+  maxRetries = DEFAULT_MAX_RETRIES,
+  fetcher = fetch,
+  onUnauthorized,
+  onStatusChange,
+}: WorkspaceSessionProps) {
   const router = useRouter();
-  const [verified, setVerified] = useState<{
-    status: "checking" | "valid" | "unavailable";
-  }>({ status: "valid" });
-  useEffect(() => {
-    let active = true,
-      controller: AbortController | undefined;
-    const check = async () => {
-      controller?.abort();
-      controller = new AbortController();
-      setVerified({ status: "checking" });
-      const current = controller;
-      const deadline = setTimeout(() => current.abort(), 4000);
-      try {
-        const response = await fetch("/api/v1/auth/me", {
-          credentials: "same-origin",
-          cache: "no-store",
-          signal: current.signal,
-        });
-        if (!active || current !== controller) return;
-        if (response.status === 401) {
+  const { t } = useTranslation("auth");
+
+  const [connectionStatus, setConnectionStatus] = useState<
+    "healthy" | "rechecking" | "degraded"
+  >("healthy");
+
+  const activeRef = useRef(true);
+  const isCheckingRef = useRef(false);
+  const lastCheckTimeRef = useRef(0);
+  const consecutiveFailuresRef = useRef(0);
+  const inFlightControllerRef = useRef<AbortController | null>(null);
+  const deadlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const executeCheckRef = useRef<() => void>(() => {});
+
+  const updateStatus = useCallback(
+    (newStatus: "healthy" | "rechecking" | "degraded") => {
+      setConnectionStatus(newStatus);
+      onStatusChange?.(newStatus);
+    },
+    [onStatusChange],
+  );
+
+  const executeCheck = useCallback(async () => {
+    if (!activeRef.current) return;
+    if (isCheckingRef.current) return;
+
+    isCheckingRef.current = true;
+    lastCheckTimeRef.current = Date.now();
+
+    // Cancel any existing in-flight controller
+    if (inFlightControllerRef.current) {
+      inFlightControllerRef.current.abort();
+      inFlightControllerRef.current = null;
+    }
+    if (deadlineTimerRef.current) {
+      clearTimeout(deadlineTimerRef.current);
+      deadlineTimerRef.current = null;
+    }
+
+    const controller = new AbortController();
+    inFlightControllerRef.current = controller;
+
+    // Set bounded timeout (15-20s for Render cold starts)
+    deadlineTimerRef.current = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
+
+    try {
+      const result = await verifySessionEndpoint({
+        fetcher,
+        signal: controller.signal,
+      });
+
+      if (!activeRef.current || inFlightControllerRef.current !== controller) {
+        return;
+      }
+
+      // Only confirmed 401 responses or an explicitly invalid session trigger login redirect
+      if (result.status === "unauthorized") {
+        consecutiveFailuresRef.current = 0;
+        if (onUnauthorized) {
+          onUnauthorized();
+        } else {
           router.replace("/login");
           router.refresh();
-          return;
         }
-        const valid =
-          response.ok &&
-          authenticationResponseSchema.safeParse(await response.json()).success;
-        if (active && current === controller)
-          setVerified({ status: valid ? "valid" : "unavailable" });
-      } catch {
-        if (active && current === controller)
-          setVerified({ status: "unavailable" });
-      } finally {
-        clearTimeout(deadline);
+        return;
+      }
+
+      if (result.status === "valid") {
+        // Success: reset transient failure count and clear degraded warning
+        consecutiveFailuresRef.current = 0;
+        if (retryTimerRef.current) {
+          clearTimeout(retryTimerRef.current);
+          retryTimerRef.current = null;
+        }
+        updateStatus("healthy");
+        return;
+      }
+
+      // Transient failure (network error, timeout, 5xx server error, or rate limit)
+      handleTransientFailure();
+    } catch {
+      if (!activeRef.current || inFlightControllerRef.current !== controller) {
+        return;
+      }
+      handleTransientFailure();
+    } finally {
+      if (deadlineTimerRef.current) {
+        clearTimeout(deadlineTimerRef.current);
+        deadlineTimerRef.current = null;
+      }
+      isCheckingRef.current = false;
+    }
+
+    function handleTransientFailure() {
+      consecutiveFailuresRef.current += 1;
+      const attempt = consecutiveFailuresRef.current;
+
+      if (attempt <= maxRetries) {
+        // Bounded exponential backoff: 2s, 4s, 8s...
+        const delay = computeBackoffDelay(attempt);
+        if (retryTimerRef.current) {
+          clearTimeout(retryTimerRef.current);
+        }
+        retryTimerRef.current = setTimeout(() => {
+          if (activeRef.current && !document.hidden) {
+            void executeCheckRef.current();
+          }
+        }, delay);
+      } else {
+        // Reached max retries: do not loop infinitely!
+        // Mark as degraded to show non-blocking indicator while keeping workspace mounted.
+        updateStatus("degraded");
+        // Will revalidate at next periodic interval or tab return.
+      }
+    }
+  }, [fetcher, maxRetries, onUnauthorized, router, timeoutMs, updateStatus]);
+
+  useEffect(() => {
+    executeCheckRef.current = executeCheck;
+  }, [executeCheck]);
+
+  useEffect(() => {
+    activeRef.current = true;
+    lastCheckTimeRef.current = Date.now();
+
+    const handleVisibilityOrNavigation = () => {
+      if (document.hidden) return;
+      const elapsed = Date.now() - lastCheckTimeRef.current;
+      // Debounce duplicate checks triggered by rapid tab switches or navigation
+      if (elapsed >= debounceMs && !isCheckingRef.current) {
+        void executeCheck();
       }
     };
-    const visible = () => {
-      if (!document.hidden) void check();
-    };
-    const interval = setInterval(visible, 60000);
-    document.addEventListener("visibilitychange", visible);
-    window.addEventListener("popstate", visible);
+
+    // Periodic revalidation (default ~5 minutes)
+    const intervalId = setInterval(() => {
+      if (!document.hidden) {
+        void executeCheck();
+      }
+    }, revalidateIntervalMs);
+
+    document.addEventListener("visibilitychange", handleVisibilityOrNavigation);
+    window.addEventListener("popstate", handleVisibilityOrNavigation);
+
     return () => {
-      active = false;
-      controller?.abort();
-      clearInterval(interval);
-      document.removeEventListener("visibilitychange", visible);
-      window.removeEventListener("popstate", visible);
+      activeRef.current = false;
+      clearInterval(intervalId);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityOrNavigation,
+      );
+      window.removeEventListener("popstate", handleVisibilityOrNavigation);
+
+      if (inFlightControllerRef.current) {
+        inFlightControllerRef.current.abort();
+        inFlightControllerRef.current = null;
+      }
+      if (deadlineTimerRef.current) {
+        clearTimeout(deadlineTimerRef.current);
+        deadlineTimerRef.current = null;
+      }
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
     };
-  }, [router]);
-  if (verified.status === "checking")
-    return (
-      <p className="session-check" role="status">
-        Verifying your session…
-      </p>
-    );
-  if (verified.status === "unavailable") return <SessionUnavailable />;
-  return children;
+  }, [debounceMs, executeCheck, revalidateIntervalMs]);
+
+  return (
+    <>
+      {connectionStatus === "degraded" && (
+        <aside
+          className="workspace-reconnecting-banner"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="reconnecting-dot" />
+          <span>{t("sessionReconnecting")}</span>
+        </aside>
+      )}
+      {children}
+    </>
+  );
 }
