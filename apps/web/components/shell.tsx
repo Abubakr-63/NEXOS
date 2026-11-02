@@ -18,6 +18,7 @@ import {
   ArrowUpRight,
   UserRound,
   BookOpen,
+  Store,
 } from "lucide-react";
 import {
   GlassPanel,
@@ -32,6 +33,7 @@ function currentSection(path: string) {
   if (path === "/projects/new") return "/projects/new";
   if (path.startsWith("/projects") || path.startsWith("/builder/"))
     return "/projects";
+  if (path.startsWith("/store")) return "/store";
   if (path.startsWith("/settings")) return "/settings";
   if (path === "/profile") return "/profile";
   if (path === "/help") return "/help";
@@ -57,6 +59,7 @@ export function Shell({
       { href: "/dashboard", label: t("overview"), Icon: LayoutDashboard },
       { href: "/projects", label: t("myProjects"), Icon: Folder },
       { href: "/projects/new", label: t("createRom"), Icon: Plus },
+      { href: "/store", label: t("store"), Icon: Store },
       { href: "/settings", label: t("settings"), Icon: SettingsIcon },
       { href: "/profile", label: t("profile"), Icon: UserRound },
     ],

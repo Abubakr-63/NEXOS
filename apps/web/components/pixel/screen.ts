@@ -28,52 +28,112 @@ function icon(
 ) {
   c.save();
   c.globalAlpha = opacity;
-  // Adaptive squircle icon background
-  const bg = app === "calendar" ? "#f1f5f9" : accent;
+
+  // Modern Google-style white squircle for standard Google apps, or themed squircle for system apps
+  const isGoogleApp = ["calendar", "browser", "files", "gmail", "drive", "docs", "meet", "maps", "photos", "playstore"].includes(app);
+  const bg = isGoogleApp ? "#ffffff" : app === "terminal" ? "#091b3e" : app === "phone" ? "#00ac47" : app === "messages" ? "#1a73e8" : accent;
   round(c, x, y, 74, 74, 24, bg);
 
-  c.strokeStyle = app === "calendar" ? "#0f172a" : "#ffffff";
-  c.lineWidth = 3;
-  c.fillStyle = app === "calendar" ? "#0f172a" : "#ffffff";
-
   if (app === "calendar") {
-    // Pixel Calendar Icon
-    c.strokeRect(x + 18, y + 18, 38, 38);
-    c.fillStyle = "#38bdf8";
-    c.fillRect(x + 18, y + 18, 38, 10);
-    c.fillStyle = "#0f172a";
+    // Colorful Google Calendar tile
+    round(c, x + 17, y + 17, 40, 40, 8, "#4285F4");
+    round(c, x + 21, y + 25, 32, 28, 4, "#ffffff");
+    c.fillStyle = "#1A73E8";
     c.font = "bold 20px Arial";
     c.textAlign = "center";
-    c.fillText("29", x + 37, y + 48);
+    c.fillText("31", x + 37, y + 46);
+    // Colorful corner accents
+    c.fillStyle = "#EA4335";
+    c.fillRect(x + 50, y + 50, 7, 7);
+    c.fillStyle = "#34A853";
+    c.fillRect(x + 17, y + 50, 7, 7);
+    c.fillStyle = "#FBBC04";
+    c.fillRect(x + 50, y + 17, 7, 7);
   } else if (app === "browser") {
-    // Pixel Chrome/Browser Globe
+    // Google Chrome Multicolor Swirl
+    const cx = x + 37, cy = y + 37;
+    // Outer red arc
     c.beginPath();
-    c.arc(x + 37, y + 37, 20, 0, Math.PI * 2);
-    c.stroke();
+    c.arc(cx, cy, 22, -Math.PI / 2, Math.PI / 6);
+    c.lineTo(cx, cy);
+    c.fillStyle = "#EA4335";
+    c.fill();
+    // Yellow arc
     c.beginPath();
-    c.ellipse(x + 37, y + 37, 9, 20, 0, 0, Math.PI * 2);
-    c.stroke();
+    c.arc(cx, cy, 22, Math.PI / 6, (5 * Math.PI) / 6);
+    c.lineTo(cx, cy);
+    c.fillStyle = "#FBBC04";
+    c.fill();
+    // Green arc
     c.beginPath();
-    c.moveTo(x + 17, y + 37);
-    c.lineTo(x + 57, y + 37);
-    c.stroke();
+    c.arc(cx, cy, 22, (5 * Math.PI) / 6, (3 * Math.PI) / 2);
+    c.lineTo(cx, cy);
+    c.fillStyle = "#34A853";
+    c.fill();
+    // Inner white ring & Blue core
+    c.beginPath();
+    c.arc(cx, cy, 11, 0, Math.PI * 2);
+    c.fillStyle = "#ffffff";
+    c.fill();
+    c.beginPath();
+    c.arc(cx, cy, 8, 0, Math.PI * 2);
+    c.fillStyle = "#4285F4";
+    c.fill();
   } else if (app === "files") {
-    // Pixel Files Folder
+    // Google Files Blue & Green Folder
     c.beginPath();
-    c.moveTo(x + 17, y + 23);
-    c.lineTo(x + 32, y + 23);
+    c.moveTo(x + 18, y + 24);
+    c.lineTo(x + 32, y + 24);
     c.lineTo(x + 38, y + 29);
-    c.lineTo(x + 58, y + 29);
-    c.lineTo(x + 58, y + 54);
-    c.lineTo(x + 17, y + 54);
+    c.lineTo(x + 56, y + 29);
+    c.lineTo(x + 56, y + 52);
+    c.lineTo(x + 18, y + 52);
     c.closePath();
-    c.stroke();
-  } else {
-    // Terminal / Tools
+    c.fillStyle = "#4285F4";
+    c.fill();
+    // Green front tab
+    c.beginPath();
+    c.moveTo(x + 18, y + 34);
+    c.lineTo(x + 56, y + 34);
+    c.lineTo(x + 56, y + 52);
+    c.lineTo(x + 18, y + 52);
+    c.closePath();
+    c.fillStyle = "#34A853";
+    c.fill();
+  } else if (app === "terminal") {
+    // NEXOS Developer Terminal
+    c.fillStyle = "#38bdf8";
     c.font = "bold 26px monospace";
     c.textAlign = "center";
     c.fillText(">_", x + 37, y + 47);
+  } else if (app === "gmail") {
+    // Gmail M
+    c.fillStyle = "#EA4335";
+    c.beginPath();
+    c.moveTo(x + 18, y + 22);
+    c.lineTo(x + 37, y + 37);
+    c.lineTo(x + 56, y + 22);
+    c.lineTo(x + 56, y + 50);
+    c.lineTo(x + 48, y + 50);
+    c.lineTo(x + 48, y + 32);
+    c.lineTo(x + 37, y + 41);
+    c.lineTo(x + 26, y + 32);
+    c.lineTo(x + 26, y + 50);
+    c.lineTo(x + 18, y + 50);
+    c.closePath();
+    c.fill();
+    c.fillStyle = "#4285F4";
+    c.fillRect(x + 18, y + 22, 8, 28);
+    c.fillStyle = "#34A853";
+    c.fillRect(x + 48, y + 22, 8, 28);
+  } else {
+    // Default system icon
+    c.fillStyle = "#ffffff";
+    c.beginPath();
+    c.arc(x + 37, y + 37, 12, 0, Math.PI * 2);
+    c.fill();
   }
+
   c.restore();
 }
 
@@ -218,15 +278,35 @@ export function createScreen(scale = 1) {
       c.fillStyle = state.dark ? "#7dd3fc" : "#0284c7";
       c.fillText("Thursday, Oct 29 · 21°C Clear", 40, 95);
 
-      // Pixel Signature Dual-Row Lockscreen Clock
-      c.fillStyle = text;
-      c.font = "300 138px Arial";
-      c.fillText("09", 36, 235);
-      c.fillText("41", 36, 368);
+      if (state.unlocked) {
+        // Unlocked Android Home Screen: Google Search Pill
+        round(c, 28, 120, 424, 54, 27, "#ffffff");
+        // Colorful 'G' logo
+        c.fillStyle = "#4285F4";
+        c.beginPath();
+        c.arc(58, 147, 12, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#ffffff";
+        c.beginPath();
+        c.arc(58, 147, 7, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "#4285F4";
+        c.fillRect(58, 143, 10, 8);
+        c.fillStyle = "#64748b";
+        c.font = "500 16px Arial";
+        c.textAlign = "left";
+        c.fillText("Search apps & web...", 84, 153);
+      } else {
+        // Pixel Signature Dual-Row Lockscreen Clock
+        c.fillStyle = text;
+        c.font = "300 138px Arial";
+        c.fillText("09", 36, 235);
+        c.fillText("41", 36, 368);
 
-      c.font = "600 16px Arial";
-      c.fillStyle = state.dark ? "#94a3b8" : "#475569";
-      c.fillText("THURSDAY, OCTOBER 29", 40, 416);
+        c.font = "600 16px Arial";
+        c.fillStyle = state.dark ? "#94a3b8" : "#475569";
+        c.fillText("THURSDAY, OCTOBER 29", 40, 416);
+      }
 
       // Floating Glass Feature Card (Superconscious & Video Reference Style)
       round(
@@ -365,21 +445,17 @@ export function createScreen(scale = 1) {
         c.fillText("COMPILATION UNAVAILABLE", 48, 888);
       }
 
-      // Pixel Lock icon
-      c.strokeStyle = text;
-      c.lineWidth = 4;
-      c.beginPath();
-      c.roundRect(224, 960, 32, 26, 5);
-      c.stroke();
-      c.beginPath();
-      c.arc(
-        240,
-        958,
-        12,
-        Math.PI,
-        state.unlocked ? Math.PI * 1.8 : Math.PI * 2,
-      );
-      c.stroke();
+      // Pixel Lock icon (visible when locked, smoothly hidden when unlocked)
+      if (!state.unlocked) {
+        c.strokeStyle = text;
+        c.lineWidth = 4;
+        c.beginPath();
+        c.roundRect(224, 960, 32, 26, 5);
+        c.stroke();
+        c.beginPath();
+        c.arc(240, 958, 12, Math.PI, Math.PI * 2);
+        c.stroke();
+      }
 
       // Bottom gesture pill bar
       round(c, 180, 1042, 120, 4, 2, text);

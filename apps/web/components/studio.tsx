@@ -33,9 +33,29 @@ import {
   Layers,
   Download,
   Save,
+  Grid,
+  FileText,
+  Gauge,
+  Shield,
+  Sliders,
+  ClipboardCheck,
 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { PrebuiltRomCard } from "./prebuilt-rom-card";
+import { SelectedAppsPreview } from "./preview";
+
+const STUDIO_STEP_ICONS = [
+  Smartphone,
+  Layers,
+  FileText,
+  Palette,
+  Grid,
+  Gauge,
+  Shield,
+  Sliders,
+  Cpu,
+  ClipboardCheck,
+];
 
 async function api<T>(
   path: string,
@@ -184,16 +204,34 @@ export function Studio({ id }: { id?: string }) {
       </div>
       <div className="studio-layout">
         <nav className="studio-steps" aria-label="Builder steps">
-          {steps.map((name, i) => (
-            <button
-              key={name}
-              aria-current={step === i ? "step" : undefined}
-              onClick={() => setStep(i)}
-            >
-              <span>{String(i + 1).padStart(2, "0")}</span>
-              {name}
-            </button>
-          ))}
+          {steps.map((name, i) => {
+            const StepIcon = STUDIO_STEP_ICONS[i] ?? Smartphone;
+            const isCompleted = i < step;
+            const isActive = step === i;
+            return (
+              <button
+                key={name}
+                aria-current={isActive ? "step" : undefined}
+                className={`flex items-center gap-2 text-left w-full transition-all ${
+                  isActive ? "text-sky-400 font-semibold" : "text-slate-300"
+                }`}
+                onClick={() => setStep(i)}
+              >
+                <span
+                  className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold ${
+                    isActive
+                      ? "bg-sky-500/20 text-sky-400 border border-sky-400/40"
+                      : isCompleted
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
+                        : "bg-slate-800/60 text-slate-400 border border-white/5"
+                  }`}
+                >
+                  <StepIcon size={14} />
+                </span>
+                <span className="truncate">{name}</span>
+              </button>
+            );
+          })}
         </nav>
         <section className="studio-editor">
           <div className="craft-kicker">
@@ -297,24 +335,17 @@ export function Studio({ id }: { id?: string }) {
           {step === 4 && (
             <>
               <p>{t("step4Description")}</p>
-              {(["browser", "calendar", "files", "terminal"] as const).map(
-                (app) => (
-                  <label className="craft-check" key={app}>
-                    <input
-                      type="checkbox"
-                      checked={config.apps.includes(app)}
-                      onChange={(e) =>
-                        change({
-                          apps: e.target.checked
-                            ? [...config.apps, app]
-                            : config.apps.filter((a) => a !== app),
-                        })
-                      }
-                    />
-                    {app}
-                  </label>
-                ),
-              )}
+              <SelectedAppsPreview
+                selectedApps={config.apps}
+                onToggleApp={(appId) => {
+                  const app = appId as ROMConfiguration["apps"][number];
+                  change({
+                    apps: config.apps.includes(app)
+                      ? config.apps.filter((a) => a !== app)
+                      : [...config.apps, app],
+                  });
+                }}
+              />
               <div className="craft-notice">
                 {t("apkUploadNotice")}
               </div>
@@ -457,6 +488,7 @@ export function Studio({ id }: { id?: string }) {
             configuration={config}
             authenticated
             compact
+            unlocked={step >= 4}
             review={step === 9}
             context={`Preset: ${config.preset}. Kernel unconfigured; compatibility unverified.`}
           />

@@ -80,7 +80,7 @@ export function PrebuiltRomCard() {
         } else {
           if (active) setErrorStatus(res.status);
         }
-      } catch (err) {
+      } catch {
         if (!controller.signal.aborted && active) {
           setErrorStatus(500);
         }
@@ -214,3 +214,4 @@ export function PrebuiltRomCard() {
     </article>
   );
 }
+
