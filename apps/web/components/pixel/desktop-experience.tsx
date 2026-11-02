@@ -24,6 +24,7 @@ export function DesktopExperience({
   mode = "login",
   context,
   authenticated = false,
+  unlocked,
 }: {
   configuration?: ROMConfiguration;
   success?: boolean;
@@ -32,6 +33,7 @@ export function DesktopExperience({
   mode?: "login" | "register";
   context?: string;
   authenticated?: boolean;
+  unlocked?: boolean;
 }) {
   const { t } = useTranslation("phonePreview");
   const canvas = useRef<HTMLCanvasElement>(null),
@@ -43,6 +45,7 @@ export function DesktopExperience({
   const [visible, setVisible] = useState(false),
     [reduced, setReduced] = useState(false);
   const [notice, setNotice] = useState("");
+  const isUnlocked = unlocked !== undefined ? unlocked : (success || authenticated);
   const screenState = useMemo(
     () =>
       configurationToScreen(
@@ -59,9 +62,9 @@ export function DesktopExperience({
                 ]
               : defaultConfiguration.apps.filter((a) => a !== "calendar"),
         },
-        success || authenticated,
+        isUnlocked,
       ),
-    [configuration, chapter, mode, success, authenticated, t],
+    [configuration, chapter, mode, isUnlocked, t],
   );
   const stateRef = useRef(screenState),
     previous = useRef(screenState);

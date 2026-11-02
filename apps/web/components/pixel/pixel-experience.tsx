@@ -11,6 +11,7 @@ export type ExperienceProps = {
   review?: boolean;
   mode?: "login" | "register";
   context?: string;
+  unlocked?: boolean;
 };
 const DesktopExperience = dynamic(
   () =>

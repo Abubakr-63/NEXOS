@@ -13,6 +13,7 @@ import {
   defaultConfiguration,
   projectMetadataSchema,
   romConfigurationSchema,
+  type ROMConfiguration,
 } from "@rom-hub/contracts";
 import {
   PrimaryButton,
@@ -27,7 +28,31 @@ import {
 import { useTranslation } from "@/lib/i18n";
 import { PixelExperience } from "./pixel/pixel-experience";
 import { PrebuiltRomCard } from "./prebuilt-rom-card";
+import { SelectedAppsPreview } from "./preview";
+import {
+  FileText,
+  Smartphone,
+  Layers,
+  Grid,
+  ClipboardCheck,
+  ArrowRight,
+  ArrowLeft,
+  Wand2,
+  CheckCircle2,
+  Download,
+  ShieldCheck,
+  Palette,
+  Search,
+} from "lucide-react";
 import "./workspace-pages.css";
+
+const STEP_ICONS = [
+  FileText,
+  Smartphone,
+  Layers,
+  Grid,
+  ClipboardCheck,
+];
 
 export function ProjectCreation() {
   const router = useRouter();
@@ -40,6 +65,7 @@ export function ProjectCreation() {
       t("steps.1"),
       t("steps.2"),
       t("steps.3"),
+      t("steps.4"),
     ],
     [t],
   );
@@ -61,6 +87,10 @@ export function ProjectCreation() {
   const [variantId, setVariantId] = useState("");
   const [base, setBase] = useState("");
   const [bases, setBases] = useState<AndroidBaseOption[]>([]);
+  const [apps, setApps] = useState<ROMConfiguration["apps"]>(["browser", "files"]);
+  const [accent, setAccent] = useState("#38bdf8");
+  const [darkMode, setDarkMode] = useState(true);
+
   const [catalogError, setCatalogError] = useState("");
   const [manufacturersLoading, setManufacturersLoading] = useState(true);
   const [deviceError, setDeviceError] = useState("");
@@ -156,11 +186,14 @@ export function ProjectCreation() {
       variant?.modelNumber === "M2101K7AG",
   );
 
-  useEffect(() => {
-    if (!isSunnyDevice && base === "pixelexperience-plus-mojito-android11") {
-      setBase("");
-    }
-  }, [isSunnyDevice, base]);
+  function handleToggleApp(appId: string) {
+    const validApp = appId as ROMConfiguration["apps"][number];
+    setApps((prev) =>
+      prev.includes(validApp)
+        ? prev.filter((a) => a !== validApp)
+        : [...prev, validApp],
+    );
+  }
 
   function next() {
     setError("");
@@ -179,12 +212,16 @@ export function ProjectCreation() {
       setError(t("stepValidationError2"));
       return;
     }
-    setStep((s) => Math.min(3, s + 1));
+    if (step === 3 && apps.length === 0) {
+      setError(t("stepValidationErrorApps"));
+      return;
+    }
+    setStep((s) => Math.min(4, s + 1));
   }
 
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (step < 3) {
+    if (step < 4) {
       next();
       return;
     }
@@ -198,6 +235,9 @@ export function ProjectCreation() {
         description,
         variantId,
         base,
+        apps,
+        accent,
+        darkMode,
       });
       const saved = await projectAPI<ProjectWriteResponse>(
         "projects",
@@ -231,37 +271,64 @@ export function ProjectCreation() {
         {!signedIn && <Link href="/login">{tc("actions")} →</Link>}
       </div>
       <div className="studio-layout">
+        {/* Left-side Step Navigation with Icons */}
         <nav className="studio-steps" aria-label="Project creation steps">
-          {steps.map((label, index) => (
-            <button
-              type="button"
-              key={label}
-              disabled={pending || index > step}
-              aria-current={step === index ? "step" : undefined}
-              onClick={() => {
-                setStep(index);
-                setError("");
-              }}
-            >
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              {label}
-            </button>
-          ))}
+          {steps.map((label, index) => {
+            const isCompleted = index < step;
+            const isActive = index === step;
+            const StepIcon = STEP_ICONS[index] ?? Wand2;
+            return (
+              <button
+                type="button"
+                key={label}
+                disabled={pending || index > step}
+                aria-current={isActive ? "step" : undefined}
+                className={`flex items-center gap-2.5 text-left w-full transition-all ${
+                  isActive ? "text-sky-400 font-semibold" : isCompleted ? "text-slate-200" : "text-slate-400"
+                }`}
+                onClick={() => {
+                  setStep(index);
+                  setError("");
+                }}
+              >
+                <span
+                  className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                    isActive
+                      ? "bg-sky-500/20 text-sky-400 border border-sky-400/40 shadow-sm"
+                      : isCompleted
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-400/30"
+                        : "bg-slate-800/60 text-slate-400 border border-white/5"
+                  }`}
+                >
+                  {isCompleted ? <CheckCircle2 size={15} /> : <StepIcon size={15} />}
+                </span>
+                <span className="truncate">{label}</span>
+              </button>
+            );
+          })}
         </nav>
+
+        {/* Central Editor Section */}
         <section className="studio-editor">
-          <span className="craft-kicker">
-            {t("stepOf", { current: step + 1, total: 4 })}
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="craft-kicker">
+              {t("stepOf", { current: step + 1, total: 5 })}
+            </span>
+          </div>
           <h2>{steps[step]}</h2>
           <form onSubmit={submit}>
             <fieldset
               disabled={pending}
               style={{ border: 0, padding: 0, minWidth: 0 }}
             >
+              {/* Step 0: Identity */}
               {step === 0 && (
                 <>
                   <label className="craft-field">
-                    {t("projectName")}
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <FileText size={15} className="text-sky-400" />
+                      {t("projectName")}
+                    </span>
                     <input
                       required
                       autoComplete="off"
@@ -272,7 +339,7 @@ export function ProjectCreation() {
                     />
                   </label>
                   <label className="craft-field">
-                    {t("description")}
+                    <span>{t("description")}</span>
                     <textarea
                       maxLength={2000}
                       rows={4}
@@ -284,6 +351,8 @@ export function ProjectCreation() {
                   </label>
                 </>
               )}
+
+              {/* Step 1: Device */}
               {step === 1 && (
                 <>
                   <p>{t("deviceSubtitle")}</p>
@@ -293,7 +362,10 @@ export function ProjectCreation() {
                     </p>
                   )}
                   <label className="craft-field">
-                    {t("manufacturerFilter")}
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Smartphone size={15} className="text-sky-400" />
+                      {t("manufacturerFilter")}
+                    </span>
                     <select
                       required
                       value={manufacturerId}
@@ -318,8 +390,12 @@ export function ProjectCreation() {
                   {manufacturersLoading && (
                     <p role="status">{t("loadingManufacturers")}</p>
                   )}
+
                   <label className="craft-field">
-                    {t("searchDevice")}
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Search size={15} className="text-sky-400" />
+                      {t("searchDevice")}
+                    </span>
                     <input
                       type="search"
                       value={query}
@@ -331,6 +407,7 @@ export function ProjectCreation() {
                       }}
                     />
                   </label>
+
                   {deviceError ? (
                     <p className="form-status" role="alert">
                       {deviceError}
@@ -340,7 +417,7 @@ export function ProjectCreation() {
                   ) : (
                     <>
                       <label className="craft-field">
-                        {t("deviceTitle")}
+                        <span>{t("deviceTitle")}</span>
                         <select
                           value={device?.id ?? ""}
                           required
@@ -383,6 +460,7 @@ export function ProjectCreation() {
                             setLoading(true);
                           }}
                         >
+                          <ArrowLeft size={14} />
                           {t("previousDevices")}
                         </SecondaryButton>
                         <span>{t("pageNumber", { page })}</span>
@@ -394,19 +472,24 @@ export function ProjectCreation() {
                             setLoading(true);
                           }}
                         >
-                          {t("moreDevices")}
+                          <span>{t("moreDevices")}</span>
+                          <ArrowRight size={14} />
                         </SecondaryButton>
                       </div>
                     </>
                   )}
+
                   {device && (
-                    <>
-                      <p>
-                        {device.manufacturer.name} · {device.name} · Codename:{" "}
-                        {device.codename}
-                      </p>
+                    <div className="mt-4 p-4 bg-slate-900/60 border border-white/10 rounded-xl space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Smartphone size={18} className="text-sky-400" />
+                        <span className="font-semibold text-white">
+                          {device.manufacturer.name} {device.name}
+                        </span>
+                        <span className="text-xs text-slate-400">({device.codename})</span>
+                      </div>
                       <label className="craft-field">
-                        {t("selectVariant")}
+                        <span>{t("selectVariant")}</span>
                         <select
                           required
                           value={variantId}
@@ -422,6 +505,7 @@ export function ProjectCreation() {
                         </select>
                       </label>
                       <div className="craft-notice">
+                        <ShieldCheck size={16} className="text-sky-400 inline mr-1" />
                         Identification: {variant?.catalogStatus ?? "UNVERIFIED"}
                         . Source: {variant?.sourceStatus ?? "UNREVIEWED"}.<br />
                         Support: UNKNOWN. NEXOS build: NOT_VERIFIED. You can
@@ -440,14 +524,17 @@ export function ProjectCreation() {
                               setStep(2);
                             }}
                           >
+                            <Download size={14} />
                             {t("selectPrebuiltRom")}
                           </SecondaryButton>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
                 </>
               )}
+
+              {/* Step 2: Base */}
               {step === 2 && (
                 <>
                   <p>{t("androidBaseSubtitle")}</p>
@@ -460,7 +547,10 @@ export function ProjectCreation() {
                   ) : (
                     <>
                       <label className="craft-field">
-                        {t("androidBaseTitle")}
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <Layers size={15} className="text-sky-400" />
+                          {t("androidBaseTitle")}
+                        </span>
                         <select
                           value={base}
                           required
@@ -490,20 +580,79 @@ export function ProjectCreation() {
                   )}
                 </>
               )}
+
+              {/* Step 3: Applications & Style (Automatic Phone Unlock!) */}
               {step === 3 && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-base font-semibold text-white mb-1">
+                      {t("appsTitle")}
+                    </h3>
+                    <p className="text-xs text-slate-400 mb-4">
+                      {t("appsSubtitle")}
+                    </p>
+                    <SelectedAppsPreview
+                      selectedApps={apps}
+                      onToggleApp={handleToggleApp}
+                    />
+                  </div>
+
+                  {/* Accent Color & Appearance */}
+                  <div className="p-4 bg-slate-900/50 border border-white/10 rounded-xl space-y-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                      <Palette size={14} className="text-sky-400" />
+                      Appearance & Theme
+                    </span>
+                    <div className="flex items-center gap-3">
+                      {["#38bdf8", "#818cf8", "#f43f5e", "#10b981", "#f59e0b"].map((col) => (
+                        <button
+                          key={col}
+                          type="button"
+                          className={`w-7 h-7 rounded-full border-2 transition-transform ${
+                            accent === col ? "scale-110 border-white shadow-md" : "border-transparent opacity-70"
+                          }`}
+                          style={{ backgroundColor: col }}
+                          onClick={() => setAccent(col)}
+                          aria-label={`Select accent ${col}`}
+                        />
+                      ))}
+                    </div>
+                    <label className="craft-check pt-2">
+                      <input
+                        type="checkbox"
+                        checked={darkMode}
+                        onChange={(e) => setDarkMode(e.target.checked)}
+                      />
+                      <span>Enable dark theme default</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Review & Create */}
+              {step === 4 && (
                 <>
                   <dl className="detail-list">
-                    <dt>{t("reviewIdentity")}</dt>
+                    <dt className="flex items-center gap-1.5">
+                      <FileText size={14} className="text-sky-400" />
+                      {t("reviewIdentity")}
+                    </dt>
                     <dd>{name.trim()}</dd>
                     <dt>{t("description")}</dt>
                     <dd>{description.trim() || "—"}</dd>
-                    <dt>{t("reviewTarget")}</dt>
+                    <dt className="flex items-center gap-1.5">
+                      <Smartphone size={14} className="text-sky-400" />
+                      {t("reviewTarget")}
+                    </dt>
                     <dd>{device?.name} ({device?.codename})</dd>
                     <dt>{t("reviewVariant")}</dt>
                     <dd>
                       {variant?.modelNumber} · {variant?.region}
                     </dd>
-                    <dt>{t("reviewBase")}</dt>
+                    <dt className="flex items-center gap-1.5">
+                      <Layers size={14} className="text-sky-400" />
+                      {t("reviewBase")}
+                    </dt>
                     <dd>
                       {base === "pixelexperience-plus-mojito-android11"
                         ? "PixelExperience Plus · Android 11 (Prebuilt ROM)"
@@ -511,6 +660,11 @@ export function ProjectCreation() {
                           ? t("unconfiguredDraftOption")
                           : `${bases.find((item) => item.id === base)?.name ?? base} · Android ${bases.find((item) => item.id === base)?.androidVersion ?? ""}`}
                     </dd>
+                    <dt className="flex items-center gap-1.5">
+                      <Grid size={14} className="text-sky-400" />
+                      {t("includedApps")}
+                    </dt>
+                    <dd className="capitalize">{apps.join(", ") || "None"}</dd>
                   </dl>
                   {isSunnyDevice && base === "pixelexperience-plus-mojito-android11" && (
                     <PrebuiltRomCard />
@@ -523,11 +677,14 @@ export function ProjectCreation() {
                   </div>
                 </>
               )}
+
               {error && (
                 <p role="alert" className="form-status">
                   {error}
                 </p>
               )}
+
+              {/* Action Buttons with Icons */}
               <div className="studio-actions">
                 <SecondaryButton
                   type="button"
@@ -537,7 +694,8 @@ export function ProjectCreation() {
                     setError("");
                   }}
                 >
-                  {t("back")}
+                  <ArrowLeft size={16} />
+                  <span>{t("back")}</span>
                 </SecondaryButton>
                 <PrimaryButton
                   type="submit"
@@ -546,30 +704,39 @@ export function ProjectCreation() {
                     (step === 1 &&
                       (loading || !!deviceError || !!catalogError)) ||
                     (step === 2 && (baseLoading || !!baseError)) ||
-                    (step === 3 && !signedIn)
+                    (step === 4 && !signedIn)
                   }
                 >
-                  {pending
-                    ? t("savingProject")
-                    : step === 3
-                      ? t("createDraft")
-                      : t("continue")}
+                  <span>
+                    {pending
+                      ? t("savingProject")
+                      : step === 4
+                        ? t("createDraft")
+                        : t("continue")}
+                  </span>
+                  {step === 4 ? <Wand2 size={16} /> : <ArrowRight size={16} />}
                 </PrimaryButton>
               </div>
             </fieldset>
           </form>
         </section>
+
+        {/* Right Preview Side: Automatic Lock / Unlock Transition */}
         <aside className="studio-preview">
           <PixelExperience
             compact
             authenticated
-            review={step === 3}
+            unlocked={step >= 3}
+            review={step === 4}
             configuration={{
               ...defaultConfiguration,
               name: name.trim() || "My Android",
               description,
               variantId: variantId || defaultConfiguration.variantId,
               base: base || defaultConfiguration.base,
+              apps,
+              accent,
+              darkMode,
             }}
             context={`${device ? `${device.name} · ${variant?.modelNumber || "Variant"}` : "No device selected"}. Base: ${base === "pixelexperience-plus-mojito-android11" ? "PixelExperience Plus · Android 11" : bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Draft")}.`}
           />
