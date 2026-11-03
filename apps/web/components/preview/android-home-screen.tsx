@@ -16,7 +16,7 @@ export type HomeScreenProps = {
   onAppClick?: (appId: string) => void;
 };
 
-export function AndroidHomeScreen({
+export const AndroidHomeScreen = React.memo(function AndroidHomeScreen({
   accent = "#38bdf8",
   dark = true,
   time = "09:41",
@@ -48,70 +48,73 @@ export function AndroidHomeScreen({
       </div>
 
       {/* At A Glance Widget */}
-      <div className="preview-at-a-glance home-glance">
-        <div className="glance-top">
-          <span className="glance-date">{date}</span>
-          <span className="glance-divider">·</span>
-          <span className="glance-weather">{weather}</span>
+      <div className="preview-glance-widget">
+        <span className="glance-date">{date}</span>
+        <div className="glance-weather">
+          <span>{weather}</span>
+          <span className="weather-icon">☀️</span>
         </div>
-        {projectName && <div className="glance-project-pill">{projectName}</div>}
       </div>
 
-      {/* Main Apps Grid */}
-      <div className="homescreen-scroll-area">
+      {/* Google Search Bar Pill */}
+      <div className="preview-search-bar" role="search" aria-label="Search apps and web">
+        <div className="search-pill-content">
+          <GoogleGIcon size={20} className="google-g" />
+          <span className="search-placeholder">Search apps & web</span>
+          <div className="search-actions">
+            <Mic size={16} className="search-action-icon text-slate-400" />
+            <Camera size={16} className="search-action-icon text-slate-400" />
+          </div>
+        </div>
+      </div>
+
+      {/* Dynamic Staggered App Icons Grid */}
+      <div className="preview-apps-area">
         <AppIconGrid selectedApps={selectedApps} onAppClick={onAppClick} />
       </div>
 
-      {/* Google Search Pill */}
-      <div className="google-search-pill" role="search" aria-label="Google search bar">
-        <div className="search-g">
-          <GoogleGIcon size={24} />
-        </div>
-        <span className="search-placeholder">Search apps & web...</span>
-        <div className="search-actions">
-          <Mic size={18} className="search-icon mic" />
-          <Camera size={18} className="search-icon lens" />
-        </div>
+      {/* Floating System Feature Pill */}
+      <div className="preview-project-pill">
+        <span className="pill-dot" />
+        <span className="pill-title truncate max-w-[140px]">{projectName}</span>
       </div>
 
-      {/* Bottom Favorite App Dock */}
-      <div className="homescreen-dock" aria-label="Favorite applications">
-        <button
-          type="button"
-          className="dock-item"
-          title="Phone"
-          aria-label="Phone"
-          onClick={() => onAppClick?.("phone")}
-        >
-          <PhoneAppIcon size={44} />
-        </button>
-        <button
-          type="button"
-          className="dock-item"
-          title="Messages"
-          aria-label="Messages"
-          onClick={() => onAppClick?.("messages")}
-        >
-          <MessagesAppIcon size={44} />
-        </button>
-        <button
-          type="button"
-          className="dock-item"
-          title="Chrome"
-          aria-label="Chrome Browser"
-          onClick={() => onAppClick?.("browser")}
-        >
-          <ChromeBrowserIcon size={44} />
-        </button>
-        <button
-          type="button"
-          className="dock-item"
-          title="Camera"
-          aria-label="Camera"
-          onClick={() => onAppClick?.("camera")}
-        >
-          <CameraAppIcon size={44} />
-        </button>
+      {/* Bottom Pinned App Dock (4 standard slots: Phone, Messages, Chrome, Camera) */}
+      <div className="preview-dock-container" aria-label="Pinned dock apps">
+        <div className="dock-glass-shelf">
+          <button
+            type="button"
+            className="dock-icon-btn"
+            onClick={() => onAppClick?.("phone")}
+            aria-label="Phone"
+          >
+            <PhoneAppIcon size={46} />
+          </button>
+          <button
+            type="button"
+            className="dock-icon-btn"
+            onClick={() => onAppClick?.("messages")}
+            aria-label="Messages"
+          >
+            <MessagesAppIcon size={46} />
+          </button>
+          <button
+            type="button"
+            className="dock-icon-btn"
+            onClick={() => onAppClick?.("browser")}
+            aria-label="Chrome Browser"
+          >
+            <ChromeBrowserIcon size={46} />
+          </button>
+          <button
+            type="button"
+            className="dock-icon-btn"
+            onClick={() => onAppClick?.("camera")}
+            aria-label="Camera"
+          >
+            <CameraAppIcon size={46} />
+          </button>
+        </div>
       </div>
 
       {/* Bottom Gesture Navigation Bar */}
@@ -120,4 +123,4 @@ export function AndroidHomeScreen({
       </div>
     </div>
   );
-}
+});

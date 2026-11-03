@@ -13,7 +13,7 @@ export type LockScreenProps = {
   onUnlockRequest?: () => void;
 };
 
-export function AndroidLockScreen({
+export const AndroidLockScreen = React.memo(function AndroidLockScreen({
   accent = "#38bdf8",
   dark = true,
   time = "09:41",
@@ -48,33 +48,40 @@ export function AndroidLockScreen({
 
       {/* At A Glance Widget */}
       <div className="preview-at-a-glance">
-        <span className="glance-date">{date}</span>
-        <span className="glance-weather">{weather}</span>
+        <span className="glance-calendar">{date} · {weather}</span>
       </div>
 
-      {/* Signature Pixel Dual-Row Lock Clock */}
-      <div className="lockscreen-clock-container" aria-label={`Current time: ${time}`}>
-        <div className="clock-digits hours">{hours}</div>
-        <div className="clock-digits minutes">{minutes}</div>
+      {/* Signature Android Dual-Row Lockscreen Clock */}
+      <div className="lockscreen-clock-container" aria-label={`Current time ${time}`}>
+        <div className="clock-hours">{hours ?? "09"}</div>
+        <div className="clock-minutes">{minutes ?? "41"}</div>
       </div>
 
-      {/* Notification / Project Banner */}
-      {projectName && (
-        <div className="lockscreen-card">
-          <span className="card-kicker">NEXOS SYSTEM INTENT</span>
-          <h4 className="card-title">{projectName}</h4>
-          <p className="card-subtitle">Ready to configure · Swipe up to unlock</p>
+      {/* Lockscreen Full Date */}
+      <div className="lockscreen-date-label">
+        <span>{date.toUpperCase()}</span>
+      </div>
+
+      {/* Notification Card / Project Indicator */}
+      <div className="lockscreen-notification">
+        <div className="notif-header">
+          <span className="notif-pill-kicker">NEXOS SYSTEM</span>
+          <span className="notif-time">now</span>
         </div>
-      )}
+        <div className="notif-body">
+          <strong>{projectName}</strong>
+          <p>Ready to customize. Tap to explore applications.</p>
+        </div>
+      </div>
 
-      {/* Bottom Lock Icon & Hint */}
+      {/* Bottom Padlock & Unlock Prompt */}
       <div className="lockscreen-footer">
-        <div className="lock-glyph-ring" aria-label="Device locked">
-          <Lock size={20} className="lock-glyph" />
+        <div className="lock-icon-pill" title="Tap to unlock">
+          <Lock size={18} className="lock-svg" />
         </div>
-        <span className="unlock-hint">Swipe up or edit apps to unlock</span>
+        <span className="swipe-hint">Swipe up or tap to unlock</span>
         <div className="gesture-bar" />
       </div>
     </div>
   );
-}
+});

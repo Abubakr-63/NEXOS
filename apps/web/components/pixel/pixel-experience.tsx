@@ -1,8 +1,16 @@
 "use client";
+
 import dynamic from "next/dynamic";
-import { useSyncExternalStore } from "react";
+import React, { useSyncExternalStore } from "react";
 import type { ROMConfiguration } from "@rom-hub/contracts";
+import { AndroidPhonePreview } from "../preview/android-phone-preview";
+import {
+  getVisualQuality,
+  subscribeQualityChange,
+  type VisualQuality,
+} from "@/lib/rendering-quality";
 import "./pixel.css";
+
 export type ExperienceProps = {
   configuration?: ROMConfiguration;
   authenticated?: boolean;
@@ -13,38 +21,42 @@ export type ExperienceProps = {
   context?: string;
   unlocked?: boolean;
 };
+
 const DesktopExperience = dynamic(
   () =>
     import("./desktop-experience").then((module) => module.DesktopExperience),
   { ssr: false },
 );
-const mobileQuery = "(max-width: 950px), (hover: none) and (pointer: coarse)";
-function subscribe(callback: () => void) {
-  const media = matchMedia(mobileQuery);
-  media.addEventListener("change", callback);
-  return () => media.removeEventListener("change", callback);
-}
-const mobileSnapshot = () => matchMedia(mobileQuery).matches;
-const serverSnapshot = () => true;
-/** Mobile never renders the dynamic component, so its engine/model/film chunks are never requested. */
+
+/**
+ * Adaptive Phone Visualization Experience.
+ *
+ * Tiering:
+ * - "lite" (mobile smartphones, tablets with coarse pointers, or user Lite mode):
+ *   Renders the lightweight 2D AndroidPhonePreview (SVG app icons, CSS transitions, 0 WebGL overhead).
+ * - "balanced" / "high":
+ *   Renders DesktopExperience (3D Three.js WebGL canvas with capped DPR and demand rendering).
+ */
 export function PixelExperience(props: ExperienceProps) {
-  const disabled = useSyncExternalStore(
-    subscribe,
-    mobileSnapshot,
-    serverSnapshot,
+  const quality: VisualQuality = useSyncExternalStore(
+    subscribeQualityChange,
+    getVisualQuality,
+    () => "lite", // Server snapshot: defaults to lightweight 2D
   );
-  if (disabled)
-    return props.compact ? (
-      <div className="pixel-mobile-summary">
-        <strong>{props.configuration?.name ?? "Configuration preview"}</strong>
-        <p>
-          {props.context ?? "Your selected settings remain available below."}
-        </p>
-        <p>
-          Text preview · 3D is disabled on mobile. Compilation remains
-          unavailable.
-        </p>
+
+  if (quality === "lite") {
+    return (
+      <div className="pixel-mobile-wrapper">
+        <AndroidPhonePreview
+          configuration={props.configuration}
+          unlocked={props.unlocked}
+          compact={props.compact}
+          interactive={false}
+          contextText={props.context}
+        />
       </div>
-    ) : null;
-  return <DesktopExperience {...props} />;
+    );
+  }
+
+  return <DesktopExperience {...props} quality={quality} />;
 }

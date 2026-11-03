@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { StoreProject } from "@/lib/store-adapter";
-import { copyConfigurationToDraft } from "@/lib/store-adapter";
+import type { StoreProject } from "../../lib/store-adapter";
+import { copyConfigurationToDraft } from "../../lib/store-adapter";
 import {
   Download,
   Heart,
@@ -16,9 +16,9 @@ import {
   CheckCircle2,
   Copy,
 } from "lucide-react";
-import { useTranslation } from "@/lib/i18n";
+import { useTranslation } from "../../lib/i18n";
 
-export function StoreCard({
+export const StoreCard = React.memo(function StoreCard({
   project,
   onBookmarkToggle,
   isBookmarked = false,
@@ -179,4 +179,4 @@ export function StoreCard({
       </div>
     </div>
   );
-}
+});

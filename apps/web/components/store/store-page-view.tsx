@@ -55,7 +55,6 @@ export function StorePageView() {
 
   function handleQueryChange(q: string) {
     setQuery(q);
-    setLoading(true);
   }
 
   function handleManufacturerChange(m: string) {

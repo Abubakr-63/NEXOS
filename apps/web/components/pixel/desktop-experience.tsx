@@ -13,6 +13,7 @@ import {
   type SceneEvent,
 } from "./orchestrator";
 import type { PixelEngine } from "./engine";
+import type { VisualQuality } from "@/lib/rendering-quality";
 import { useTranslation } from "@/lib/i18n";
 import "./pixel.css";
 
@@ -25,6 +26,7 @@ export function DesktopExperience({
   context,
   authenticated = false,
   unlocked,
+  quality = "high",
 }: {
   configuration?: ROMConfiguration;
   success?: boolean;
@@ -34,6 +36,7 @@ export function DesktopExperience({
   context?: string;
   authenticated?: boolean;
   unlocked?: boolean;
+  quality?: VisualQuality;
 }) {
   const { t } = useTranslation("phonePreview");
   const canvas = useRef<HTMLCanvasElement>(null),
@@ -108,6 +111,7 @@ export function DesktopExperience({
           stateRef.current,
           reduce,
           compact,
+          quality,
         );
         if (compact || reduce) engine.current.seek(1 / 3);
         else
@@ -142,6 +146,7 @@ export function DesktopExperience({
             stateRef.current,
             matchMedia("(prefers-reduced-motion: reduce)").matches,
             compact,
+            quality,
           );
           (element as unknown as { __pixelEngine: PixelEngine | null }).__pixelEngine =
             engine.current;
@@ -168,7 +173,7 @@ export function DesktopExperience({
       engine.current?.dispose();
       engine.current = null;
     };
-  }, [compact]);
+  }, [compact, quality]);
 
   useEffect(() => {
     stateRef.current = screenState;

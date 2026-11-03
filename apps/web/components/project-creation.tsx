@@ -54,6 +54,9 @@ const STEP_ICONS = [
   ClipboardCheck,
 ];
 
+// In-memory catalog cache to avoid duplicate API requests during search & filtering
+const devicesCache = new Map<string, DevicesResponse>();
+
 export function ProjectCreation() {
   const router = useRouter();
   const { t } = useTranslation("projectCreation");
@@ -148,6 +151,17 @@ export function ProjectCreation() {
 
   useEffect(() => {
     const controller = new AbortController();
+    const cacheKey = `${manufacturerId}:${query.trim()}:${page}`;
+    const cached = devicesCache.get(cacheKey);
+    if (cached) {
+      const cacheTimer = setTimeout(() => {
+        setCatalog(cached);
+        setDeviceError("");
+        setLoading(false);
+      }, 0);
+      return () => clearTimeout(cacheTimer);
+    }
+
     const timer = setTimeout(() => {
       const params = new URLSearchParams({
         q: query,
@@ -162,6 +176,7 @@ export function ProjectCreation() {
         controller.signal,
       )
         .then((data) => {
+          devicesCache.set(cacheKey, data);
           setCatalog(data);
           setDeviceError("");
         })
@@ -171,7 +186,7 @@ export function ProjectCreation() {
         .finally(() => {
           if (!controller.signal.aborted) setLoading(false);
         });
-    }, 200);
+    }, 250);
     return () => {
       clearTimeout(timer);
       controller.abort();
@@ -184,6 +199,26 @@ export function ProjectCreation() {
     device &&
       (device.codename === "mojito" || device.slug === "xiaomi-mojito") &&
       variant?.modelNumber === "M2101K7AG",
+  );
+
+  const previewConfig = useMemo(
+    () => ({
+      ...defaultConfiguration,
+      name: name.trim() || "My Android",
+      description,
+      variantId: variantId || defaultConfiguration.variantId,
+      base: base || defaultConfiguration.base,
+      apps,
+      accent,
+      darkMode,
+    }),
+    [name, description, variantId, base, apps, accent, darkMode],
+  );
+
+  const previewContext = useMemo(
+    () =>
+      `${device ? `${device.name} · ${variant?.modelNumber || "Variant"}` : "No device selected"}. Base: ${base === "pixelexperience-plus-mojito-android11" ? "PixelExperience Plus · Android 11" : bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Draft")}.`,
+    [device, variant, base, bases],
   );
 
   function handleToggleApp(appId: string) {
@@ -728,17 +763,8 @@ export function ProjectCreation() {
             authenticated
             unlocked={step >= 3}
             review={step === 4}
-            configuration={{
-              ...defaultConfiguration,
-              name: name.trim() || "My Android",
-              description,
-              variantId: variantId || defaultConfiguration.variantId,
-              base: base || defaultConfiguration.base,
-              apps,
-              accent,
-              darkMode,
-            }}
-            context={`${device ? `${device.name} · ${variant?.modelNumber || "Variant"}` : "No device selected"}. Base: ${base === "pixelexperience-plus-mojito-android11" ? "PixelExperience Plus · Android 11" : bases.find((item) => item.id === base)?.name ?? (base === "unconfigured" ? "Unconfigured" : "Draft")}.`}
+            configuration={previewConfig}
+            context={previewContext}
           />
           <div className="craft-notice">
             {t("draftNotice")}
