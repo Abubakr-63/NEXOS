@@ -160,6 +160,19 @@ export function conceptMaterials() {
     dispose() {
       brushed.dispose();
       canvas.width = canvas.height = 0;
+      metal.dispose();
+      darkMetal.dispose();
+      glass.dispose();
+      glassBack.dispose();
+      polishedMetal.dispose();
+      gLogo.dispose();
+      blackSapphire.dispose();
+      flash.dispose();
+      black.dispose();
+      copper.dispose();
+      board.dispose();
+      cyan.dispose();
+      lens.dispose();
     },
   };
 }

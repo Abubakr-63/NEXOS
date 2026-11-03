@@ -35,6 +35,7 @@ export function computeFrontDot(
   const viewDir = cPos.sub(tPos).normalize();
   return frontNormal.dot(viewDir);
 }
+
 export type PixelEngine = {
   seek: (progress: number) => void;
   film: (progress: number) => void;
@@ -45,48 +46,56 @@ export type PixelEngine = {
   motion: (value: boolean) => void;
   dispose: () => void;
 };
+
 export function createPixelEngine(
   canvas: HTMLCanvasElement,
   state: PixelScreenState,
   reduced: boolean,
   compact = false,
+  quality: "high" | "balanced" | "lite" = "high",
 ): PixelEngine {
+  const isBalanced = quality === "balanced";
   const context = canvas.getContext("webgl2", {
     alpha: true,
-    antialias: true,
-    powerPreference: "low-power",
+    antialias: !isBalanced,
+    powerPreference: isBalanced ? "low-power" : "high-performance",
   });
   if (!context || context.isContextLost())
     throw new Error("WebGL2 unavailable");
+
   const renderer = new THREE.WebGLRenderer({
     canvas,
     context,
     alpha: true,
-    antialias: true,
+    antialias: !isBalanced,
   });
+
+  const maxDpr = isBalanced ? 1.0 : 1.5;
   renderer.setPixelRatio(
     Math.min(
       window.devicePixelRatio || 1,
-      matchMedia("(max-width: 720px)").matches ? 1 : 1.5,
+      maxDpr,
     ),
   );
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
-  // Contact-shadow texture supplies grounding without a second full geometry pass.
   renderer.shadowMap.enabled = false;
   renderer.shadowMap.type = THREE.PCFShadowMap;
+
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 150);
   const lighting = studioLighting(renderer, scene);
-  const mobile = matchMedia("(max-width: 720px)").matches;
-  const screen = createScreen(mobile ? 1 : 1.6);
+
+  const screenScale = isBalanced ? 1.0 : 1.4;
+  const screen = createScreen(screenScale);
   const texture = new THREE.CanvasTexture(screen.canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
   texture.generateMipmaps = false;
-  const model = makeConceptModel(texture, mobile);
+
+  const model = makeConceptModel(texture, isBalanced);
+
   // Explicit material environment maps retain individual optical/back/frame reflection levels.
-  // A scene-only environment uses scene.environmentIntensity instead in this Three.js version.
   model.group.traverse((object) => {
     if (object instanceof THREE.Mesh)
       for (const material of Array.isArray(object.material)
@@ -97,6 +106,7 @@ export function createPixelEngine(
       }
   });
   scene.add(model.group);
+
   let targetProgress = reduced ? 2 / 6 : 0,
     currentProgress = targetProgress,
     currentState = state;
@@ -118,6 +128,7 @@ export function createPixelEngine(
   const smoothLook = new THREE.Vector3();
   let cameraInitialized = false;
   let framesRendered = 0;
+
   const frame = (time: number) => {
     raf = 0;
     if (disposed || !visible || document.hidden) return;
@@ -130,7 +141,8 @@ export function createPixelEngine(
     smoothZoom = reduced ? zoom : THREE.MathUtils.damp(smoothZoom, zoom, 8, dt);
     let displayProgress = currentProgress;
     let drawDisplay = true;
-        if (filmTarget !== null && !reduced) {
+
+    if (filmTarget !== null && !reduced) {
       filmCurrent = filmTarget;
       const film = sampleFilm(filmCurrent);
       model.group.rotation.set(...film.rotation);
@@ -180,6 +192,7 @@ export function createPixelEngine(
       model.displayMaterial.color.setScalar(1);
       canvas.dataset.cutaway = "0";
     }
+
     if (!cameraInitialized || reduced) {
       smoothCamera.copy(target);
       smoothLook.copy(look);
@@ -209,11 +222,17 @@ export function createPixelEngine(
       frontDot = correctedNormal.dot(viewDir);
     }
     canvas.dataset.frontDot = frontDot.toFixed(4);
+
+    // Optimize texture upload: in compact/builder mode with motion=0, screen only redraws when state changes
+    const isFilmActive = filmTarget !== null && !reduced && !compact;
+    const motionValue = isFilmActive ? time / 1000 : 0;
     if (
       drawDisplay &&
-      screen.draw(currentState, displayProgress, reduced ? 0 : time / 1000)
-    )
+      screen.draw(currentState, displayProgress, motionValue)
+    ) {
       texture.needsUpdate = true;
+    }
+
     renderer.render(scene, camera);
     canvas.dataset.frames = String(++framesRendered);
     canvas.dataset.screenApps = currentState.apps.join(",");
@@ -229,6 +248,7 @@ export function createPixelEngine(
     ).toFixed(3);
     canvas.dataset.drawCalls = String(renderer.info.render.calls);
     canvas.dataset.triangles = String(renderer.info.render.triangles);
+
     if (
       Math.abs(currentProgress - targetProgress) > 0.0002 ||
       (filmTarget !== null && Math.abs(filmCurrent - filmTarget) > 0.00002) ||
@@ -236,24 +256,28 @@ export function createPixelEngine(
     )
       raf = requestAnimationFrame(frame);
   };
+
   const invalidate = () => {
     if (!raf && !disposed && visible && !document.hidden)
       raf = requestAnimationFrame(frame);
   };
+
   const resize = () => {
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio || 1, rect.width < 480 ? 1 : 1.5),
+      Math.min(window.devicePixelRatio || 1, rect.width < 480 ? 1 : maxDpr),
     );
     renderer.setSize(rect.width, rect.height, false);
     camera.aspect = rect.width / rect.height;
     camera.updateProjectionMatrix();
     invalidate();
   };
+
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   resize();
+
   const onVisibility = () => {
     if (document.hidden) {
       cancelAnimationFrame(raf);
@@ -261,6 +285,7 @@ export function createPixelEngine(
     } else invalidate();
   };
   document.addEventListener("visibilitychange", onVisibility);
+
   let count = 0,
     instances = 0;
   model.group.traverse((object) => {
@@ -270,13 +295,13 @@ export function createPixelEngine(
   canvas.dataset.meshes = String(count);
   canvas.dataset.renderer = "three-webgl2";
   canvas.dataset.asset = "nexos-original-concept";
-  canvas.dataset.quality = mobile ? "mobile" : "desktop";
+  canvas.dataset.quality = quality;
   canvas.dataset.instancedDetails = String(instances);
+
   return {
     film(progress) {
       if (reduced || compact || performance.now() < viewLockUntil) return;
       const value = Math.max(0, Math.min(1, progress));
-      // The identical endpoints make wrapping continuous; never interpolate backwards through the film.
       if (filmTarget !== null && filmTarget > 0.98 && value < 0.02)
         filmCurrent = value;
       if (filmTarget === null) filmCurrent = value;
@@ -297,14 +322,13 @@ export function createPixelEngine(
       until = performance.now() + 450;
       invalidate();
     },
-        view(view) {
+    view(view) {
       viewLockUntil = performance.now() + 15000;
       filmTarget = null;
       if (view === "front") pose = 0;
       else if (view === "three-quarter" || view === "perspective") pose = -0.55;
       else if (view === "side") pose = -1.25;
       else {
-        // Rear view is strictly forbidden; remap to safe front three-quarter
         pose = 0.55;
       }
       until = performance.now() + 15000;
@@ -344,7 +368,7 @@ export function createPixelEngine(
       texture.dispose();
       model.dispose();
       lighting.dispose();
-      screen.dispose();
+      screen.dispose?.();
       renderer.dispose();
     },
   };

@@ -161,15 +161,12 @@ export function createScreen(scale = 1) {
     canvas,
     draw(state: PixelScreenState, progress: number, motion: number) {
       const chapter = Math.min(6, Math.floor(progress * 6 + 0.001));
-      const signature = JSON.stringify([
-        state,
-        chapter,
-        Math.round(motion * 20),
-      ]);
+      const motionStep = motion === 0 ? 0 : Math.round(motion * 10);
+      const signature = `${state.name}|${state.accent}|${state.dark ? 1 : 0}|${state.unlocked ? 1 : 0}|${state.draft ? 1 : 0}|${state.apps.join(",")}|${chapter}|${motionStep}`;
       if (signature === lastSignature) return false;
       lastSignature = signature;
 
-      const nextState = JSON.stringify([state, chapter]);
+      const nextState = `${state.name}|${state.accent}|${state.dark ? 1 : 0}|${state.unlocked ? 1 : 0}|${chapter}`;
       if (nextState !== lastState) {
         if (lastState && previousContext && motion !== 0) {
           previousContext.clearRect(0, 0, W, H);

@@ -33,7 +33,7 @@ export function StoreGrid({
     });
   }
 
-  if (loading) {
+  if (loading && projects.length === 0) {
     return (
       <div className="store-loading-state" role="status" aria-label="Loading projects">
         <p className="text-slate-400 text-sm mb-4">{t("loadingStore")}</p>

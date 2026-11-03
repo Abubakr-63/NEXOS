@@ -97,6 +97,10 @@ export function Studio({ id }: { id?: string }) {
   );
 
   const [config, setConfig] = useState<ROMConfiguration>(defaultConfiguration);
+  const previewContext = useMemo(
+    () => `Preset: ${config.preset}. Kernel unconfigured; compatibility unverified.`,
+    [config.preset],
+  );
   const [project, setProject] = useState<Project>();
   const [devices, setDevices] = useState<Device[]>([]);
   const [step, setStep] = useState(0);
@@ -490,7 +494,7 @@ export function Studio({ id }: { id?: string }) {
             compact
             unlocked={step >= 4}
             review={step === 9}
-            context={`Preset: ${config.preset}. Kernel unconfigured; compatibility unverified.`}
+            context={previewContext}
           />
           <p className="pixel-draft-summary">
             <strong>{config.name}</strong> ·{" "}

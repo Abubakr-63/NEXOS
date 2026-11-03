@@ -1574,3 +1574,24 @@ select {
   letter-spacing: 1px;
   color: var(--muted);
 }
+
+@media (max-width: 768px), (pointer: coarse) {
+  .glass-panel,
+  .floating-toolbar {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .craft-shell::after {
+    filter: blur(30px);
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-card,
+  .glass-panel,
+  .craft-shell::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

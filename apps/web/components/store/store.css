@@ -531,3 +531,19 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
+
+@media (max-width: 768px), (pointer: coarse) {
+  .store-toolbar,
+  .store-card,
+  .store-details-glass {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .store-card,
+  .store-btn {
+    transition: none !important;
+  }
+}
